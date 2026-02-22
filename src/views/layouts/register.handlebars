@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastro - StoreHost</title>
+    
+    <!-- Importação do Google Fonts (Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/register.css">
+
+</head>
+<body>
+
+    <div class="auth-wrapper">
+
+        <!-- 1. Coluna de Branding (Atrativa) -->
+        <div class="auth-branding">
+            <div class="branding-content">
+                <a href="/" class="logo-branding">StoreHost</a>
+                <h2>A plataforma completa para sua rede.</h2>
+                <p>Gerencie todas as suas lojas e franquias em um único lugar com relatórios centralizados e gestão de estoque.</p>
+            </div>
+        </div>
+
+        <!-- 2. Coluna do Formulário -->
+        <div class="auth-form-container">
+            <!-- SEU CÓDIGO HTML DE CADASTRO ABAIXO -->
+            <main class="container">
+                <section class="card">
+                  <h2>Cadastrar Nova Loja</h2>
+                  <p class="subtitle">Preencha os dados para criar sua conta principal.</p>
+
+                  <form method="POST" action="/register/store">
+                    
+                    <div class="row">
+                      <div class="col">
+                        <label for="name">Nome da Loja</label>
+                        <input id="name" name="name" type="text" placeholder="Ex: Móveis Bahia" required />
+                      </div>
+                      <div class="col">
+                        <label for="cnpj">CNPJ</label>
+                        <input id="cnpj" name="cnpj" type="text" placeholder="00.000.000/0000-00" required />
+                      </div>
+                    </div>
+        
+                    <div class="row">
+                      <div class="col">
+                        <label for="email">E-mail</label>
+                        <input id="email" name="email" type="email" placeholder="contato@loja.com" required />
+                      </div>
+                      <div class="col">
+                        <label for="phone">Telefone</label>
+                        <input id="phone" name="phone" type="text" placeholder="(71) 99999-9999" />
+                      </div>
+                    </div>
+        
+                    <div class="row">
+                      <!-- Adicionando "full-width" para o endereço ocupar a linha toda, se desejado -->
+                      <div class="col full-width">
+                           <label for="address">Endereço</label>
+                           <input id="address" name="address" type="text" placeholder="Rua Exemplo, 123 - Bairro - Cidade/UF" required />
+                      </div>
+                    </div>
+                    
+                    <div class="row">
+                       <!-- Corrigido de "colo" para "col" e "for/id" da senha -->
+                       <div class="col">
+                           <label for="password">Senha</label>
+                           <input id="password" name="password" type="password" required />
+                       </div>
+                       <!-- Criei uma coluna vazia para alinhar, mas pode ser um campo de "Confirmar Senha" no futuro -->
+                       <div class="col">
+                           <label for="password-confirm">Confirmar Senha</label>
+                           <input id="password-confirm" name="senha_confirm" type="password" required />
+                       </div>
+                    </div>
+                   
+                    <div class="form-actions">
+                      <!-- Adicionando classes de botão -->
+                      <button type="submit" class="btn btn-primario">Salvar Loja</button>
+                    </div>
+        
+                  </form>
+
+                  <!-- Link para Login -->
+                  <div class="login-link">
+                    Já tem uma conta? <a href="/login">Faça login</a>
+                  </div>
+
+                </section>
+            </main>
+        </div>
+    </div>
+
+</body>
+</html>

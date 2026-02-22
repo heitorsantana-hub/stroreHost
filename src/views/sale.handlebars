@@ -1,0 +1,92 @@
+<div class="content-body">
+    
+    <section class="welcome-sec">
+        <h1>Ponto de Venda (PDV)</h1>
+        <p>Registre as saídas de produtos e acompanhe o histórico de vendas recentes.</p>
+    </section>
+    
+    <div class="main-grid">
+        
+        <section class="data-card">
+            <div class="card-header">
+                <h2>Últimas Vendas</h2>
+            </div>
+            
+            <div class="table-container">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>Recibo</th>
+                            <th>Produto</th>
+                            <th>Qtd.</th>
+                            <th>Total</th>
+                            <th>Pagamento</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each vendas}}
+                            <tr>
+                                <td><span style="color: var(--text-muted); font-size: 0.85rem;">#{{this._id}}</span></td>
+                                <td><strong>{{this.product_name}}</strong></td>
+                                <td>{{this.quantity}}x</td>
+                                <td><strong>R$ {{this.total_price}}</strong></td>
+                                <td>{{this.payment_method}}</td>
+                                <td><span class="badge-status status-active">Concluída</span></td>
+                            </tr>
+                        {{else}}
+                            <tr>
+                                <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                    Nenhuma venda registrada ainda. Realize a primeira venda usando o formulário ao lado!
+                                </td>
+                            </tr>
+                        {{/each}}
+                    </tbody>
+                </table>    
+            </div>
+        </section>
+
+        <section class="data-card">
+            <div class="card-header">
+                <h2>Nova Venda</h2>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Preencha os dados para registrar a saída do estoque.</p>
+            
+            <form action="/dashboard/sales/create" method="post">
+                
+                <div class="form-group">
+                    <label>Produto</label>
+                    <select name="product_id" class="form-input" required>
+                        <option value="">Selecione o produto vendido...</option>
+                        {{#each produtos}}
+                            <option value="{{this._id}}">{{this.name}} - R$ {{this.price}}</option>
+                        {{/each}}
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Quantidade</label>
+                    <input type="number" name="quantity" placeholder="Ex: 2" min="1" class="form-input" required>
+                </div>
+
+                <div class="form-group">
+                    <label>Método de Pagamento</label>
+                    <select name="payment_method" class="form-input" required>
+                        <option value="Pix">Pix</option>
+                        <option value="Cartão de Crédito">Cartão de Crédito</option>
+                        <option value="Cartão de Débito">Cartão de Débito</option>
+                        <option value="Dinheiro">Dinheiro</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label>Observações (Opcional)</label>
+                    <textarea name="notes" class="form-input" placeholder="Detalhes do cliente ou da venda..." style="height: 80px; resize: none;"></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Finalizar Venda</button>
+            </form>
+        </section>
+
+    </div>
+</div>

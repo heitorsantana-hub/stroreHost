@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - StoreHost</title>
+    <link rel="shortcut icon" href="/image.ico" type="image/x-icon">
+    
+    <!-- Importação do Google Fonts (Inter) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/css/login.css">
+
+</head>
+<body>
+
+    <div class="auth-wrapper">
+
+        <!-- Coluna de Branding -->
+        <div class="auth-branding">
+            <div class="branding-content">
+                <a href="/" class="logo-branding">StoreHost</a>
+                <h2>Bem-vindo de volta!</h2>
+                <p>Acesse seu painel administrativo para gerenciar suas lojas, estoque e funcionários com total facilidade.</p>
+            </div>
+        </div>
+
+        <!-- Coluna do Formulário -->
+        <div class="auth-form-container">
+            <main class="container">
+                <section class="card" id="login">
+                    <h2>Entrar</h2>
+                    <p class="subtitle">Acesse sua conta para continuar.</p>
+
+                    <form method="POST" action="/login/post">
+                        <label for="username">E-mail</label>
+                        <input id="username" name="email" type="text" placeholder="seu@email.com" required autocomplete="username" />
+
+                        <label for="password">Senha</label>
+                        <input id="password" name="password" type="password" placeholder="Sua senha" required autocomplete="current-password" />
+
+                        <div class="row">
+                            <div class="col">
+                                <label class="small-label">
+                                    <input type="checkbox" name="remember"/> Manter conectado
+                                </label>
+                            </div>
+                            <div class="col">
+                                <button type="submit" class="btn btn-primario">Entrar</button>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Link para Cadastro -->
+                    <div class="register-link">
+                        Ainda não tem conta? <a href="/register">Cadastre sua loja</a>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+</body>
+</html>

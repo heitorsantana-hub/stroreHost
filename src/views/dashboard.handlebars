@@ -1,0 +1,115 @@
+<div class="content-body">
+    
+    <section class="welcome-sec">
+        <h1>Painel de Controle</h1>
+        <p>Olá, bem-vindo de volta à gestão da loja <strong>{{storeName}}</strong>.</p>
+    </section>
+
+    <div class="stats-grid">
+        
+        <div class="stat-card">
+            <div class="stat-header">
+                <h3>Vendas Totais</h3>
+                <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: var(--success);">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                </div>
+            </div>
+            <p class="stat-value">R$ {{kpiVendas}}</p>
+            <p class="trend up">Faturamento Bruto</p>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <h3>Produtos no Catálogo</h3>
+                <div class="stat-icon" style="background: rgba(10, 87, 232, 0.1); color: var(--primary);">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"></path></svg>
+                </div>
+            </div>
+            <p class="stat-value">{{kpiProdutos}}</p>
+            <p class="trend up" style="color: var(--primary);">Itens Registrados</p>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <h3>Estoque Baixo</h3>
+                <div class="stat-icon" style="background: rgba(239, 68, 68, 0.1); color: var(--danger);">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path></svg>
+                </div>
+            </div>
+            <p class="stat-value" style="color: {{#if kpiEstoqueBaixo}}var(--danger){{else}}var(--text-main){{/if}};">
+                {{kpiEstoqueBaixo}} Itens
+            </p>
+            <p class="trend down">Com menos de 5 unid.</p>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-header">
+                <h3>Despesas</h3>
+                <div class="stat-icon" style="background: rgba(245, 158, 11, 0.1); color: var(--warning);">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                </div>
+            </div>
+            <p class="stat-value" style="color: var(--warning);">R$ {{kpiDespesas}}</p>
+            <p class="trend up" style="color: var(--text-muted);">Custos Operacionais</p>
+        </div>
+    </div>
+
+    <div class="main-grid">
+        
+        <div class="data-card">
+            <div class="card-header">
+                <h2>Últimas Vendas</h2>
+                <a href="/dashboard/sale" class="btn-view">Ir para PDV</a>
+            </div>
+            <table class="custom-table">
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Valor</th>
+                        <th>Data</th>
+                        <th>Pagamento</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {{#each ultimasVendas}}
+                        <tr>
+                            <td><strong>{{this.product_name}}</strong> <span style="font-size:0.8rem; color:var(--text-muted);">({{this.quantity}}x)</span></td>
+                            <td>R$ {{this.total_price}}</td>
+                            <td>{{this.data_formatada}}</td>
+                            <td><span class="badge-status status-active">{{this.payment_method}}</span></td>
+                        </tr>
+                    {{else}}
+                        <tr>
+                            <td colspan="4" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                Nenhuma venda recente registrada.
+                            </td>
+                        </tr>
+                    {{/each}}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="data-card">
+            <div class="card-header">
+                <h2>Últimas Movimentações</h2>
+            </div>
+            <div class="activity-feed">
+                {{#each ultimasMovimentacoes}}
+                    <div class="activity-item">
+                        <div class="activity-dot" style="background: {{#if this.isEntrada}}var(--success){{else}}var(--danger){{/if}}; border-color: {{#if this.isEntrada}}#DCFCE7{{else}}#FEE2E2{{/if}};"></div>
+                        
+                        <div class="activity-content">
+                            <p><strong>{{this.tipo_texto}}</strong> de {{this.quantity}} un. do produto.</p>
+                            <span>{{this.data_formatada}}</span>
+                        </div>
+                    </div>
+                {{else}}
+                    <div style="text-align: center; color: var(--text-muted); padding: 1rem 0;">
+                        Sem movimentações recentes de estoque.
+                    </div>
+                {{/each}}
+            </div>
+        </div>
+
+    </div>
+</div>

@@ -1,0 +1,77 @@
+<div class="content-body">
+        
+        <section class="welcome-sec">
+            <h1>Catálogo de Produtos</h1>
+            <p>Gerencie o estoque e adicione novos itens à loja.</p>
+        </section>
+        
+        <div class="main-grid">
+            
+            <section class="data-card">
+                <div class="card-header">
+                    <h2>Produtos Registrados</h2>
+                </div>
+                
+                <div class="table-container">
+                    <table class="custom-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nome</th>
+                                <th>Categoria</th>
+                                <th>Preço Base</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                    {{#each produtos}}
+                        <tr>
+                            <td><span class="badge-status status-active">Padrão</span></td>
+                            <td><strong>{{this.name}}</strong></td>
+                            <td>{{this.category}}</td>
+                            <td>R$ {{this.price}}</td>
+                            <td>
+                                <button class="btn btn-outline">Editar</button>
+                            </td>
+                        </tr>
+                    {{else}}
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                Nenhum produto cadastrado ainda. Use o formulário ao lado para começar!
+                            </td>
+                        </tr>
+                    {{/each}}
+            </tbody>
+                    </table>    
+                </div>
+            </section>
+
+            <section class="data-card">
+                <div class="card-header">
+                    <h2>Novo Produto</h2>
+                </div>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Adicione uma nova definição de produto.</p>
+                
+                <form action="/dashboard/products/create" method="post">
+                    <div class="form-group">
+                        <label>Nome do Produto</label>
+                        <input type="text" name="name" placeholder="Ex: Tênis de Corrida" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Categoria</label>
+                        <input type="text" name="category" placeholder="Nome da categoria" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Preço</label>
+                        <input type="text" name="price" placeholder="Valor do preço" class="form-input" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Descrição</label>
+                        <textarea name="description" class="form-input" placeholder="Detalhes do produto..." style="height: 100px; resize: none;"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Registrar Produto</button>
+                </form>
+            </section>
+
+        </div>
+    </div>

@@ -1,0 +1,67 @@
+<div class="content-body">
+    <div class="grid-layout">
+        
+        <section class="card">
+            <h2>Membros da Equipe</h2>
+            <div class="table-container">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Colaborador</th>
+                            <th>Cargo</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each employees}}
+                            <tr>
+                                <td><span class="badge-status status-active">Padrão</span></td>
+                                <td>
+                                    <strong>{{this.name}}</strong><br>
+                                    <span style="font-size: 0.85rem; color: var(--text-muted);">{{this.email}}</span>
+                                </td>
+                                <td>{{this.cargo}}</td>
+                                <td>
+                                    <button class="btn btn-outline">Editar</button>
+                                </td>
+                            {{else}}
+                        <tr>
+                            <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                Nenhum funcionário cadastrado ainda. Use o formulário ao lado para começar!
+                            </td>
+                        </tr>
+                    {{/each}} </tbody> </table>
+            </div>
+        </section>
+
+        <section class="card">
+            <h2>Novo Utilizador</h2>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Crie acessos para novos membros.</p>
+            <form action="/dashboard/employee/post" method="post">
+                <div class="form-group">
+                    <label>Nome Completo</label>
+                    <input type="text" name="name" placeholder="Nome do funcionário" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label>Email Corporativo</label>
+                    <input type="email" name="email" placeholder="exemplo@loja.com" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label>Cargo</label>
+                    <input type="text" name="cargo" placeholder="Cargo do funcionário" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label>Senha Provisória</label>
+                    <input type="password" name="password" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label>Confirmar Senha</label>
+                    <input type="password" name="confirm_senha" class="form-input" required>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Adicionar à Equipe</button>
+            </form>
+        </section>
+        
+    </div>
+</div>

@@ -1,0 +1,211 @@
+
+
+        /* --- 1. Configurações Globais e Reset --- */
+        :root {
+            --cor-primaria: #0A57E8; /* Azul principal */
+            --cor-secundaria: #0D244F; /* Azul escuro */
+            --cor-fundo-claro: #F8F9FA; /* Cinza bem claro */
+            --cor-texto: #212529; /* Preto/Cinza escuro */
+            --cor-texto-secundario: #6C757D; /* Cinza médio */
+            --cor-branco: #FFFFFF;
+            --raio-borda: 8px;
+            --sombra-padrao: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            line-height: 1.7;
+            color: var(--cor-texto);
+            background-color: var(--cor-fundo-claro);
+            font-size: 16px;
+        }
+
+        /* --- 2. Utilitários --- */
+        .container {
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        h2 {
+            color: var(--cor-secundaria);
+            font-weight: 700;
+            font-size: 2.2rem;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .btn {
+            display: inline-block;
+            padding: 12px 28px;
+            border-radius: var(--raio-borda);
+            text-decoration: none;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .btn-primario {
+            background-color: var(--cor-primaria);
+            color: var(--cor-branco);
+            box-shadow: 0 4px 10px rgba(10, 87, 232, 0.3);
+        }
+
+        .btn-primario:hover {
+            background-color: #0846b9;
+            transform: translateY(-2px);
+        }
+        
+        /* --- 3. Layout de Autenticação (Split Screen) --- */
+        .auth-wrapper {
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        /* Coluna de Branding (Esquerda) */
+        .auth-branding {
+            flex: 1;
+            background: linear-gradient(135deg, var(--cor-primaria) 0%, var(--cor-secundaria) 100%);
+            color: var(--cor-branco);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+        
+        .branding-content {
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .logo-branding {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--cor-branco);
+            text-decoration: none;
+            display: block;
+            margin-bottom: 20px;
+        }
+        
+        .branding-content h2 {
+            color: var(--cor-branco);
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+
+        .branding-content p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 1.1rem;
+        }
+
+        /* Coluna do Formulário (Direita) */
+        .auth-form-container {
+            flex: 1.5;
+            background-color: var(--cor-fundo-claro);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+        }
+
+        /* --- 4. Card de Login --- */
+        main.container {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+        }
+
+        .card {
+            background-color: var(--cor-branco);
+            border-radius: var(--raio-borda);
+            border: 1px solid #E0E0E0;
+            box-shadow: var(--sombra-padrao);
+            padding: 40px;
+            width: 100%;
+            max-width: 450px; 
+        }
+
+        .card .subtitle {
+            text-align: center;
+            color: var(--cor-texto-secundario);
+            margin-bottom: 30px;
+        }
+
+        form label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: var(--cor-secundaria);
+        }
+
+        form input[type="text"],
+        form input[type="password"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #E0E0E0;
+            border-radius: var(--raio-borda);
+            font-size: 1rem;
+            margin-bottom: 20px;
+        }
+
+        form input:focus {
+            outline: none;
+            border-color: var(--cor-primaria);
+            box-shadow: 0 0 0 3px rgba(10, 87, 232, 0.1);
+        }
+
+        .row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+        }
+
+        .small-label {
+            font-size: 0.9rem;
+            color: var(--cor-texto-secundario);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+        }
+
+        .small-label input {
+            margin-right: 8px;
+        }
+
+        .register-link {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 0.9rem;
+            color: var(--cor-texto-secundario);
+        }
+
+        .register-link a {
+            color: var(--cor-primaria);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+        
+        /* Responsividade */
+        @media (max-width: 992px) {
+            .auth-branding {
+                display: none;
+            }
+            .auth-form-container {
+                flex: 1;
+                padding: 20px;
+            }
+        }

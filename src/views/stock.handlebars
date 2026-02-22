@@ -1,0 +1,78 @@
+
+    <div class="content-body">
+        
+        <section class="welcome-sec">
+            <h1>Controle de Estoque</h1>
+            <p>Monitore os níveis de produtos e registre entradas ou saídas.</p>
+        </section>
+
+        <div class="main-grid">
+            
+    <section class="data-card">
+    <div class="card-header">
+        <h2>Níveis de Estoque</h2>
+    </div>
+    <div class="table-container">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Produto</th>
+                    <th>Qtd. Atual</th>
+                    <th>Valor</th>
+                    <th>Última Mov.</th>
+                    <th>Ações</th> </tr>
+            </thead>
+            <tbody>
+                {{#each produtos}}
+                    <tr>
+                        <td><strong>{{this.name}}</strong></td>
+                        
+                        <td>{{this.current_stock}} un.</td> 
+                        
+                        <td>R$ {{this.price}}</td>
+                        
+                        <td style="color: var(--text-muted); font-size: 0.85rem;">Sem registro</td>
+                        
+                        <td>
+                            <button class="btn btn-outline">Editar</button>
+                        </td>
+                    </tr>
+                {{else}}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            Nenhum produto cadastrado ainda. Use o formulário ao lado para começar!
+                        </td>
+                    </tr>
+                {{/each}}
+            </tbody>
+        </table>
+    </div>
+</section>
+
+            <section class="data-card">
+                <div class="card-header">
+                    <h2>Movimentar Estoque</h2>
+                </div>
+                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Adicione entradas ou saídas de itens.</p>
+                
+                <form action="/dashboard/stock/update" method="post">
+                    <div class="form-group">
+                        <label>Selecionar Produto</label>
+                        <select name="product_id" class="form-input" required>
+                            <option value="">Escolha um produto...</option>
+                            {{#each produtos}}
+                                <option value="{{this._id}}">{{this.name}}</option>
+                            {{/each}}
+
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Quantidade</label>
+                        <input type="number" name="quantity" class="form-input" min="1" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Atualizar Estoque</button>
+                </form>
+            </section>
+
+        </div>
+    </div>
