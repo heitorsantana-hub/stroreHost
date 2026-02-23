@@ -190,7 +190,7 @@
         }
 
         .mockup-img {
-            width: 100%;
+            width: 70%;
             height: auto;
             border-radius: var(--radius);
             box-shadow: 0 30px 60px -12px rgba(50, 50, 93, 0.25), 0 18px 36px -18px rgba(0, 0, 0, 0.3);
@@ -421,3 +421,80 @@
             .footer-grid { grid-template-columns: 1fr 1fr; }
             .testimonial-grid { grid-template-columns: 1fr; }
         }
+
+        /* --- Ajustes Mobile (Adicionar ao final do seu CSS) --- */
+
+.mobile-only { display: none; }
+
+@media (max-width: 768px) {
+    .mobile-only { display: block; }
+    
+    .nav-auth { display: none; } /* Esconde botões normais */
+    
+    .mobile-toggle { 
+        display: block; 
+        z-index: 1001;
+    }
+
+    .nav-menu {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 80%;
+        height: 100vh;
+        background: var(--white);
+        flex-direction: column;
+        justify-content: center;
+        transition: 0.4s;
+        box-shadow: -10px 0 30px rgba(0,0,0,0.1);
+    }
+
+    .nav-menu.active {
+        right: 0;
+    }
+
+    .nav-menu li {
+        margin: 1.5rem 0;
+    }
+
+    /* Hero Section Mobile */
+    .hero {
+        padding: 8rem 1rem 4rem;
+    }
+
+    .hero h1 {
+        font-size: 2.2rem;
+    }
+
+    .hero-btns {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .btn {
+        width: 100%;
+    }
+
+    .mockup-img {
+        width: 100% !important;
+        border-width: 4px;
+    }
+
+    /* Grids */
+    .features-grid, .pricing-grid, .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+
+    .pricing-grid {
+        padding: 0 1rem;
+    }
+
+    .price-card.featured {
+        transform: scale(1); /* Remove o zoom no mobile para não quebrar o layout */
+    }
+
+    .footer-grid {
+        text-align: center;
+    }
+}

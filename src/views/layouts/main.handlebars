@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -35,32 +35,22 @@
         <div class="hero-content">
             <span class="badge">NOVIDADE: Dashboards em Tempo Real</span>
             <h1>Gerencie o seu império de <span>lojas</span> num só lugar.</h1>
-            <p>A StoreHost é a infraestrutura completa para franquias e redes de retalho que procuram escala, controlo total e inteligência de dados.</p>
+            <p>A StoreHost é a infraestrutura completa para franquias e redes de retalho que procuram escala, controle total e inteligência de dados.</p>
             
             <div class="hero-btns">
-                <a href="register.html" class="btn btn-primary" style="padding: 1rem 2.5rem; font-size: 1.1rem;">Criar Conta Gratuita</a>
+                <a href="/register" class="btn btn-primary" style="padding: 1rem 2.5rem; font-size: 1.1rem;">Criar Conta Gratuita</a>
                 <a href="#features" class="btn" style="color: var(--secondary); font-weight: 700;">Ver Demonstração →</a>
             </div>
         </div>
+        
+      
 
         <div class="hero-mockup">
-            <img src="https://placehold.co/1200x800/0A57E8/FFFFFF?text=Dashboard+Premium+Mockup" alt="Dashboard StoreHost" class="mockup-img">
+        <img src="/mockup.png" alt="Dashboard StoreHost" class="mockup-img">
         </div>
+</div>
     </section>
 
-    <!-- Trusted By -->
-    <section class="trusted">
-        <div class="container">
-            <p>Empresas que confiam na nossa tecnologia</p>
-            <div class="logos">
-                <i>FASHION_CO</i>
-                <i>TECH_RETAIL</i>
-                <i>GLOBAL_FOOD</i>
-                <i>HOME_STYLE</i>
-                <i>LUX_BRAND</i>
-            </div>
-        </div>
-    </section>
 
     <!-- Features -->
     <section class="features" id="features">
@@ -114,29 +104,29 @@
         <div class="pricing-grid">
             <div class="price-card">
                 <h3>Starter</h3>
-                <span class="amount">€49<span>/mês</span></span>
+                <span class="amount">R$50<span>/mês</span></span>
                 <p>Para quem está a abrir a segunda loja.</p>
                 <ul class="price-list">
-                    <li>Até 2 Lojas</li>
+                    <li>1 Loja</li>
                     <li>Gestão de Inventário</li>
                     <li>Relatórios Básicos</li>
                     <li>Suporte via Chat</li>
                 </ul>
-                <a href="cadastro.html" class="btn btn-outline" style="width: 100%;">Selecionar Starter</a>
+                <a href="/register" class="btn btn-outline" style="width: 100%;">Selecionar Starter</a>
             </div>
 
             <div class="price-card featured">
                 <span class="badge" style="background: var(--accent); color: var(--secondary);">MAIS POPULAR</span>
                 <h3>Growth</h3>
-                <span class="amount">€149<span>/mês</span></span>
+                <span class="amount">R$80<span>/mês</span></span>
                 <p>A solução ideal para franquias em expansão.</p>
                 <ul class="price-list">
-                    <li>Até 10 Lojas</li>
+                    <li>Até 2 Lojas</li>
                     <li>Dashboards Avançados</li>
                     <li>API de Integração</li>
                     <li>Suporte Prioritário 24/7</li>
                 </ul>
-                <a href="cadastro.html" class="btn btn-primary" style="width: 100%; background: var(--white); color: var(--secondary);">Selecionar Growth</a>
+                <a href="/register" class="btn btn-primary" style="width: 100%; background: var(--white); color: var(--secondary);">Selecionar Growth</a>
             </div>
 
             <div class="price-card">
@@ -231,6 +221,24 @@
                 document.querySelector(this.getAttribute('href')).scrollIntoView({
                     behavior: 'smooth'
                 });
+            });
+        });
+
+        
+        // Lógica do Menu Mobile
+        const mobileToggle = document.getElementById('mobileToggle');
+        const navMenu = document.getElementById('navMenu');
+
+        mobileToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+            mobileToggle.textContent = navMenu.classList.contains('active') ? '✕' : '☰';
+        });
+
+        // Fechar menu ao clicar em um link
+        document.querySelectorAll('.nav-menu a').forEach(link => {
+            link.addEventListener('click', () => {
+                navMenu.classList.remove('active');
+                mobileToggle.textContent = '☰';
             });
         });
     </script>
