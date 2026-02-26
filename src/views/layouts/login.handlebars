@@ -6,32 +6,31 @@
     <title>Login - StoreHost</title>
     <link rel="shortcut icon" href="/image.ico" type="image/x-icon">
     
-    <!-- Importação do Google Fonts (Inter) -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/css/login.css">
-
 </head>
 <body>
 
     <div class="auth-wrapper">
-
-        <!-- Coluna de Branding -->
         <div class="auth-branding">
             <div class="branding-content">
                 <a href="/" class="logo-branding">StoreHost</a>
                 <h2>Bem-vindo de volta!</h2>
-                <p>Acesse seu painel administrativo para gerenciar suas lojas, estoque e funcionários com total facilidade.</p>
+                <p>Acesse seu painel administrativo para gerenciar suas lojas, estoque e funcionários.</p>
             </div>
         </div>
 
-        <!-- Coluna do Formulário -->
         <div class="auth-form-container">
             <main class="container">
                 <section class="card" id="login">
                     <h2>Entrar</h2>
                     <p class="subtitle">Acesse sua conta para continuar.</p>
+
+                    <div id="alert-container"></div>
 
                     <form method="POST" action="/login/post">
                         <label for="username">E-mail</label>
@@ -40,19 +39,18 @@
                         <label for="password">Senha</label>
                         <input id="password" name="password" type="password" placeholder="Sua senha" required autocomplete="current-password" />
 
-                        <div class="row">
+                        <div class="row align-items-center">
                             <div class="col">
                                 <label class="small-label">
                                     <input type="checkbox" name="remember"/> Manter conectado
                                 </label>
                             </div>
-                            <div class="col">
-                                <button type="submit" class="btn btn-primario">Entrar</button>
+                            <div class="col-auto">
+                                <button type="submit" class="btn btn-primary">Entrar</button>
                             </div>
                         </div>
                     </form>
 
-                    <!-- Link para Cadastro -->
                     <div class="register-link">
                         Ainda não tem conta? <a href="/register">Cadastre sua loja</a>
                     </div>
@@ -61,5 +59,48 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('error') === 'notfound') {
+            const alertContainer = document.getElementById('alert-container');
+            alertContainer.innerHTML = `
+                <div class="alert alert-danger d-flex align-items-center alert-dismissible fade show" role="alert">
+                    <svg width="20" height="20" fill="currentColor" class="bi flex-shrink-0 me-2" viewBox="0 0 16 16">
+                        <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                    </svg>
+                    <div style="font-size: 0.9rem;">Loja não encontrada! Verifique os dados.</div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+        }
+
+        else if (urlParams.get('error') === 'password') {
+            const alertContainer = document.getElementById('alert-container');
+            alertContainer.innerHTML = `
+                <div class="alert alert-danger d-flex align-items-center alert-dismissible fade show" role="alert">
+                    <svg width="20" height="20" fill="currentColor" class="bi flex-shrink-0 me-2" viewBox="0 0 16 16">
+                        <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                    </svg>
+                    <div style="font-size: 0.9rem;">Usuario ou Senha errados! Verifique os dados.</div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+        }
+
+        else if (urlParams.get('error') === 'session') {
+            const alertContainer = document.getElementById('alert-container');
+            alertContainer.innerHTML = `
+                <div class="alert alert-danger d-flex align-items-center alert-dismissible fade show" role="alert">
+                    <svg width="20" height="20" fill="currentColor" class="bi flex-shrink-0 me-2" viewBox="0 0 16 16">
+                        <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                    </svg>
+                    <div style="font-size: 0.9rem;">Sessão negada, faça o login.</div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+        }
+    </script>
 </body>
 </html>

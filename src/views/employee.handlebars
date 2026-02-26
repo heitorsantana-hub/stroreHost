@@ -1,13 +1,20 @@
 <div class="content-body">
-    <div class="grid-layout">
+    <section class="welcome-sec">
+        <h1>Gestão de Equipe</h1>
+        <p>Administre os colaboradores e permissões do sistema.</p>
+    </section>
+
+    <div class="main-grid">
         
-        <section class="card">
-            <h2>Membros da Equipe</h2>
+        <section class="data-card">
+            <div class="card-header">
+                <h2>Membros da Equipe</h2>
+            </div>
             <div class="table-container">
                 <table class="custom-table">
                     <thead>
                         <tr>
-                            <th>ID</th>
+                            <th>Status</th>
                             <th>Colaborador</th>
                             <th>Cargo</th>
                             <th>Ações</th>
@@ -16,52 +23,118 @@
                     <tbody>
                         {{#each employees}}
                             <tr>
-                                <td><span class="badge-status status-active">Padrão</span></td>
+                                <td><span class="badge-status status-active">Ativo</span></td>
                                 <td>
-                                    <strong>{{this.name}}</strong><br>
-                                    <span style="font-size: 0.85rem; color: var(--text-muted);">{{this.email}}</span>
+                                    <div class="user-cell">
+                                        <div>
+                                            <strong>{{this.name}}</strong><br>
+                                            <span style="font-size: 0.8rem; color: var(--text-muted);">{{this.email}}</span>
+                                        </div>
+                                    </div>
                                 </td>
                                 <td>{{this.cargo}}</td>
                                 <td>
-                                    <button class="btn btn-outline">Editar</button>
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-outline btn-sm" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#editEmployeeModal"
+                                            data-id="{{this._id}}"
+                                            data-name="{{this.name}}"
+                                            data-email="{{this.email}}"
+                                            data-cargo="{{this.cargo}}">
+                                            Editar
+                                        </button>
+
+                                        <form action="/dashboard/employee/delete" method="POST" onsubmit="return confirm('Excluir este colaborador?')">
+                                            <input type="hidden" name="employee_id" value="{{this._id}}">
+                                            <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
+                                        </form>
+                                    </div>
                                 </td>
-                            {{else}}
-                        <tr>
-                            <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">
-                                Nenhum funcionário cadastrado ainda. Use o formulário ao lado para começar!
-                            </td>
-                        </tr>
-                    {{/each}} </tbody> </table>
+                            </tr>
+                        {{else}}
+                            <tr>
+                                <td colspan="4" class="text-center py-4 text-muted">Nenhum membro encontrado.</td>
+                            </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
             </div>
         </section>
 
-        <section class="card">
-            <h2>Novo Utilizador</h2>
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Crie acessos para novos membros.</p>
+        <section class="data-card">
+            <div class="card-header">
+                <h2>Novo Utilizador</h2>
+            </div>
+            <div id="alert-container"></div>
+            
             <form action="/dashboard/employee/post" method="post">
                 <div class="form-group">
                     <label>Nome Completo</label>
-                    <input type="text" name="name" placeholder="Nome do funcionário" class="form-input" required>
+                    <input type="text" name="name" class="form-input" placeholder="Nome do funcionário" required>
                 </div>
                 <div class="form-group">
                     <label>Email Corporativo</label>
-                    <input type="email" name="email" placeholder="exemplo@loja.com" class="form-input" required>
+                    <input type="email" name="email" class="form-input" placeholder="exemplo@loja.com" required>
                 </div>
                 <div class="form-group">
                     <label>Cargo</label>
-                    <input type="text" name="cargo" placeholder="Cargo do funcionário" class="form-input" required>
+                    <input type="text" name="cargo" class="form-input" placeholder="Ex: Gerente" required>
                 </div>
                 <div class="form-group">
                     <label>Senha Provisória</label>
                     <input type="password" name="password" class="form-input" required>
                 </div>
-                <div class="form-group">
-                    <label>Confirmar Senha</label>
-                    <input type="password" name="confirm_senha" class="form-input" required>
-                </div>
-                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Adicionar à Equipe</button>
+                <button type="submit" class="btn btn-primary w-100 mt-3">Adicionar à Equipe</button>
             </form>
         </section>
-        
     </div>
 </div>
+
+<div class="modal fade" id="editEmployeeModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="editEmployeeForm" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Colaborador</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label>Nome</label>
+                        <input type="text" name="name" id="edit-name" class="form-input" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>Cargo</label>
+                        <input type="text" name="cargo" id="edit-cargo" class="form-input" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>Email</label>
+                        <input type="text" name="email" id="edit-email" class="form-input" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+ <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    // 2. Lógica do Modal de Edição
+    const urlParams = new URLSearchParams(window.location.search);
+    const editModal = document.getElementById('editEmployeeModal');
+    if (editModal) {
+        editModal.addEventListener('show.bs.modal', event => {
+            const btn = event.relatedTarget;
+            editModal.querySelector('#edit-name').value = btn.getAttribute('data-name');
+            editModal.querySelector('#edit-cargo').value = btn.getAttribute('data-cargo');
+            editModal.querySelector('#edit-email').value = btn.getAttribute('data-email');
+            editModal.querySelector('#editEmployeeForm').action = `/dashboard/employee/update/${btn.getAttribute('data-id')}`;
+        });
+    }
+</script>

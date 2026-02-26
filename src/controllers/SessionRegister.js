@@ -1,5 +1,4 @@
 import Store from "../models/Store.js"; // Pegando o Banco de Lojas
-import path from "path";
 
 class SessionRegister {
   async store(req, res) {
@@ -7,7 +6,8 @@ class SessionRegister {
     try {
       let store = await Store.findOne({ email });
       if (store) {
-        return res.status(400).json({ error: "Store already exists" });
+        console.log("Loja já existe");
+        return res.redirect("/register?error=exists");
       }
       store = await Store.create({
         name,
@@ -17,8 +17,7 @@ class SessionRegister {
         phone,
         cnpj,
       });
-      console.log({ store });
-      return res.status(201).redirect("/login");
+      return res.redirect("/login");
     } catch (err) {
       console.log(err);
       return res.status(500).json(err);

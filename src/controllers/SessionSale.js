@@ -9,7 +9,7 @@ class SessionSale {
       const storeId = req.session.storeId;
 
       if (!storeId) {
-        return res.redirect("/dashboard/sale");
+        return res.redirect("/dashboard/login?erro=session");
       }
 
       if (!quantity || !product_id || !payment_method) {
@@ -33,10 +33,7 @@ class SessionSale {
 
       // 3. REGRA DE NEGÓCIO: Checagem de Estoque
       if (product.current_stock < qtdVendida) {
-        console.log(
-          `Erro: Estoque insuficiente. Temos apenas ${product.current_stock} unidades.`,
-        );
-        return res.redirect("/dashboard/sale");
+        return res.redirect("/dashboard/sales?error=quantity");
       }
 
       // 4. REGRA DE NEGÓCIO: Cálculo Financeiro e Fotografia
@@ -63,7 +60,7 @@ class SessionSale {
       console.log(`Venda Registrada com Sucesso! Recibo: #${sale._id}`);
 
       // 7. Retorno de sucesso corrigido
-      return res.redirect("/dashboard/sales");
+      return res.redirect("/dashboard/sales?sucess=create");
     } catch (error) {
       console.log("Deu erro aqui: ", error);
       return res.redirect("/dashboard/sales");

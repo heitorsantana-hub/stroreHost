@@ -14,9 +14,9 @@ import path, { join } from "path";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import { fileURLToPath } from "url";
-import { error } from "console";
 import SessionSale from "./src/controllers/SessionSale.js";
 import SessionDashboard from "./src/controllers/SessionDashboard.js";
+import { Session } from "inspector";
 const app = express();
 const port = 3000;
 
@@ -62,11 +62,13 @@ app.get("/dashboard", SessionDashboard.index);
 
 // Sessão de Produtos
 app.post("/dashboard/products/create", SessionProduct.store);
+app.post("/dashboard/product/update/:id", SessionProduct.update);
+app.post("/dashboard/product/delete", SessionProduct.destroy);
 
 app.get("/dashboard/product", async (req, res) => {
   // 1. Verifica se a pessoa está logada
   if (!req.session.storeId) {
-    return res.redirect("/login");
+    return res.redirect("/login?error=session");
   }
 
   try {
@@ -89,10 +91,11 @@ app.get("/dashboard/product", async (req, res) => {
 });
 
 app.post("/dashboard/stock/update", SesssionStock.update);
+app.post("/dashboard/stock/update/:id", SesssionStock.update2);
 
 app.get("/dashboard/stock", async (req, res) => {
   if (!req.session.storeId) {
-    return res.redirect("/login");
+    return res.redirect("/login?error=session");
   }
 
   try {
@@ -113,10 +116,12 @@ app.get("/dashboard/stock", async (req, res) => {
 });
 
 app.post("/dashboard/employee/post", SessionEmployee.store);
+app.post("/dashboard/employee/update/:id", SessionEmployee.update);
+app.post("/dashboard/employee/delete", SessionEmployee.destroy);
 
 app.get("/dashboard/employee", async (req, res) => {
   if (!req.session.storeId) {
-    return res.redirect("/login");
+    return res.redirect("/login?error=session");
   }
 
   try {
@@ -140,7 +145,7 @@ app.post("/dashboard/sales/create", SessionSale.store);
 
 app.get("/dashboard/sales", async (req, res) => {
   if (!req.session.storeId) {
-    return res.redirect("/login");
+    return res.redirect("/login?error=session");
   }
 
   try {

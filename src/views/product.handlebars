@@ -31,7 +31,22 @@
                             <td>{{this.category}}</td>
                             <td>R$ {{this.price}}</td>
                             <td>
-                                <button class="btn btn-outline">Editar</button>
+                                <button 
+                                    class="btn btn-outline" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#editModal"
+                                    data-id="{{this._id}}"
+                                    data-name="{{this.name}}"
+                                    data-category="{{this.category}}"
+                                    data-price="{{this.price}}"
+                                    data-description="{{this.description}}">
+                                    Editar
+                                </button>
+                                <br>
+                                <form action="/dashboard/product/delete" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir?')">
+                                    <input type="hidden" name="product_id" value="{{this._id}}">
+                                    <button type="submit" class="btn btn-danger">Remover</button>
+                                </form>
                             </td>
                         </tr>
                     {{else}}
@@ -52,7 +67,11 @@
                 </div>
                 <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Adicione uma nova definição de produto.</p>
                 
+                <div id="alert-container"></div>
+
                 <form action="/dashboard/products/create" method="post">
+
+
                     <div class="form-group">
                         <label>Nome do Produto</label>
                         <input type="text" name="name" placeholder="Ex: Tênis de Corrida" class="form-input" required>
@@ -75,3 +94,89 @@
 
         </div>
     </div>
+
+    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="editForm" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editModalLabel">Editar Produto</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                    <input type="hidden" name="product_id" value="{{produtos._id}}">
+
+                    <div class="mb-3">
+                        <label class="form-label">Nome do Produto</label>
+                        <input type="text" name="name" id="edit-name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Categoria</label>
+                        <input type="text" name="category" id="edit-category" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Preço</label>
+                        <input type="text" name="price" id="edit-price" class="form-control" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+
+     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        if (urlParams.get('sucess') === 'create') {
+            const alertContainer = document.getElementById('alert-container');
+            alertContainer.innerHTML = `
+                <div class="alert alert-success d-flex align-items-center" role="alert">
+                <svg width="20" height="20" fill="currentColor" class="bi flex-shrink-0 me-2" viewBox="0 0 16 16">
+                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                    </svg>
+                    <div style="font-size: 0.9rem;">Produto Cadastrado Com Sucesso!</div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+        }
+        else if (urlParams.get('sucess') === 'update') {
+            const alertContainer = document.getElementById('alert-container');
+            alertContainer.innerHTML = `
+                <div class="alert alert-success d-flex align-items-center" role="alert">
+                <svg width="20" height="20" fill="currentColor" class="bi flex-shrink-0 me-2" viewBox="0 0 16 16">
+                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                    </svg>
+                    <div style="font-size: 0.9rem;">Produto Atualizado Com Sucesso!</div>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            `;
+        }
+
+        const editModal = document.getElementById('editModal');
+        if (editModal) {
+            editModal.addEventListener('show.bs.modal', event => {
+                const button = event.relatedTarget; // Botão que foi clicado
+                
+                // Pega os dados que guardamos no botão
+                const id = button.getAttribute('data-id');
+                const name = button.getAttribute('data-name');
+                const category = button.getAttribute('data-category');
+                const price = button.getAttribute('data-price');
+
+                // Preenche os inputs do Modal
+                editModal.querySelector('#edit-name').value = name;
+                editModal.querySelector('#edit-category').value = category;
+                editModal.querySelector('#edit-price').value = price;
+                
+                // Define para onde o formulário será enviado
+                editModal.querySelector('#editForm').action = `/dashboard/product/update/${id}`;
+            });
+        }
+    </script>

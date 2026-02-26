@@ -9,13 +9,13 @@ class SessionLogin {
 
     // Loja não encontrada
     if (!store) {
-      console.log("Loja não existe");
-      return res.status(400).redirect("/login");
+      // Adiciona ?error=1 na URL
+      return res.redirect("/login?error=notfound");
     }
 
     if (store.password != password) {
       console.log("Senha errada");
-      return res.status(401).redirect("/login");
+      return res.redirect("/login?error=password");
     }
 
     // Dados da sessão

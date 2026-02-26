@@ -5,7 +5,7 @@ class SessionFinance {
   async index(req, res) {
     try {
       const storeId = req.session.storeId;
-      if (!storeId) return res.redirect("/login");
+      if (!storeId) return res.redirect("/login?error=session");
 
       // Busca todas as transações da loja
       const transactions = await Transaction.find({ store_id: storeId })
@@ -100,7 +100,7 @@ class SessionFinance {
       });
 
       console.log("Lançamento financeiro registrado com sucesso!");
-      return res.redirect("/dashboard/finance");
+      return res.redirect("/dashboard/finance?sucess=create");
     } catch (error) {
       console.log("Erro interno ao registrar transação:", error);
       return res.redirect("/dashboard/finance");

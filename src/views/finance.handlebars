@@ -83,6 +83,8 @@
             </div>
             <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Registre despesas operacionais ou receitas avulsas.</p>
             
+            <div id="alert-container"></div>
+
             <form action="/dashboard/finance/create" method="post">
                 
                 <div class="form-group">
@@ -176,4 +178,18 @@
         },
         options: chartOptions
     });
+</script>
+
+ <script>
+    const urlParams = new URLSearchParams(window.location.search);
+    const alertContainer = document.getElementById('alert-container');
+
+    if (urlParams.get('sucess') === 'create') {
+        alertContainer.innerHTML = `
+            <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
+                <svg width="20" height="20" fill="currentColor" class="bi me-2" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>
+                <div>Lançamento Cadastrado Com Sucesso!</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>`;
+    } 
 </script>

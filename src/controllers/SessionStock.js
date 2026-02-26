@@ -6,7 +6,7 @@ class SessionStock {
     const { product_id, quantity } = req.body;
     const storeId = req.session.storeId;
 
-    if (!storeId) return res.redirect("/login");
+    if (!storeId) return res.redirect("/login?erro=session");
 
     try {
       // Procurando um produto que exista na loja específica
@@ -32,10 +32,33 @@ class SessionStock {
       });
 
       console.log("Resgitro Feito com Sucesso");
-      return res.redirect("/dashboard/stock");
+      return res.redirect("/dashboard/stock?sucess=create");
     } catch (error) {
       console.log("Erro ao movimentar estoque:", error);
       return res.redirect("/dashboard/stock");
+    }
+  }
+
+  async update2(req, res) {
+    const { id } = req.params;
+    const { quantity } = req.body;
+
+    try {
+      const storeId = req.session.storeId;
+
+      if (!storeId) {
+        return res.redirect("/login?erro=session");
+      }
+
+      const result = await Product.updateOne(
+        { _id: id, store_id: storeId },
+        { $set: { current_stock: quantity } }, // Use o $set para garantir a alteração
+      );
+
+      console.log({ result });
+      return res.redirect("/dashboard/stock?sucess=create");
+    } catch (err) {
+      console.log(err);
     }
   }
 }
