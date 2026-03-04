@@ -8,58 +8,83 @@
         <div class="main-grid">
             
             <section class="data-card">
-                <div class="card-header">
-                    <h2>Produtos Registrados</h2>
-                </div>
-                
-                <div class="table-container">
-                    <table class="custom-table">
-                        <thead>
-                            <tr>
-                                <th>ID</th>
-                                <th>Nome</th>
-                                <th>Categoria</th>
-                                <th>Preço Base</th>
-                                <th>Ações</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                    {{#each produtos}}
-                        <tr>
-                            <td><span class="badge-status status-active">Padrão</span></td>
-                            <td><strong>{{this.name}}</strong></td>
-                            <td>{{this.category}}</td>
-                            <td>R$ {{this.price}}</td>
-                            <td>
-                                <button 
-                                    class="btn btn-outline" 
-                                    data-bs-toggle="modal" 
-                                    data-bs-target="#editModal"
-                                    data-id="{{this._id}}"
-                                    data-name="{{this.name}}"
-                                    data-category="{{this.category}}"
-                                    data-price="{{this.price}}"
-                                    data-description="{{this.description}}">
-                                    Editar
-                                </button>
-                                <br>
-                                <form action="/dashboard/product/delete" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir?')">
-                                    <input type="hidden" name="product_id" value="{{this._id}}">
-                                    <button type="submit" class="btn btn-danger">Remover</button>
-                                </form>
-                            </td>
-                        </tr>
-                    {{else}}
-                        <tr>
-                            <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">
-                                Nenhum produto cadastrado ainda. Use o formulário ao lado para começar!
-                            </td>
-                        </tr>
-                    {{/each}}
+    <div class="card-header">
+        <h2>Produtos Registrados</h2>
+    </div>
+    
+    <div class="table-container">
+        <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Produto</th>
+                    <th>Categoria</th>
+                    <th>Preço</th>
+                    <th class="text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each produtos}}
+                <tr>
+                    <td><span class="badge-status status-active">Ativo</span></td>
+                    
+                    <td>
+                        <strong>{{this.name}}</strong><br>
+                        <small class="text-muted" style="font-size: 0.7rem;">ID: {{this._id}}</small>
+                    </td>
+                    
+                    <td><span class="text-muted">{{this.category}}</span></td>
+                    
+                    <td><strong>R$ {{this.price}}</strong></td>
+                    
+                    <td>
+                        <div class="d-flex justify-content-center align-items-center gap-2">
+                            
+                            <button class="btn btn-outline btn-sm" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#viewModal"
+                                data-id="{{this._id}}"
+                                data-name="{{this.name}}"
+                                data-image="{{this.image_url}}"
+                                data-category="{{this.category}}"
+                                data-description="{{this.description}}"
+                                data-quantity="{{this.current_stock}}"
+                                data-price="{{this.price}}"
+                                data-stock="{{this.current_stock}}">
+                                <i class="bi bi-eye"></i> Ver
+                            </button>
+
+                            <button class="btn btn-outline btn-sm" 
+                                data-bs-toggle="modal" 
+                                data-bs-target="#editModal"
+                                data-id="{{this._id}}"
+                                data-name="{{this.name}}"
+                                data-category="{{this.category}}"
+                                data-price="{{this.price}}"
+                                data-imagem="{{this.image_url}}"
+                                data-description="{{this.description}}">
+                                Editar
+                            </button>
+
+                            <form action="/dashboard/product/delete" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir?')" class="m-0">
+                                <input type="hidden" name="product_id" value="{{this._id}}">
+                                <button type="submit" class="btn btn-danger btn-sm">Remover</button>
+                            </form>
+
+                        </div>
+                    </td>
+                </tr>
+                {{else}}
+                <tr>
+                    <td colspan="5" class="text-center py-4 text-muted">
+                        Nenhum produto cadastrado ainda.
+                    </td>
+                </tr>
+                {{/each}}
             </tbody>
-                    </table>    
-                </div>
-            </section>
+        </table>    
+    </div>
+</section>
 
             <section class="data-card">
                 <div class="card-header">
@@ -69,7 +94,7 @@
                 
                 <div id="alert-container"></div>
 
-                <form action="/dashboard/products/create" method="post">
+                <form action="/dashboard/products/create" method="post" enctype="multipart/form-data">
 
 
                     <div class="form-group">
@@ -84,6 +109,12 @@
                         <label>Preço</label>
                         <input type="text" name="price" placeholder="Valor do preço" class="form-input" required>
                     </div>
+
+                    <div class="form-group">
+                        <label>Imagem do Produto</label>
+                        <input type="file" name="image" class="form-input" accept="image/*">
+                    </div>
+
                     <div class="form-group">
                         <label>Descrição</label>
                         <textarea name="description" class="form-input" placeholder="Detalhes do produto..." style="height: 100px; resize: none;"></textarea>
@@ -98,15 +129,12 @@
     <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
-            <form id="editForm" method="POST">
+            <form id="editForm" method="POST" enctype="multipart/form-data">
                 <div class="modal-header">
                     <h5 class="modal-title" id="editModalLabel">Editar Produto</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-
-                    <input type="hidden" name="product_id" value="{{produtos._id}}">
-
                     <div class="mb-3">
                         <label class="form-label">Nome do Produto</label>
                         <input type="text" name="name" id="edit-name" class="form-control" required>
@@ -119,12 +147,61 @@
                         <label class="form-label">Preço</label>
                         <input type="text" name="price" id="edit-price" class="form-control" required>
                     </div>
+                    <div class="mb-3">
+                        <label class="form-label">Nova Imagem (Opcional)</label>
+                        <input type="file" name="image" id="edit-image" class="form-input" accept="image/*">
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
                     <button type="submit" class="btn btn-primary">Salvar Alterações</button>
                 </div>
             </form>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="viewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalhes do Produto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="fw-bold">Nome:</label>
+                    <span id="view-name"></span>
+                </div>
+                <div class="mb-3">
+                    <label class="fw-bold">Categoria:</label>
+                    <span id="view-category"></span>
+                </div>
+                <div class="mb-3">
+                    <label class="fw-bold">Preço:</label>
+                    <span id="view-price"></span>
+                </div>
+                <div class="mb-3">
+                    <label class="fw-bold">Descrição:</label>
+                    <p id="view-description" class="text-muted"></p>
+                </div>
+                <div class="mb-3">
+                    <label class="fw-bold">Quantidade:</label>
+                    <p id="view-quantity" class="text-muted"></p>
+                </div>
+               <div class="mb-3 text-center">
+                    <label class="fw-bold d-block mb-2">Imagem do Produto:</label>
+                    <img id="view-image" 
+                    src="" 
+                    alt="Produto" 
+                    class="img-fluid rounded shadow-sm d-block mx-auto" 
+                    style="max-height: 250px; object-fit: cover;">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
         </div>
     </div>
 </div>
@@ -169,6 +246,7 @@
                 const name = button.getAttribute('data-name');
                 const category = button.getAttribute('data-category');
                 const price = button.getAttribute('data-price');
+                const image_url = button.getAttribute('data-imagem');
 
                 // Preenche os inputs do Modal
                 editModal.querySelector('#edit-name').value = name;
@@ -179,4 +257,38 @@
                 editModal.querySelector('#editForm').action = `/dashboard/product/update/${id}`;
             });
         }
+
+        const viewModal = document.getElementById('viewModal');
+
+        if (viewModal) {
+        viewModal.addEventListener('show.bs.modal', event => {
+            // 1. Identifica o botão que abriu o modal
+            const btn = event.relatedTarget;
+            console.log("Modal aberto pelo botão do produto ID:", btn.getAttribute('data-id'));
+
+            // 2. Extrai os dados da "mochila" (data-attributes)
+            const name = btn.getAttribute('data-name');
+            const category = btn.getAttribute('data-category');
+            const price = btn.getAttribute('data-price');
+            const description = btn.getAttribute('data-description');
+            const quantity = btn.getAttribute('data-quantity');
+            const image = btn.getAttribute('data-image');
+
+            // 3. Preenche os campos de TEXTO (usando textContent)
+            viewModal.querySelector('#view-name').textContent = name || "Não informado";
+            viewModal.querySelector('#view-category').textContent = category || "Sem categoria";
+            viewModal.querySelector('#view-price').textContent = price ? `R$ ${price}` : "Consulte";
+            viewModal.querySelector('#view-quantity').textContent = quantity || "Sem quantidade";
+            viewModal.querySelector('#view-description').textContent = description || "Nenhuma descrição disponível.";
+
+            // 4. Trata a IMAGEM (usando o atributo .src)
+            const imgElement = viewModal.querySelector('#view-image');
+            if (image && image !== "") {
+                imgElement.src = image;
+                imgElement.style.display = "block"; // Garante que ela apareça
+            } else {
+                imgElement.src = "https://placehold.co/400x300?text=Produto+Sem+Foto";
+            }
+        });
+    }
     </script>

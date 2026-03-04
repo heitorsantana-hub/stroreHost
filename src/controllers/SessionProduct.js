@@ -1,10 +1,16 @@
 import Employee from "../models/Employee.js";
 import Product from "../models/Product.js";
+import Sale from "../models/Sale.js";
 import Store from "../models/Store.js";
 
 class SessionProduct {
   async store(req, res) {
     const { name, price, category, description } = req.body;
+
+    // O Multer coloca os dados do ficheiro aqui
+    const image_url = req.file
+      ? `/uploads/${req.file.filename}`
+      : "/img/default.png";
 
     try {
       const storeId = req.session.storeId;
@@ -27,6 +33,7 @@ class SessionProduct {
         price,
         category,
         description,
+        image_url,
       });
 
       console.log("Produto criado com sucesso:", product.name);
@@ -68,19 +75,22 @@ class SessionProduct {
     try {
       const storeId = req.session.storeId;
 
-      const result = await Product.updateOne(
-        {
-          _id: id,
-          store_id: storeId,
-        },
-        {
-          name,
-          category,
-          price,
-        },
+      const updateData = {
+        name: name,
+        category: category,
+        price: price,
+      };
+
+      // Se um novo arquivo foi enviado, adicionamos o novo caminho da imagem
+      if (req.file) {
+        updateData.image_url = `/uploads/${req.file.filename}`;
+      }
+
+      await Product.updateOne(
+        { _id: id, store_id: storeId },
+        { $set: updateData },
       );
 
-      console.log(result);
       return res.redirect("/dashboard/product?sucess=update");
     } catch (err) {
       console.log(err);

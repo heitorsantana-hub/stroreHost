@@ -1,12 +1,10 @@
 <div class="content-body">
-    
     <section class="welcome-sec">
         <h1>Ponto de Venda (PDV)</h1>
         <p>Registre as saídas de produtos e acompanhe o histórico de vendas recentes.</p>
     </section>
     
     <div class="main-grid">
-        
         <section class="data-card">
             <div class="card-header">
                 <h2>Últimas Vendas</h2>
@@ -22,6 +20,7 @@
                             <th>Total</th>
                             <th>Pagamento</th>
                             <th>Status</th>
+                            <th class="text-center">Ações</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -33,11 +32,29 @@
                                 <td><strong>R$ {{this.total_price}}</strong></td>
                                 <td>{{this.payment_method}}</td>
                                 <td><span class="badge-status status-active">Concluída</span></td>
+                                <td>
+                                    <div class="d-flex justify-content-center align-items-center gap-2">
+                                        <button class="btn btn-outline btn-sm" 
+                                            data-bs-toggle="modal" 
+                                            data-bs-target="#editModal"
+                                            data-id="{{this._id}}"
+                                            data-product="{{this.product_id}}"
+                                            data-quantity="{{this.quantity}}"
+                                            data-payment="{{this.payment_method}}">
+                                            Editar
+                                        </button>
+
+                                        <form action="/dashboard/sales/delete" method="POST" onsubmit="return confirm('Excluir venda?')" class="m-0">
+                                            <input type="hidden" name="sale_id" value="{{this._id}}">
+                                            <button type="submit" class="btn btn-danger btn-sm">Remover</button>
+                                        </form>
+                                    </div>
+                                </td>
                             </tr>
                         {{else}}
                             <tr>
-                                <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">
-                                    Nenhuma venda registrada ainda. Realize a primeira venda usando o formulário ao lado!
+                                <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                    Nenhuma venda registrada ainda.
                                 </td>
                             </tr>
                         {{/each}}
@@ -50,46 +67,72 @@
             <div class="card-header">
                 <h2>Nova Venda</h2>
             </div>
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Preencha os dados para registrar a saída do estoque.</p>
-            
             <div id="alert-container"></div>
 
             <form action="/dashboard/sales/create" method="post">
-                
                 <div class="form-group">
                     <label>Produto</label>
                     <select name="product_id" class="form-input" required>
-                        <option value="">Selecione o produto vendido...</option>
+                        <option value="">Selecione...</option>
                         {{#each produtos}}
                             <option value="{{this._id}}">{{this.name}} - R$ {{this.price}}</option>
                         {{/each}}
                     </select>
                 </div>
-
                 <div class="form-group">
                     <label>Quantidade</label>
-                    <input type="number" name="quantity" placeholder="Ex: 2" min="1" class="form-input" required>
+                    <input type="number" name="quantity" min="1" class="form-input" required>
                 </div>
-
                 <div class="form-group">
-                    <label>Método de Pagamento</label>
+                    <label>Pagamento</label>
                     <select name="payment_method" class="form-input" required>
                         <option value="Pix">Pix</option>
                         <option value="Cartão de Crédito">Cartão de Crédito</option>
-                        <option value="Cartão de Débito">Cartão de Débito</option>
                         <option value="Dinheiro">Dinheiro</option>
                     </select>
                 </div>
-
-                <div class="form-group">
-                    <label>Observações (Opcional)</label>
-                    <textarea name="notes" class="form-input" placeholder="Detalhes do cliente ou da venda..." style="height: 80px; resize: none;"></textarea>
-                </div>
-
-                <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Finalizar Venda</button>
+                <button type="submit" class="btn btn-primary w-100 mt-2">Finalizar Venda</button>
             </form>
         </section>
+    </div>
+</div>
 
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="editForm" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ajustar Venda</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label>Produto</label>
+                        <select name="product_id" id="edit-product" class="form-input" required>
+                            {{#each produtos}}
+                                <option value="{{this._id}}">{{this.name}}</option>
+                            {{/each}}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label>Quantidade</label>
+                        <input type="number" name="quantity" id="edit-quantity" class="form-input" required>
+                    </div>
+                    <div class="mb-3">
+                        <label>Pagamento</label>
+                        <select name="payment_method" id="edit-payment" class="form-input" required>
+                            <option value="Pix">Pix</option>
+                            <option value="Cartão de Crédito">Cartão de Crédito</option>
+                            <option value="Dinheiro">Dinheiro</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 
@@ -122,4 +165,25 @@
                 </div>
             `;
         }
+
+        const editModal = document.getElementById('editModal');
+            if (editModal) {
+                editModal.addEventListener('show.bs.modal', event => {
+                    const button = event.relatedTarget;
+                    
+                    // Captura dos dados (Nomes simplificados para não dar erro)
+                    const id = button.getAttribute('data-id');
+                    const productId = button.getAttribute('data-product');
+                    const quantity = button.getAttribute('data-quantity');
+                    const payment = button.getAttribute('data-payment');
+
+                    // Preenchimento dos campos usando os IDs que adicionamos
+                    editModal.querySelector('#edit-product').value = productId;
+                    editModal.querySelector('#edit-quantity').value = quantity;
+                    editModal.querySelector('#edit-payment').value = payment;
+                    
+                    // Ajuste da rota de destino
+                    editModal.querySelector('#editForm').action = `/dashboard/sales/update/${id}`;
+                });
+            }
     </script>

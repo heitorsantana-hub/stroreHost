@@ -31,7 +31,10 @@
                         
                         <td>R$ {{this.price}}</td>
                         
-                        <td style="color: var(--text-muted); font-size: 0.85rem;">Sem registro</td>
+
+                            <td class="text-muted" style="font-size: 0.85rem;">
+                                {{formatDate this.updatedAt}}
+                            </td>
                         
                        <td>
                          <button 
@@ -41,7 +44,22 @@
                         data-id="{{this._id}}"
                         data-quantity="{{this.current_stock}}">
                         Editar
-                    </button>
+                        </button>
+
+                         <button 
+                            class="btn btn-outline" 
+                            data-bs-toggle="modal" 
+                            data-bs-target="#viewModal"
+                            data-id="{{this._id}}"
+                            data-name="{{this.name}}"
+                            data-image="{{this.image_url}}"
+                            data-quantity="{{this.current_stock}}"
+                            data-category="{{this.category}}"
+                            data-description="{{this.description}}"
+                            data-price="{{this.price}}"
+                            data-stock="{{this.current_stock}}">
+                            Ver
+                        </button>
                        </td>
                         
                     </tr>
@@ -110,6 +128,50 @@
     </div>
 </div>
 
+<div class="modal fade" id="viewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalhes do Produto</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="fw-bold">Nome:</label>
+                    <span id="view-name"></span>
+                </div>
+                <div class="mb-3">
+                    <label class="fw-bold">Categoria:</label>
+                    <span id="view-category"></span>
+                </div>
+                <div class="mb-3">
+                    <label class="fw-bold">Preço:</label>
+                    <span id="view-price"></span>
+                </div>
+                <div class="mb-3">
+                    <label class="fw-bold">Descrição:</label>
+                    <p id="view-description" class="text-muted"></p>
+                </div>
+                <div class="mb-3">
+                    <label class="fw-bold">Quantidade:</label>
+                    <p id="view-quantity" class="text-muted"></p>
+                </div>
+               <div class="mb-3 text-center">
+                    <label class="fw-bold d-block mb-2">Imagem do Produto:</label>
+                    <img id="view-image" 
+                    src="" 
+                    alt="Produto" 
+                    class="img-fluid rounded shadow-sm d-block mx-auto" 
+                    style="max-height: 250px; object-fit: cover;">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
@@ -142,6 +204,40 @@
                 // IMPORTANTE: O ID do form aqui deve ser igual ao do HTML (#editStockForm)
                 const form = editModal.querySelector('#editStockForm');
                 form.action = `/dashboard/stock/update/${id}`;
+            });
+        }
+
+        const viewModal = document.getElementById('viewModal');
+
+        if (viewModal) {
+            viewModal.addEventListener('show.bs.modal', event => {
+                // 1. Identifica o botão que abriu o modal
+                const btn = event.relatedTarget;
+                console.log("Modal aberto pelo botão do produto ID:", btn.getAttribute('data-id'));
+
+                // 2. Extrai os dados da "mochila" (data-attributes)
+                const name = btn.getAttribute('data-name');
+                const category = btn.getAttribute('data-category');
+                const price = btn.getAttribute('data-price');
+                const description = btn.getAttribute('data-description');
+                const quantity = btn.getAttribute('data-quantity')
+                const image = btn.getAttribute('data-image');
+
+                // 3. Preenche os campos de TEXTO (usando textContent)
+                viewModal.querySelector('#view-name').textContent = name || "Não informado";
+                viewModal.querySelector('#view-category').textContent = category || "Sem categoria";
+                viewModal.querySelector('#view-price').textContent = price ? `R$ ${price}` : "Consulte";
+                viewModal.querySelector('#view-quantity').textContent = quantity || "Sem quantidade";
+                viewModal.querySelector('#view-description').textContent = description || "Nenhuma descrição disponível.";
+
+                // 4. Trata a IMAGEM (usando o atributo .src)
+                const imgElement = viewModal.querySelector('#view-image');
+                if (image && image !== "") {
+                    imgElement.src = image;
+                    imgElement.style.display = "block"; // Garante que ela apareça
+                } else {
+                    imgElement.src = "https://placehold.co/400x300?text=Produto+Sem+Foto";
+                }
             });
         }
     </script>

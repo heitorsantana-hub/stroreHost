@@ -106,6 +106,54 @@ class SessionFinance {
       return res.redirect("/dashboard/finance");
     }
   }
+
+  async destroy(req, res) {
+    const transaction_id = req.body.transaction_id;
+
+    try {
+      const storeId = req.session.storeId;
+
+      if (!storeId) {
+        return res.redirect("/login?error=session");
+      }
+
+      const result = await Transaction.deleteOne({
+        store_id: storeId,
+        _id: transaction_id,
+      });
+
+      console.log({ result });
+      console.log("ID que chegou:", transaction_id);
+
+      return res.redirect("/dashboard/finance?sucess=create");
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  async update(req, res) {
+    const { type, category, amount, description } = req.body;
+    const { id } = req.params;
+    try {
+      const storeId = req.session.storeId;
+
+      const updateData = {
+        type: type,
+        category: category,
+        amount: amount,
+        description: description,
+      };
+
+      await Transaction.updateOne(
+        { _id: id, store_id: storeId },
+        { $set: updateData },
+      );
+
+      return res.redirect("/dashboard/finance?sucess=create");
+    } catch (err) {
+      console.log(err);
+    }
+  }
 }
 
 export default new SessionFinance();

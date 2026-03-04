@@ -35,6 +35,9 @@ const ProductSchema = new mongoose.Schema(
       default: 0, // Todo produto novo nasce com 0 no estoque
       min: 0, // Proteção extra: o estoque nunca pode ficar negativo no banco
     },
+    image_url: {
+      type: String,
+    },
   },
   {
     // 5. Rastreabilidade automática

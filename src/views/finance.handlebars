@@ -31,50 +31,67 @@
     <div class="main-grid">
         
         <section class="data-card">
-            <div class="card-header">
-                <h2>Histórico de Lançamentos</h2>
-            </div>
-            
-            <div class="table-container">
-                <table class="custom-table">
-                    <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>Descrição</th>
-                            <th>Categoria</th>
-                            <th>Tipo</th>
-                            <th>Valor</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {{#each transacoes}}
-                            <tr>
-                                <td style="color: var(--text-muted); font-size: 0.85rem;">{{this.data_formatada}}</td>
-                                <td><strong>{{this.description}}</strong></td>
-                                <td>{{this.category}}</td>
-                                <td>
-                                    {{#if this.isIncome}}
-                                        <span class="badge-status" style="background: #DCFCE7; color: #166534;">Entrada</span>
-                                    {{else}}
-                                        <span class="badge-status" style="background: #FEE2E2; color: #B91C1C;">Saída</span>
-                                    {{/if}}
-                                </td>
-                                <td>
-                                    <strong style="color: {{#if this.isIncome}}var(--success){{else}}var(--danger){{/if}};">
-                                        R$ {{this.amount}}
-                                    </strong>
-                                </td>
-                            </tr>
-                        {{else}}
-                            <tr>
-                                <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">
-                                    Nenhuma transação registrada ainda.
-                                </td>
-                            </tr>
-                        {{/each}}
-                    </tbody>
-                </table>    
-            </div>
+           <div class="table-container">
+    <table class="custom-table">
+            <thead>
+                <tr>
+                    <th>Data</th>
+                    <th>Descrição</th>
+                    <th>Categoria</th>
+                    <th>Tipo</th>
+                    <th>Valor</th>
+                    <th class="text-center">Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                {{#each transacoes}}
+                    <tr>
+                        <td style="color: var(--text-muted); font-size: 0.85rem;">{{this.data_formatada}}</td>
+                        <td><strong>{{this.description}}</strong></td>
+                        <td>{{this.category}}</td>
+                        <td>
+                            {{#if this.isIncome}}
+                                <span class="badge-status" style="background: #DCFCE7; color: #166534;">Entrada</span>
+                            {{else}}
+                                <span class="badge-status" style="background: #FEE2E2; color: #B91C1C;">Saída</span>
+                            {{/if}}
+                        </td>
+                        <td>
+                            <strong style="color: {{#if this.isIncome}}var(--success){{else}}var(--danger){{/if}};">
+                                R$ {{this.amount}}
+                            </strong>
+                        </td>
+                        <td>
+                            <div class="d-flex justify-content-center gap-2">
+                                <button class="btn btn-outline btn-sm" data-bs-toggle="modal" data-bs-target="#viewFinanceModal"
+                                    data-id="{{this._id}}" data-description="{{this.description}}" data-category="{{this.category}}"
+                                    data-amount="{{this.amount}}" data-type="{{#if this.isIncome}}Entrada{{else}}Saída{{/if}}" data-date="{{this.data_formatada}}">
+                                    Ver
+                                </button>
+
+                                <button class="btn btn-outline btn-sm" data-bs-toggle="modal" data-bs-target="#editFinanceModal"
+                                    data-id="{{this._id}}" data-description="{{this.description}}" data-category="{{this.category}}"
+                                    data-amount="{{this.amount}}" data-type="{{#if this.isIncome}}income{{else}}expense{{/if}}">
+                                    Editar
+                                </button>
+
+                                <form action="/dashboard/finance/delete" method="POST" onsubmit="return confirm('Excluir este lançamento?')">
+                                    <input type="hidden" name="transaction_id" value="{{this._id}}">
+                                    <button type="submit" class="btn btn-danger btn-sm">Remover</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                {{else}}
+                    <tr>
+                        <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                            Nenhuma transação registrada ainda.
+                        </td>
+                    </tr>
+                {{/each}}
+            </tbody>
+        </table>    
+    </div>
         </section>
 
         <section class="data-card">
@@ -117,9 +134,131 @@
     </div>
 </div>
 
+<div class="modal fade" id="viewFinanceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalhes do Lançamento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="fw-bold">Descrição:</label>
+                    <span id="view-fin-desc"></span>
+                </div>
+                <div class="mb-3">
+                    <label class="fw-bold">Categoria:</label>
+                    <span id="view-fin-cat"></span>
+                </div>
+                <div class="mb-3">
+                    <label class="fw-bold">Tipo:</label>
+                    <span id="view-fin-type"></span>
+                </div>
+                <div class="mb-3">
+                    <label class="fw-bold">Valor:</label>
+                    <span id="view-fin-amount" class="fw-bold"></span>
+                </div>
+                <div class="mb-3">
+                    <label class="fw-bold">Data:</label>
+                    <span id="view-fin-date"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="editFinanceModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="editFinanceForm" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title">Editar Lançamento</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label>Tipo</label>
+                        <select name="type" id="edit-fin-type" class="form-input" required>
+                            <option value="income">Entrada (Receita)</option>
+                            <option value="expense">Saída (Despesa)</option>
+                        </select>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>Descrição</label>
+                        <input type="text" name="description" id="edit-fin-desc" class="form-input" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>Categoria</label>
+                        <input type="text" name="category" id="edit-fin-cat" class="form-input" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <label>Valor (R$)</label>
+                        <input type="number" step="0.01" name="amount" id="edit-fin-amount" class="form-input" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+ <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const alertContainer = document.getElementById('alert-container');
+
+    if (urlParams.get('sucess') === 'create') {
+        alertContainer.innerHTML = `
+            <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
+                <svg width="20" height="20" fill="currentColor" class="bi me-2" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>
+                <div>Lançamento Cadastrado Com Sucesso!</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>`;
+    } 
+
+    // Lógica para o Modal de Visualização
+    const viewFinModal = document.getElementById('viewFinanceModal');
+    if (viewFinModal) {
+        viewFinModal.addEventListener('show.bs.modal', event => {
+            const btn = event.relatedTarget;
+            viewFinModal.querySelector('#view-fin-desc').textContent = btn.getAttribute('data-description');
+            viewFinModal.querySelector('#view-fin-cat').textContent = btn.getAttribute('data-category');
+            viewFinModal.querySelector('#view-fin-type').textContent = btn.getAttribute('data-type');
+            viewFinModal.querySelector('#view-fin-amount').textContent = `R$ ${btn.getAttribute('data-amount')}`;
+            viewFinModal.querySelector('#view-fin-date').textContent = btn.getAttribute('data-date');
+        });
+    }
+
+    // Lógica para o Modal de Edição
+    const editFinModal = document.getElementById('editFinanceModal');
+    if (editFinModal) {
+        editFinModal.addEventListener('show.bs.modal', event => {
+            const btn = event.relatedTarget;
+            const id = btn.getAttribute('data-id');
+
+            editFinModal.querySelector('#edit-fin-type').value = btn.getAttribute('data-type');
+            editFinModal.querySelector('#edit-fin-desc').value = btn.getAttribute('data-description');
+            editFinModal.querySelector('#edit-fin-cat').value = btn.getAttribute('data-category');
+            editFinModal.querySelector('#edit-fin-amount').value = btn.getAttribute('data-amount');
+
+            // Define a rota de atualização dinamicamente
+            editFinModal.querySelector('#editFinanceForm').action = `/dashboard/finance/update/${id}`;
+        });
+    }
+
+    // Tratamento de Alertas Extras (Update e Delete)
+    if (urlParams.get('sucess') === 'update') {
+        alertContainer.innerHTML = `<div class="alert alert-success alert-dismissible fade show">Lançamento atualizado! <button class="btn-close" data-bs-dismiss="alert"></button></div>`;
+    } else if (urlParams.get('sucess') === 'delete') {
+        alertContainer.innerHTML = `<div class="alert alert-warning alert-dismissible fade show">Lançamento removido com sucesso. <button class="btn-close" data-bs-dismiss="alert"></button></div>`;
+    }
+
     const labelsEntradas = {{{ labelsEntradas }}};
     const dadosEntradas = {{{ dadosEntradas }}};
     
@@ -178,18 +317,5 @@
         },
         options: chartOptions
     });
-</script>
-
- <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const alertContainer = document.getElementById('alert-container');
-
-    if (urlParams.get('sucess') === 'create') {
-        alertContainer.innerHTML = `
-            <div class="alert alert-success alert-dismissible fade show d-flex align-items-center" role="alert">
-                <svg width="20" height="20" fill="currentColor" class="bi me-2" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>
-                <div>Lançamento Cadastrado Com Sucesso!</div>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>`;
-    } 
+    
 </script>

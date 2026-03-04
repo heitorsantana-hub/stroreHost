@@ -1,4 +1,5 @@
          @import "~bootstrap/dist/css/bootstrap.min.css";
+         
 
         :root {
             --primary: #0A57E8;
@@ -44,15 +45,35 @@
             z-index: 100;
         }
 
+        /* --- Fix do Nome na Top Bar (Referente ao seu Print) --- */
+        .user-name {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            line-height: 1.2; /* Diminui o espaço entre as linhas */
+        }
+
+        .store-name-text {
+            font-weight: 700;
+            color: var(--secondary);
+            display: block;
+        }
+
+        .user-role-text {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: block;
+        }
+
+        /* --- Fix da Sidebar Brand --- */
         .sidebar-brand {
-            font-size: 1.5rem;
-            font-weight: 800;
-            margin-bottom: 3rem;
             display: flex;
             align-items: center;
-            gap: 10px;
-            color: var(--white);
+            white-space: nowrap; 
+            font-size: 1.5rem;
+            font-weight: 800; /* 1000 às vezes buga em algumas fontes, 800 é o 'Extra Bold' real */
             text-decoration: none;
+            gap: 2px;
         }
 
         .sidebar-brand span { color: var(--primary); }
@@ -67,13 +88,19 @@
         .nav-link {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 15px;
             padding: 0.8rem 1rem;
             color: rgba(255, 255, 255, 0.6);
             text-decoration: none;
             border-radius: 12px;
             font-weight: 500;
             transition: all 0.2s ease;
+        }
+
+        .nav-link i {
+            font-size: 1.2rem;
+            display: flex;
+            align-items: center;
         }
 
         .nav-link svg {

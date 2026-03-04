@@ -66,6 +66,72 @@ class SessionSale {
       return res.redirect("/dashboard/sales");
     }
   }
+
+  async destroy(req, res) {
+    const sale_id = req.body.sale_id;
+
+    try {
+      const storeId = req.session.storeId;
+
+      if (!storeId) {
+        return res.redirect("/login?error=session");
+      }
+
+      const result = await Sale.deleteOne({
+        store_id: storeId,
+        _id: sale_id,
+      });
+
+      console.log({ result });
+      console.log("ID que chegou:", sale_id);
+
+      return res.redirect("/dashboard/sales?sucess=create");
+    } catch (err) {
+      console.log(err);
+    }
+  }
+
+  async update(req, res) {
+    // 1. No seu formulário, o campo se chama 'product_id', não 'name'
+    const { product_id, quantity, payment_method } = req.body;
+    const { id } = req.params; // ID da VENDA
+    const storeId = req.session.storeId;
+
+    try {
+      // 2. Precisamos do preço atual do produto para recalcular o total
+      const product = await Product.findOne({
+        _id: product_id,
+        store_id: storeId,
+      });
+
+      if (!product) {
+        return res.status(404).send("Produto não encontrado.");
+      }
+
+      const total_price = product.price * quantity;
+
+      // 3. Criamos o objeto de atualização (agora com o total certo)
+      const updateData = {
+        product_id: product_id,
+        product_name: product.name, // Mantendo o nome atualizado
+        quantity: quantity,
+        payment_method: payment_method,
+        total_price: total_price,
+      };
+
+      // 4. ATENÇÃO: Aqui deve ser o seu modelo de Vendas (ex: Sale)
+      // Se você usar Product, vai sobrescrever um produto com dados de uma venda!
+      await Sale.updateOne(
+        { _id: id, store_id: storeId },
+        { $set: updateData },
+      );
+
+      return res.redirect("/dashboard/sales?sucess=update");
+    } catch (err) {
+      console.error("Erro na atualização da venda:", err);
+      res.status(500).send("Erro interno ao atualizar.");
+    }
+  }
 }
 
 export default new SessionSale();

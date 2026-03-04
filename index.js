@@ -1,5 +1,7 @@
 import express from "express";
+import multer from "multer";
 import session from "express-session";
+import crypto from "node:crypto";
 import { engine } from "express-handlebars";
 import SessionRegister from "./src/controllers/SessionRegister.js";
 import SessionLogin from "./src/controllers/SessionLogin.js";
@@ -16,7 +18,6 @@ import mongoose from "mongoose";
 import { fileURLToPath } from "url";
 import SessionSale from "./src/controllers/SessionSale.js";
 import SessionDashboard from "./src/controllers/SessionDashboard.js";
-import { Session } from "inspector";
 const app = express();
 const port = 3000;
 
@@ -35,6 +36,26 @@ app.engine(
     partialsDir: [path.join(__dirname, "src", "views", "partials")],
     layoutsDir: path.join(__dirname, "src", "views", "layouts"),
     defaultLayout: "main",
+
+    // Configuração de Formatação de Datas tabela
+    // Na configuração do seu app.engine('handlebars', ...)
+    helpers: {
+      // ... seu helper firstLetter que já existe ...
+
+      formatDate: function (date) {
+        if (!date) return "Sem registro";
+
+        // Criamos um objeto de data e formatamos para o padrão Brasil
+        return new Intl.DateTimeFormat("pt-BR", {
+          day: "2-digit",
+          month: "2-digit",
+          year: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+          timeZone: "America/Sao_Paulo", // Garante o fuso horário correto
+        }).format(new Date(date));
+      },
+    },
   }),
 );
 app.set("view engine", "handlebars");
@@ -57,12 +78,39 @@ app.use(
   }),
 );
 
+// Multer para colocar imagem nos produtos
+
+const storage = multer.diskStorage({
+  // Define a pasta de destino
+  destination: (req, file, cb) => {
+    cb(null, path.resolve("public", "uploads"));
+  },
+  // Gera um nome único para evitar ficheiros duplicados
+  filename: (req, file, cb) => {
+    crypto.randomBytes(16, (err, hash) => {
+      if (err) cb(err);
+      const fileName = `${hash.toString("hex")}-${file.originalname}`;
+      cb(null, fileName);
+    });
+  },
+});
+
+export const upload = multer({ storage });
+
 // Rotas
 app.get("/dashboard", SessionDashboard.index);
 
 // Sessão de Produtos
-app.post("/dashboard/products/create", SessionProduct.store);
-app.post("/dashboard/product/update/:id", SessionProduct.update);
+app.post(
+  "/dashboard/products/create",
+  upload.single("image"),
+  SessionProduct.store,
+);
+app.post(
+  "/dashboard/product/update/:id",
+  upload.single("image"),
+  SessionProduct.update,
+);
 app.post("/dashboard/product/delete", SessionProduct.destroy);
 
 app.get("/dashboard/product", async (req, res) => {
@@ -142,6 +190,8 @@ app.get("/dashboard/employee", async (req, res) => {
 });
 
 app.post("/dashboard/sales/create", SessionSale.store);
+app.post("/dashboard/sales/delete", SessionSale.destroy);
+app.post("/dashboard/sales/update/:id", SessionSale.update);
 
 app.get("/dashboard/sales", async (req, res) => {
   if (!req.session.storeId) {
@@ -170,8 +220,11 @@ app.get("/dashboard/sales", async (req, res) => {
   }
 });
 
-app.get("/dashboard/finance", SessionFinance.index);
+// Rotas da página do Financeiro
 
+app.get("/dashboard/finance", SessionFinance.index);
+app.post("/dashboard/finance/delete", SessionFinance.destroy);
+app.post("/dashboard/finance/update/:id", SessionFinance.update);
 app.post("/dashboard/finance/create", SessionFinance.store);
 
 //Página de Loging
