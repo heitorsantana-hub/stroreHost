@@ -23,8 +23,8 @@ import SessionDashboard from "./src/controllers/SessionDashboard.js";
 const app = express();
 const port = 3000;
 
-//dotenv.config(); //Configurando o arquivo .env
-//mongoose.connect(process.env.MONGO_URL); //Lendo o Arquivo .env
+dotenv.config(); //Configurando o arquivo .env
+mongoose.connect(process.env.MONGO_URL); //Lendo o Arquivo .env
 
 // Configuração necessária para caminhos em ES Modules
 const __filename = fileURLToPath(import.meta.url);
