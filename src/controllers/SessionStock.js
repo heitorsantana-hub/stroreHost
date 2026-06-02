@@ -29,6 +29,7 @@ class SessionStock {
         store_id: storeId,
         product_id: product_id,
         quantity: qtd,
+        type: "in",
       });
 
       console.log("Resgitro Feito com Sucesso");

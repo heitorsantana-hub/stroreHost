@@ -27,6 +27,7 @@ class DashboardController {
         despesasAgrupadas,
         ultimasVendas,
         ultimasMovimentacoes,
+        faturamentoMensalAgrupado,
       ] = await Promise.all([
         Store.findById(storeId).lean(), // Pega o nome da loja
         Product.countDocuments({ store_id: storeId }), // Conta todos os produtos
@@ -41,10 +42,10 @@ class DashboardController {
           { $group: { _id: null, total: { $sum: "$total_price" } } },
         ]),
 
-        // A Mágica do MongoDB: Soma todos os "amount" de transações que sejam "expense" (saídas)
+        // A Mágica do MongoDB: Agrupa despesas por categoria
         Transaction.aggregate([
           { $match: { store_id: objectId, type: "expense" } },
-          { $group: { _id: null, total: { $sum: "$amount" } } },
+          { $group: { _id: "$category", total: { $sum: "$amount" } } },
         ]),
 
         // Traz apenas as últimas 4 vendas ordenadas da mais recente para a mais antiga
@@ -53,18 +54,73 @@ class DashboardController {
           .limit(4)
           .lean(),
 
-        // Traz apenas as últimas 4 movimentações de stock
+        // Traz apenas as últimas 4 movimentações de stock (populando o produto)
         StockMovement.find({ store_id: storeId })
+          .populate("product_id")
           .sort({ createdAt: -1 })
           .limit(4)
           .lean(),
+
+        // Agrupa faturamento por mês no ano corrente
+        Sale.aggregate([
+          {
+            $match: {
+              store_id: objectId,
+              createdAt: { $gte: new Date(new Date().getFullYear(), 0, 1) },
+            },
+          },
+          {
+            $group: {
+              _id: { $month: "$createdAt" },
+              total: { $sum: "$total_price" },
+            },
+          },
+          { $sort: { _id: 1 } },
+        ]),
       ]);
 
       // 2. Processar os Totais Financeiros (Se a loja for nova e não tiver vendas, o aggregate retorna vazio)
       const totalVendas =
         vendasAgrupadas.length > 0 ? vendasAgrupadas[0].total : 0;
-      const totalDespesas =
-        despesasAgrupadas.length > 0 ? despesasAgrupadas[0].total : 0;
+      const totalDespesas = despesasAgrupadas.reduce(
+        (sum, item) => sum + item.total,
+        0,
+      );
+
+      // Dados para o Gráfico de Despesas por Categoria (Pie/Doughnut)
+      const categoriasDespesas = despesasAgrupadas.map(
+        (d) => d._id || "Outros",
+      );
+      const valoresDespesas = despesasAgrupadas.map((d) => d.total);
+
+      // Dados para o Gráfico de Faturamento por Mês (Area/Line)
+      const faturamentoMesesValores = Array(12).fill(0);
+      faturamentoMensalAgrupado.forEach((item) => {
+        const mesIndex = item._id - 1;
+        if (mesIndex >= 0 && mesIndex < 12) {
+          faturamentoMesesValores[mesIndex] = item.total;
+        }
+      });
+      const mesesNomes = [
+        "Jan",
+        "Fev",
+        "Mar",
+        "Abr",
+        "Mai",
+        "Jun",
+        "Jul",
+        "Ago",
+        "Set",
+        "Out",
+        "Nov",
+        "Dez",
+      ];
+      const mesAtual = new Date().getMonth();
+      const mesesLabelsExibir = mesesNomes.slice(0, Math.max(6, mesAtual + 1));
+      const faturamentoValoresExibir = faturamentoMesesValores.slice(
+        0,
+        Math.max(6, mesAtual + 1),
+      );
 
       // 3. Formatar os dados para a Tabela de Vendas
       const vendasFormatadas = ultimasVendas.map((venda) => {
@@ -85,13 +141,15 @@ class DashboardController {
         // Cria as variáveis que o Handlebars precisa para pintar a bolinha de Verde ou Vermelho
         mov.isEntrada = mov.type === "in";
         mov.tipo_texto = mov.type === "in" ? "Entrada" : "Saída";
+        mov.productName = mov.product_id
+          ? mov.product_id.name
+          : "Produto Removido";
 
         return mov;
       });
 
       // 5. Enviar o "Banquete" de Dados para o Handlebars renderizar o ecrã
       res.render("dashboard", {
-        // Altere "index" para o nome exato do seu ficheiro .hbs do dashboard
         layout: "dashboard",
         storeName: loja ? loja.name : "Minha Loja",
         kpiVendas: totalVendas.toFixed(2),
@@ -100,6 +158,13 @@ class DashboardController {
         kpiDespesas: totalDespesas.toFixed(2),
         ultimasVendas: vendasFormatadas,
         ultimasMovimentacoes: movimentosFormatados,
+        activeDashboard: true,
+
+        // Injeção de variáveis JSON para os gráficos
+        labelsFaturamento: JSON.stringify(mesesLabelsExibir),
+        dadosFaturamento: JSON.stringify(faturamentoValoresExibir),
+        labelsDespesas: JSON.stringify(categoriasDespesas),
+        dadosDespesas: JSON.stringify(valoresDespesas),
       });
     } catch (error) {
       console.log("Erro grave ao carregar o Painel de Controlo:", error);

@@ -1,5 +1,6 @@
 import Sale from "../models/Sale.js";
 import Product from "../models/Product.js";
+import StockMovement from "../models/StockMovement.js";
 
 class SessionSale {
   async store(req, res) {
@@ -56,6 +57,14 @@ class SessionSale {
       // 6. REGRA DE NEGÓCIO: Dar Baixa Automática no Estoque
       product.current_stock -= qtdVendida;
       await product.save();
+
+      // Registrar a movimentação de estoque de saída
+      await StockMovement.create({
+        store_id: storeId,
+        product_id: product._id,
+        quantity: qtdVendida,
+        type: "out",
+      });
 
       console.log(`Venda Registrada com Sucesso! Recibo: #${sale._id}`);
 

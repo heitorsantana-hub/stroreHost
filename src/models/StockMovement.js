@@ -17,6 +17,12 @@ const StockMovementSchema = new mongoose.Schema(
       required: true,
       min: 1, // Ninguém pode movimentar 0 ou quantidades negativas
     },
+    type: {
+      type: String,
+      enum: ["in", "out"],
+      required: true,
+      default: "in",
+    },
   },
   {
     timestamps: true, // Salva a data e hora exata da movimentação
