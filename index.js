@@ -9,6 +9,8 @@ import SessionProduct from "./src/controllers/SessionProduct.js";
 import SesssionStock from "./src/controllers/SessionStock.js";
 import SessionEmployee from "./src/controllers/SessionEmployee.js";
 import SessionFinance from "./src/controllers/SessionFinance.js";
+import SessionScheduling from "./src/controllers/SessionScheduling.js";
+import Schedule from "./src/models/Schedule.js";
 import Product from "./src/models/Product.js";
 import Employee from "./src/models/Employee.js";
 import Sale from "./src/models/Sale.js";
@@ -231,6 +233,29 @@ app.post("/dashboard/finance/delete", SessionFinance.destroy);
 app.post("/dashboard/finance/update/:id", SessionFinance.update);
 app.post("/dashboard/finance/create", SessionFinance.store);
 
+// ==========================================
+// ROTAS DE AGENDAMENTO (ESTILO APPLE CALENDAR)
+// ==========================================
+app.get("/dashboard/scheduling", async (req, res) => {
+  if (!req.session.storeId) return res.redirect("/login?error=session");
+  return SessionScheduling.index(req, res);
+});
+
+app.post("/dashboard/scheduling/create", async (req, res) => {
+  if (!req.session.storeId) return res.status(401).send("Sessão expirada.");
+  return SessionScheduling.create(req, res);
+});
+
+app.post("/dashboard/scheduling/update/:id", async (req, res) => {
+  if (!req.session.storeId) return res.status(401).send("Sessão expirada.");
+  return SessionScheduling.update(req, res);
+});
+
+app.post("/dashboard/scheduling/delete", async (req, res) => {
+  if (!req.session.storeId) return res.status(401).send("Sessão expirada.");
+  return SessionScheduling.delete(req, res);
+});
+
 //Página de Loging
 app.post("/login/post", SessionLogin.store);
 
@@ -254,6 +279,7 @@ app.get("/", (req, res) => {
     layout: "main",
   });
 });
+
 
 // Criando servidor
 app.listen(port, () => {
