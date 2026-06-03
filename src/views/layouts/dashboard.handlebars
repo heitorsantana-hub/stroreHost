@@ -97,6 +97,9 @@
     </nav>
 
     <main class="main-content">
+        <!-- Input Hidden para capturar o Store ID -->
+        <input type="hidden" id="storeIdHub" value="{{storeId}}">
+
         <header class="top-bar">
             <div class="search-box">
                 <i class="bi bi-search text-muted"></i>
@@ -138,14 +141,52 @@
 <script type="module">
   import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
 
+  // 📌 Captura o storeId do input hidden
+  const storeIdHub = document.getElementById('storeIdHub')?.value || '';
+
+  // 🔒 Função para gerar um UUID v4 único
+  function generateUUID() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0;
+      const v = c === 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
+
+  // 💾 Função para obter ou criar sessionId persistente no localStorage
+  function getOrCreateSessionId() {
+    if (!storeIdHub) return generateUUID();
+    
+    const sessionKey = `storehost_chat_session_${storeIdHub}`;
+    let sessionId = localStorage.getItem(sessionKey);
+    
+    // Se não existir, cria um novo e armazena
+    if (!sessionId) {
+      sessionId = generateUUID();
+      localStorage.setItem(sessionKey, sessionId);
+    }
+    
+    return sessionId;
+  }
+
+  // Obtém ou cria o sessionId uma única vez
+  const chatSessionId = getOrCreateSessionId();
+
+  // 🚀 Inicializa o widget de chat com persistência de histórico
   createChat({
     webhookUrl: 'https://edu0777.app.n8n.cloud/webhook/a0d8eb84-d490-4c8c-9f60-d6818d5d9ccd/chat',
+    sessionId: chatSessionId,
     
     initialMessages: [
       'Olá! 👋',
       'Eu sou a Inteligência Artificial do StoreHost. Como posso ajudar com suas lojas hoje?'
     ],
     
+    // Intercepta cada mensagem enviada e injeta o store_id
+    onSendMessage: async (messageData) => {
+      messageData.store_id = storeIdHub;
+      return messageData;
+    },
     
     i18n: {
       en: {
