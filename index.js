@@ -23,8 +23,8 @@ import SessionDashboard from "./src/controllers/SessionDashboard.js";
 const app = express();
 const port = 3000;
 
-//dotenv.config(); //Configurando o arquivo .env
-//mongoose.connect(process.env.MONGO_URL); //Lendo o Arquivo .env
+dotenv.config(); //Configurando o arquivo .env
+mongoose.connect(process.env.MONGO_URL); //Lendo o Arquivo .env
 
 // Configuração necessária para caminhos em ES Modules
 const __filename = fileURLToPath(import.meta.url);
@@ -133,6 +133,7 @@ app.get("/dashboard/product", async (req, res) => {
       layout: "dashboard",
       produtos: meusProdutos,
       storeName: req.session.storeName, // Enviando a variável para a view
+      activeProduct: true,
     });
   } catch (error) {
     console.log("Erro ao buscar produtos:", error);
@@ -158,6 +159,7 @@ app.get("/dashboard/stock", async (req, res) => {
       layout: "dashboard",
       produtos: meusProdutos,
       storeName: req.session.storeName,
+      activeStock: true,
     });
   } catch (error) {
     console.log("Erro ao buscar os produtos: ", error);
@@ -184,6 +186,7 @@ app.get("/dashboard/employee", async (req, res) => {
       layout: "dashboard",
       employees: meusFuncionarios,
       storeName: req.session.storeName,
+      activeEmployee: true,
     });
   } catch (error) {
     console.log("Erro ao buscar os produtos: ", error);
@@ -215,6 +218,7 @@ app.get("/dashboard/sales", async (req, res) => {
       produtos: meusProdutos,
       vendas: minhasVenda,
       storeName: req.session.storeName,
+      activeSales: true,
     });
   } catch (error) {
     console.log("Erro ao buscar os produtos: ", error);

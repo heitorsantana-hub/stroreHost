@@ -48,6 +48,7 @@ class SessionFinance {
         layout: "dashboard",
         transacoes: formatadas,
         storeName: req.session.storeName,
+        activeFinance: true,
 
         // Dados para os Gráficos
         labelsEntradas: JSON.stringify(Object.keys(categoriasEntrada)), // Nomes das categorias
