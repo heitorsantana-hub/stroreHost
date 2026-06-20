@@ -598,3 +598,88 @@ body {
     color: var(--text-muted);
     display: block;
 }
+
+/* Botão Flutuante */
+.ai-toggle-btn {
+    position: fixed;
+    bottom: 25px;
+    right: 25px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #a855f7, #6366f1);
+    color: white;
+    border: none;
+    box-shadow: 0 4px 15px rgba(168, 85, 247, 0.4);
+    font-size: 1.5rem;
+    cursor: pointer;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ai-toggle-btn:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(168, 85, 247, 0.6);
+}
+
+/* Painel da IA */
+.storehost-ai-widget {
+    position: fixed;
+    bottom: 85px; /* Fica acima do botão */
+    right: 25px;
+    width: 320px;
+    background-color: #1E293B; /* Cor combinando com a sua sidebar */
+    border: 1px solid #a855f7;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    z-index: 9998;
+    padding: 15px;
+    color: #fff;
+    
+    /* Animação e estado inicial (Escondido) */
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(20px) scale(0.95);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Classe que o JS vai ativar */
+.storehost-ai-widget.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+}
+
+.ai-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;}
+.ai-header h4 { margin: 0; font-size: 1rem; font-weight: 600; color: #f8fafc;}
+.ai-close { background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer; transition: color 0.2s; }
+.ai-close:hover { color: #fff; }
+.ai-content p { font-size: 0.9rem; line-height: 1.5; margin: 0; color: #cbd5e1; }
+
+.add-role{
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: smaller;    
+}
+
+/* Coloca todos os grupos de checkboxes lado a lado */
+.checkbox-group {
+    display: flex;
+    gap: 20px; /* Define o espaço entre cada opção (ex: Adicionar e Editar) */
+    flex-wrap: wrap; /* Se a tela for pequena, joga os itens para a linha de baixo automaticamente */
+}
+
+/* Alinha perfeitamente o quadradinho com o texto */
+.checkbox-item {
+    display: flex;
+    align-items: center; /* Centraliza verticalmente */
+    gap: 5px; /* Espaço entre o quadradinho e a palavra */
+}
+
+/* Opcional: Remove a margem padrão dos labels para não desalinharem */
+.checkbox-item label {
+    margin: 0;
+    cursor: pointer; /* Muda o mouse para a "mãozinha" indicando que é clicável */
+}

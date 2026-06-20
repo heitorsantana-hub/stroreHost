@@ -10,9 +10,11 @@ import SesssionStock from "./src/controllers/SessionStock.js";
 import SessionEmployee from "./src/controllers/SessionEmployee.js";
 import SessionFinance from "./src/controllers/SessionFinance.js";
 import SessionScheduling from "./src/controllers/SessionScheduling.js";
+import SessionRole from "./src/controllers/SessionRole.js";
 import Schedule from "./src/models/Schedule.js";
 import Product from "./src/models/Product.js";
 import Employee from "./src/models/Employee.js";
+import Role from "./src/models/Role.js";
 import Sale from "./src/models/Sale.js";
 import path, { join } from "path";
 import dotenv from "dotenv";
@@ -20,8 +22,9 @@ import mongoose from "mongoose";
 import { fileURLToPath } from "url";
 import SessionSale from "./src/controllers/SessionSale.js";
 import SessionDashboard from "./src/controllers/SessionDashboard.js";
+import SessionAIFeedback from "./src/controllers/SessionAIFeedback.js";
 const app = express();
-const port = 3000;
+const port = 8080;
 
 dotenv.config(); //Configurando o arquivo .env
 mongoose.connect(process.env.MONGO_URL); //Lendo o Arquivo .env
@@ -170,6 +173,7 @@ app.get("/dashboard/stock", async (req, res) => {
 app.post("/dashboard/employee/post", SessionEmployee.store);
 app.post("/dashboard/employee/update/:id", SessionEmployee.update);
 app.post("/dashboard/employee/delete", SessionEmployee.destroy);
+app.post("/dashboard/employee/add/role", SessionRole.store);
 
 app.get("/dashboard/employee", async (req, res) => {
   if (!req.session.storeId) {
@@ -177,16 +181,21 @@ app.get("/dashboard/employee", async (req, res) => {
   }
 
   try {
-    // Procura de produto
+    // Procura de funcionario
     const meusFuncionarios = await Employee.find({
       store_id: req.session.storeId,
     }).lean(); // lean() o motivo é por causa do MongoDB
+
+    const meuCargo = await Role.find({
+      store_id: req.session.storeId,
+    }).lean();
 
     res.render("employee", {
       layout: "dashboard",
       employees: meusFuncionarios,
       storeName: req.session.storeName,
       activeEmployee: true,
+      roles: meuCargo,
     });
   } catch (error) {
     console.log("Erro ao buscar os produtos: ", error);
@@ -256,6 +265,10 @@ app.post("/dashboard/scheduling/delete", async (req, res) => {
   return SessionScheduling.delete(req, res);
 });
 
+// Adicione isso no seu arquivo de rotas do Node.js/Express
+
+app.post("/api/ai-feedback", SessionAIFeedback.postChat);
+
 //Página de Loging
 app.post("/login/post", SessionLogin.store);
 
@@ -280,8 +293,4 @@ app.get("/", (req, res) => {
   });
 });
 
-
-// Criando servidor
-app.listen(port, () => {
-  console.log(`Porta rodando em: ${port}`);
-});
+module.exports = app;

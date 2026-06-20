@@ -87,6 +87,18 @@
         </a>
     </nav>
 
+        <!-- Componente da StoreHost AI -->
+    <div id="storehost-ai-widget" class="storehost-ai-widget" style="display: none;">
+    <div class="ai-header">
+        <span class="ai-icon">✨</span>
+        <h4>StoreHost AI</h4>
+        <button class="ai-close" onclick="closeAIWidget()">×</button>
+    </div>
+    <div class="ai-content">
+        <p id="ai-feedback-text">Analisando sua loja...</p>
+    </div>
+    </div>
+
     <main class="main-content">
         <header class="top-bar">
             <div class="search-box">
@@ -116,6 +128,145 @@
             {{{body}}}
         </div>
     </main>
+
+   <style>
+    /* Botão Flutuante */
+    .ai-chat-btn {
+        position: fixed; bottom: 25px; right: 25px; width: 55px; height: 55px;
+        border-radius: 50%; background: #2563EB; /* Azul Crisp */
+        color: white; border: none; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
+        font-size: 1.8rem; cursor: pointer; z-index: 99999; 
+        display: flex; align-items: center; justify-content: center; transition: 0.3s;
+    }
+    .ai-chat-btn:hover { transform: scale(1.05); }
+
+    /* Janela do Chat */
+    .ai-chat-window {
+        position: fixed; bottom: 90px; right: 25px; width: 350px; height: 500px;
+        background-color: #ffffff; border-radius: 16px;
+        box-shadow: 0 12px 28px rgba(0,0,0,0.15); display: flex; flex-direction: column;
+        z-index: 99998; opacity: 0; pointer-events: none;
+        transform: translateY(20px); transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        overflow: hidden; border: 1px solid #E2E8F0;
+    }
+    .ai-chat-window.is-open { opacity: 1; pointer-events: auto; transform: translateY(0); }
+
+    /* Cabeçalho do Chat */
+    .chat-header {
+        background: #2563EB; color: white; padding: 15px 20px;
+        display: flex; align-items: center; justify-content: space-between;
+    }
+    .chat-header h4 { margin: 0; font-size: 1rem; font-weight: 600; }
+    .close-chat { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; opacity: 0.8;}
+    
+    /* Área de Mensagens */
+    .chat-body {
+        flex: 1; padding: 15px; overflow-y: auto; background: #F8FAFC;
+        display: flex; flex-direction: column; gap: 12px;
+    }
+    
+    /* Balões de Mensagem */
+    .msg-bubble { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 0.9rem; line-height: 1.4; word-wrap: break-word; }
+    .msg-user { background: #2563EB; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+    .msg-ai { background: #E2E8F0; color: #1E293B; align-self: flex-start; border-bottom-left-radius: 4px; }
+    
+    /* Rodapé (Input) */
+    .chat-footer {
+        padding: 12px 15px; background: white; border-top: 1px solid #E2E8F0;
+        display: flex; gap: 10px; align-items: center;
+    }
+    .chat-input {
+        flex: 1; border: 1px solid #CBD5E1; border-radius: 20px; padding: 10px 15px;
+        font-size: 0.9rem; outline: none; transition: 0.2s;
+    }
+    .chat-input:focus { border-color: #2563EB; }
+    .send-btn { background: none; border: none; color: #2563EB; font-size: 1.4rem; cursor: pointer; }
+    .send-btn:disabled { color: #CBD5E1; cursor: not-allowed; }
+</style>
+
+<button class="ai-chat-btn" onclick="toggleChat()">
+    <i class="bi bi-chat-dots-fill"></i>
+</button>
+
+<div id="ai-chat-window" class="ai-chat-window">
+    <div class="chat-header">
+        <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-robot fs-5"></i>
+            <h4>Assistente StoreHost</h4>
+        </div>
+        <button class="close-chat" onclick="toggleChat()">×</button>
+    </div>
+    
+    <div id="chat-body" class="chat-body">
+        <div class="msg-bubble msg-ai">Olá! Sou a IA da StoreHost. Como posso ajudar com sua loja hoje?</div>
+    </div>
+    
+    <div class="chat-footer">
+        <input type="text" id="chat-input" class="chat-input" placeholder="Digite sua dúvida..." onkeypress="handleEnter(event)">
+        <button id="send-btn" class="send-btn" onclick="sendMessage()"><i class="bi bi-send-fill"></i></button>
+    </div>
+</div>
+
+<script>
+    const chatWindow = document.getElementById('ai-chat-window');
+    const chatBody = document.getElementById('chat-body');
+    const chatInput = document.getElementById('chat-input');
+    const sendBtn = document.getElementById('send-btn');
+
+    function toggleChat() {
+        chatWindow.classList.toggle('is-open');
+        if (chatWindow.classList.contains('is-open')) chatInput.focus();
+    }
+
+    function handleEnter(e) {
+        if (e.key === 'Enter') sendMessage();
+    }
+
+    function appendMessage(text, sender) {
+        const div = document.createElement('div');
+        div.className = `msg-bubble msg-${sender}`;
+        div.innerText = text;
+        chatBody.appendChild(div);
+        chatBody.scrollTop = chatBody.scrollHeight; // Rola pro final
+        return div;
+    }
+
+    async function sendMessage() {
+        const text = chatInput.value.trim();
+        if (!text) return;
+
+        // Adiciona msg do usuário
+        appendMessage(text, 'user');
+        chatInput.value = '';
+        sendBtn.disabled = true;
+
+        // Adiciona indicador visual de que a IA está digitando
+        const typingIndicator = appendMessage('Digitando...', 'ai');
+        typingIndicator.style.opacity = '0.5';
+
+        try {
+            const response = await fetch('/api/ai-chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message: text }),
+                credentials: 'same-origin'
+            });
+            
+            const data = await response.json();
+            
+            // Remove o 'Digitando...' e põe a resposta real
+            chatBody.removeChild(typingIndicator);
+            appendMessage(data.reply || "Erro ao processar resposta.", 'ai');
+
+        } catch (err) {
+            chatBody.removeChild(typingIndicator);
+            appendMessage("Desculpe, falha na conexão com o servidor.", 'ai');
+        } finally {
+            sendBtn.disabled = false;
+            chatInput.focus();
+        }
+    }
+</script>   
 
 </body>
 </html>

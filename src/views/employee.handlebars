@@ -79,10 +79,16 @@
                 </div>
                 <div class="form-group">
                     <label>Cargo</label>
-                    <input type="text" name="cargo" class="form-input" placeholder="Ex: Gerente" required>
+                    <select name="cargo" class="form-input" required>
+                        {{#each roles}}
+                            <option value="{{this._id}}">{{this.name_role}}</option>
+                        {{/each}}
+                    </select>
+                    <a href="/add/role" class="add-role" data-bs-toggle="modal" 
+                    data-bs-target="#addRoleModal" >Adicionar Cargo</a>
                 </div>
                 <div class="form-group">
-                    <label>Senha Provisória</label>
+                    <label>Senha</label>
                     <input type="password" name="password" class="form-input" required>
                 </div>
                 <button type="submit" class="btn btn-primary w-100 mt-3">Adicionar à Equipe</button>
@@ -122,11 +128,72 @@
     </div>
 </div>
 
+<div class="modal fade" id="addRoleModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <form id="addRoleForm" method="POST">
+                <div class="modal-header">
+                    <h5 class="modal-title">Adicionar Cargo</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group mb-3">
+                        <label>Nome do Cargo</label>
+                        <input type="text" name="name" id="edit-name" class="form-input" required>
+                    </div>
+                    <div class="form-group mb-3">
+                        <p class="form-label"><strong>Funções do Cargo</strong></p>
+                        
+                        <div class="checkbox-group">
+                            
+                            <div class="checkbox-item">
+                                <input type="checkbox" name="view_dashboard" id="add_dashboard">
+                                <label for="add_dash">Visualizar Dashboard</label>
+                            </div>
+
+                            <div class="checkbox-item">
+                                <input type="checkbox" name="view_finance" id="add_finance">
+                                <label for="add_fin">Visualizar Financeiro</label>
+                            </div>
+
+                            <div class="checkbox-item">
+                                <input type="checkbox" name="view_stock" id="add_stock">
+                                <label for="add_sto">Visualizar Estoque</label>
+                            </div>
+
+                            <div class="checkbox-item">
+                                <input type="checkbox" name="view_products" id="add_products">
+                                <label for="add_pro">Visualizar Protudos</label>
+                            </div>
+
+                            <div class="checkbox-item">
+                                <input type="checkbox" name="view_sales" id="add_sales">
+                                <label for="add_sal">Visualizar Vendas</label>
+                            </div>
+
+                            <div class="checkbox-item">
+                                <input type="checkbox" name="view_employee" id="add_employee">
+                                <label for="add_emp">Visualizar Equipe</label>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    // 2. Lógica do Modal de Edição
     const urlParams = new URLSearchParams(window.location.search);
+
+    //Modal para editar
     const editModal = document.getElementById('editEmployeeModal');
     if (editModal) {
         editModal.addEventListener('show.bs.modal', event => {
@@ -135,6 +202,21 @@
             editModal.querySelector('#edit-cargo').value = btn.getAttribute('data-cargo');
             editModal.querySelector('#edit-email').value = btn.getAttribute('data-email');
             editModal.querySelector('#editEmployeeForm').action = `/dashboard/employee/update/${btn.getAttribute('data-id')}`;
+        });
+    }
+
+    //Modal para salvar um novo cargo
+    const addModal = document.getElementById('addRoleModal');
+    if (addModal) {
+        addModal.addEventListener('show.bs.modal', event => {
+            const btn = event.relatedTarget;
+            addModal.querySelector('#add_dashboard').value = btn.getAttribute('data-view_dashboard');
+            addModal.querySelector('#add_finance').value = btn.getAttribute('data-view_finance');
+            addModal.querySelector('#add_stock').value = btn.getAttribute('data-view_stock');
+            addModal.querySelector('#add_products').value = btn.getAttribute('data-view_products');
+            addModal.querySelector('#add_sales').value = btn.getAttribute('data-view_sales');
+            addModal.querySelector('#add_employee').value = btn.getAttribute('data-view_employee');
+            addModal.querySelector('#addRoleForm').action = `/dashboard/employee/add/role`;
         });
     }
 </script>

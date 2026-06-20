@@ -27,10 +27,10 @@ const EmployeeSchema = new mongoose.Schema(
       required: true, // Lembrete: Criptografar com bcrypt no Controller antes de salvar!
     },
 
-    // 3. Dados da Tabela
+    // Cargo de vem da tabela Role (Cargos)
     cargo: {
+      ref: "Store",
       type: String,
-      default: "Operador de Estoque", // Valor padrão já que o formulário atual não tem esse <select>
     },
   },
   {
