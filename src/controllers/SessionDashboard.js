@@ -8,15 +8,28 @@ import StockMovement from "../models/StockMovement.js";
 class DashboardController {
   async index(req, res) {
     try {
-      const storeId = req.session.storeId;
-
-      // Proteção de Rota
-      if (!storeId) {
-        return res.redirect("/login");
+      // 🛡️ BARREIRA DE SEGURANÇA: Verificação rigorosa da sessão
+      if (!req.session || !req.session.storeId) {
+        console.warn("Acesso ao dashboard sem sessão válida");
+        return res.redirect("/login?error=session_expired");
       }
 
-      // Converte a string da sessão para um ObjectId real do MongoDB (Necessário para o Aggregate)
-      const objectId = new mongoose.Types.ObjectId(storeId);
+      const storeId = req.session.storeId;
+
+      // Validação adicional: garante que storeId é uma string válida
+      if (typeof storeId !== "string" || storeId.trim() === "") {
+        console.warn("StoreId inválido na sessão:", storeId);
+        return res.redirect("/login?error=invalid_store");
+      }
+
+      let objectId;
+      try {
+        // Converte a string da sessão para um ObjectId real do MongoDB (Necessário para o Aggregate)
+        objectId = new mongoose.Types.ObjectId(storeId);
+      } catch (mongoError) {
+        console.error("Erro ao converter storeId para ObjectId:", mongoError);
+        return res.redirect("/login?error=invalid_store_format");
+      }
 
       // 1. ALTA PERFORMANCE: Executa todas as buscas ao mesmo tempo!
       const [
@@ -151,6 +164,7 @@ class DashboardController {
       // 5. Enviar o "Banquete" de Dados para o Handlebars renderizar o ecrã
       res.render("dashboard", {
         layout: "dashboard",
+        storeId: storeId,
         storeName: loja ? loja.name : "Minha Loja",
         kpiVendas: totalVendas.toFixed(2),
         kpiProdutos: produtosCount,
@@ -167,8 +181,19 @@ class DashboardController {
         dadosDespesas: JSON.stringify(valoresDespesas),
       });
     } catch (error) {
-      console.log("Erro grave ao carregar o Painel de Controlo:", error);
-      res.send("Erro interno ao carregar o dashboard.");
+      console.error("❌ Erro grave ao carregar o Painel de Controlo:", error);
+      
+      // Não envia resposta se a resposta já foi iniciada
+      if (!res.headersSent) {
+        // Diferencia entre erros de sessão e erros internos
+        if (error.message.includes("session") || error.message.includes("storeId")) {
+          return res.redirect("/login?error=session_error");
+        }
+        res.status(500).render("error", {
+          message: "Erro interno ao carregar o dashboard. Tente novamente mais tarde.",
+          error: process.env.NODE_ENV === "development" ? error : {},
+        });
+      }
     }
   }
 }

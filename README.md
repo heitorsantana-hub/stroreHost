@@ -283,6 +283,7 @@ stroreHost/
 
 ---
 
+<<<<<<< HEAD
 ## 9. 🎓 Guia de Slides para Apresentação do TCC
 
 Para ajudar na estruturação da sua apresentação de TCC perante a banca examinadora, criamos um arquivo completo com o roteiro de slides detalhado contendo a proposta visual, tópicos de cada tela e roteiro de fala passo a passo.
@@ -293,4 +294,6 @@ Para ajudar na estruturação da sua apresentação de TCC perante a banca exami
 
 ---
 
+=======
+>>>>>>> 1d31796f5ff51e66215b2b160072ec8cf68e388e
 Desenvolvido com 💙 para fins acadêmicos e práticos de empreendedorismo digital.

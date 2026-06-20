@@ -11,7 +11,9 @@ class SessionScheduling {
       return res.render('scheduling', { 
         schedules, 
         employees,
-        layout: 'dashboard' 
+        layout: 'dashboard',
+        activeScheduling: true,
+        storeName: req.session.storeName
       });
     } catch (error) {
       console.error("Erro ao carregar agendamentos:", error);
