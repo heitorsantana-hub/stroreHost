@@ -3,63 +3,50 @@ import Product from "../models/Product.js";
 
 class SessionStock {
   async update(req, res) {
-    const { product_id, quantity } = req.body;
+    // 1. Recebemos o motivo, tipo (in/out) e valor unitário
+    const { product_id, quantity, type, reason, unit_value } = req.body;
     const storeId = req.session.storeId;
 
     if (!storeId) return res.redirect("/login?erro=session");
 
     try {
-      // Procurando um produto que exista na loja específica
       const product = await Product.findOne({
         _id: product_id,
         store_id: storeId,
       });
+      if (!product) return res.redirect("/dashboard/stock");
 
-      if (!product) {
-        console.log("Produto não encontrado");
-        return res.redirect("/dashboard/stock");
+      // 2. CRÍTICO: Usar parseFloat em vez de parseInt para aceitar decimais (ex: 1.5 KG)
+      const qtd = parseFloat(quantity);
+
+      // 3. Atualiza o estoque do produto baseado se é entrada ou saída
+      if (type === "out") {
+        product.current_stock -= qtd;
+      } else {
+        product.current_stock += qtd;
       }
-
-      const qtd = parseInt(quantity, 10);
-
-      product.current_stock += qtd;
       await product.save();
 
+      // 4. Calcula o valor financeiro do movimento (se houver)
+      const valorUnitario = parseFloat(unit_value) || product.cost_price;
+      const valorTotal = qtd * valorUnitario;
+
+      // 5. Salva o registro completo
       await StockMovement.create({
         store_id: storeId,
         product_id: product_id,
         quantity: qtd,
-        type: "in",
+        type: type || "in",
+        reason: reason || "ajuste",
+        unit_value: valorUnitario,
+        total_value: valorTotal,
       });
 
-      console.log("Resgitro Feito com Sucesso");
+      console.log("Registro Feito com Sucesso");
       return res.redirect("/dashboard/stock?sucess=create");
     } catch (error) {
       console.log("Erro ao movimentar estoque:", error);
       return res.redirect("/dashboard/stock");
-    }
-  }
-
-  async update2(req, res) {
-    const { id } = req.params;
-    const { quantity } = req.body;
-
-    try {
-      const storeId = req.session.storeId;
-
-      if (!storeId) {
-        return res.redirect("/login?erro=session");
-      }
-
-      const result = await Product.updateOne(
-        { _id: id, store_id: storeId },
-        { $set: { current_stock: quantity } }, // Use o $set para garantir a alteração
-      );
-
-      console.log({ result });
-      return res.redirect("/dashboard/stock?sucess=create");
-    } catch (err) {
-      console.log(err);
     }
   }
 }

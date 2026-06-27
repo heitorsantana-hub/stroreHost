@@ -77,26 +77,65 @@ class SessionSale {
   }
 
   async destroy(req, res) {
-    const sale_id = req.body.sale_id;
+    const { sale_id } = req.body; // Vem daquele input type="hidden" no HTML
 
     try {
       const storeId = req.session.storeId;
+      if (!storeId) return res.redirect("/login?error=session");
 
-      if (!storeId) {
-        return res.redirect("/login?error=session");
+      // 1. BUSCAR A VENDA ANTES DE DELETAR (Precisamos saber o que foi vendido)
+      const sale = await Sale.findOne({ _id: sale_id, store_id: storeId });
+
+      if (!sale) {
+        console.log("Venda não encontrada para exclusão.");
+        return res.redirect("/dashboard/sales?error=not_found");
       }
 
-      const result = await Sale.deleteOne({
+      // 2. DEVOLVER AO ESTOQUE
+      const product = await Product.findOne({
+        _id: sale.product_id,
         store_id: storeId,
-        _id: sale_id,
       });
 
-      console.log({ result });
-      console.log("ID que chegou:", sale_id);
+      if (product) {
+        // Soma a quantidade de volta
+        product.current_stock += sale.quantity;
+        await product.save();
 
-      return res.redirect("/dashboard/sales?sucess=create");
+        // 3. REGISTRAR O HISTÓRICO DA DEVOLUÇÃO
+        await StockMovement.create({
+          store_id: storeId,
+          product_id: product._id,
+          quantity: sale.quantity,
+          type: "in",
+          reason: "devolucao", // Lembra que criamos esse motivo? Ele brilha aqui!
+          unit_value: product.cost_price,
+          total_value: sale.quantity * product.cost_price,
+        });
+      }
+
+      // 4. ACERTAR O FINANCEIRO (Retirar o dinheiro do caixa)
+      // Pega os últimos 4 dígitos do ID da venda para ficar bonito no relatório
+      const shortId = sale._id.toString().slice(-4).toUpperCase();
+
+      await Transaction.create({
+        store_id: storeId,
+        type: "expense", // É uma "saída" porque estamos devolvendo o dinheiro ao cliente
+        description: `Estorno de Venda #${shortId}`,
+        category: "Devolução / Estorno",
+        amount: sale.total_price, // O valor total que havia sido pago
+        isIncome: false,
+        data_formatada: new Date().toLocaleDateString("pt-BR"), // Adapte para como seu model salva datas
+      });
+
+      // 5. FINALMENTE, DELETAR A VENDA
+      await Sale.deleteOne({ _id: sale_id });
+
+      console.log(`Venda ${sale_id} estornada com sucesso.`);
+      return res.redirect("/dashboard/sales?sucess=delete");
     } catch (err) {
-      console.log(err);
+      console.error("Erro grave ao tentar estornar venda:", err);
+      return res.status(500).redirect("/dashboard/sales?error=internal");
     }
   }
 

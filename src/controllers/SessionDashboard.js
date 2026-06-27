@@ -46,7 +46,7 @@ class DashboardController {
         Product.countDocuments({ store_id: storeId }), // Conta todos os produtos
         Product.countDocuments({
           store_id: storeId,
-          current_stock: { $lt: 5 },
+          $expr: { $lte: ["$current_stock", "$min_stock"] },
         }), // Produtos quase esgotados
 
         // A Mágica do MongoDB: Soma todos os "total_price" de todas as vendas desta loja
@@ -182,15 +182,19 @@ class DashboardController {
       });
     } catch (error) {
       console.error("❌ Erro grave ao carregar o Painel de Controlo:", error);
-      
+
       // Não envia resposta se a resposta já foi iniciada
       if (!res.headersSent) {
         // Diferencia entre erros de sessão e erros internos
-        if (error.message.includes("session") || error.message.includes("storeId")) {
+        if (
+          error.message.includes("session") ||
+          error.message.includes("storeId")
+        ) {
           return res.redirect("/login?error=session_error");
         }
         res.status(500).render("error", {
-          message: "Erro interno ao carregar o dashboard. Tente novamente mais tarde.",
+          message:
+            "Erro interno ao carregar o dashboard. Tente novamente mais tarde.",
           error: process.env.NODE_ENV === "development" ? error : {},
         });
       }

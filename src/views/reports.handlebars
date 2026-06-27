@@ -1,0 +1,38 @@
+<div class="content-body">
+    <section class="welcome-sec">
+        <h1>Relatórios e BI</h1>
+        <p>Análise de dados, exportação de CSV e inteligência de vendas.</p>
+    </section>
+
+    <div class="main-grid">
+        <section class="data-card">
+            <h3>Exportar Dados</h3>
+            <p>Baixe todo o histórico de vendas em formato CSV para usar no Excel.</p>
+            <a href="/dashboard/reports/csv" class="btn btn-success w-100">
+                <i class="bi bi-file-earmark-spreadsheet"></i> Baixar Relatório (CSV)
+            </a>
+        </section>
+
+        <section class="data-card">
+            <h3>Top 5 Produtos</h3>
+            <div class="table-container mt-3">
+                <table class="custom-table">
+                    <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th class="text-end">Qtd Vendida</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{#each topProdutos}}
+                        <tr>
+                            <td><strong>{{this._id}}</strong></td>
+                            <td class="text-end">{{this.totalVendido}} unidades</td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+</div>

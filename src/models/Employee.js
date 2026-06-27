@@ -28,9 +28,10 @@ const EmployeeSchema = new mongoose.Schema(
     },
 
     // Cargo de vem da tabela Role (Cargos)
-    cargo: {
-      ref: "Store",
-      type: String,
+    role_id: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Role",
+      required: true,
     },
   },
   {

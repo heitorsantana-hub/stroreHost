@@ -14,10 +14,59 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <link rel="stylesheet" href="/css/dashboard.css">
+    
+    <style>
+        /* Estilos do Chat Flutuante (Otimizados) */
+        .ai-chat-btn {
+            position: fixed; bottom: 25px; right: 25px; width: 55px; height: 55px;
+            border-radius: 50%; background: #2563EB; color: white; border: none; 
+            box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4); font-size: 1.5rem; 
+            cursor: pointer; z-index: 99999; display: flex; align-items: center; 
+            justify-content: center; transition: transform 0.3s;
+        }
+        .ai-chat-btn:hover { transform: scale(1.08); }
+
+        .ai-chat-window {
+            position: fixed; bottom: 90px; right: 25px; width: 350px; height: 500px;
+            background-color: #ffffff; border-radius: 16px; box-shadow: 0 12px 28px rgba(0,0,0,0.15); 
+            display: flex; flex-direction: column; z-index: 99998; opacity: 0; pointer-events: none;
+            transform: translateY(20px); transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            overflow: hidden; border: 1px solid #E2E8F0;
+        }
+        .ai-chat-window.is-open { opacity: 1; pointer-events: auto; transform: translateY(0); }
+
+        .chat-header {
+            background: linear-gradient(45deg, #2563EB, #3B82F6); color: white; padding: 15px 20px;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .chat-header h4 { margin: 0; font-size: 1rem; font-weight: 600; }
+        .close-chat { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; opacity: 0.8; transition: 0.2s;}
+        .close-chat:hover { opacity: 1; }
+        
+        .chat-body {
+            flex: 1; padding: 15px; overflow-y: auto; background: #F8FAFC;
+            display: flex; flex-direction: column; gap: 12px;
+        }
+        
+        .msg-bubble { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 0.9rem; line-height: 1.4; word-wrap: break-word; }
+        .msg-user { background: #2563EB; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
+        .msg-ai { background: #E2E8F0; color: #1E293B; align-self: flex-start; border-bottom-left-radius: 4px; }
+        
+        .chat-footer {
+            padding: 12px 15px; background: white; border-top: 1px solid #E2E8F0;
+            display: flex; gap: 10px; align-items: center;
+        }
+        .chat-input {
+            flex: 1; border: 1px solid #CBD5E1; border-radius: 20px; padding: 10px 15px;
+            font-size: 0.9rem; outline: none; transition: border-color 0.2s;
+        }
+        .chat-input:focus { border-color: #2563EB; }
+        .send-btn { background: none; border: none; color: #2563EB; font-size: 1.4rem; cursor: pointer; }
+        .send-btn:disabled { color: #CBD5E1; cursor: not-allowed; }
+    </style>
 </head>
 <body>
     
-    <!-- Sidebar Desktop -->
     <aside class="sidebar">
         <a href="/" class="sidebar-brand">
             <i class="bi bi-box-fill text-primary me-2"></i> Store<span>Host</span>
@@ -59,6 +108,11 @@
                     <i class="bi bi-calendar3"></i> Agendamentos
                 </a>
             </li>
+            <li class="nav-item">
+            <a href="/dashboard/reports" class="nav-link {{#if activeReports}}active{{/if}}">
+                <i class="bi bi-graph-up-arrow"></i> Relatórios
+            </a>
+        </li>
         </ul>
 
         <div class="sidebar-footer">
@@ -68,57 +122,27 @@
         </div>
     </aside>
 
-    <!-- Mobile Bottom Navigation -->
     <nav class="mobile-nav">
-        <a href="/dashboard" class="mobile-nav-item {{#if activeDashboard}}active{{/if}}">
-            <i class="bi bi-speedometer2"></i>
-            <span>Início</span>
-        </a>
-        <a href="/dashboard/product" class="mobile-nav-item {{#if activeProduct}}active{{/if}}">
-            <i class="bi bi-box-seam"></i>
-            <span>Produtos</span>
-        </a>
-        <a href="/dashboard/stock" class="mobile-nav-item {{#if activeStock}}active{{/if}}">
-            <i class="bi bi-layers"></i>
-            <span>Estoque</span>
-        </a>
-        <a href="/dashboard/sales" class="mobile-nav-item {{#if activeSales}}active{{/if}}">
-            <i class="bi bi-cart3"></i>
-            <span>Vendas</span>
-        </a>
-        <a href="/dashboard/finance" class="mobile-nav-item {{#if activeFinance}}active{{/if}}">
-            <i class="bi bi-wallet2"></i>
-            <span>Finanças</span>
-        </a>
-        <a href="/dashboard/scheduling" class="mobile-nav-item {{#if activeScheduling}}active{{/if}}">
-            <i class="bi bi-calendar3"></i>
-            <span>Agenda</span>
-        </a>
+        <a href="/dashboard" class="mobile-nav-item {{#if activeDashboard}}active{{/if}}"><i class="bi bi-speedometer2"></i><span>Início</span></a>
+        <a href="/dashboard/product" class="mobile-nav-item {{#if activeProduct}}active{{/if}}"><i class="bi bi-box-seam"></i><span>Produtos</span></a>
+        <a href="/dashboard/stock" class="mobile-nav-item {{#if activeStock}}active{{/if}}"><i class="bi bi-layers"></i><span>Estoque</span></a>
+        <a href="/dashboard/sales" class="mobile-nav-item {{#if activeSales}}active{{/if}}"><i class="bi bi-cart3"></i><span>Vendas</span></a>
+        <a href="/dashboard/finance" class="mobile-nav-item {{#if activeFinance}}active{{/if}}"><i class="bi bi-wallet2"></i><span>Finanças</span></a>
+        <a href="/dashboard/scheduling" class="mobile-nav-item {{#if activeScheduling}}active{{/if}}"><i class="bi bi-calendar3"></i><span>Agenda</span></a>
     </nav>
 
-        <!-- Componente da StoreHost AI -->
-    <div id="storehost-ai-widget" class="storehost-ai-widget" style="display: none;">
-    <div class="ai-header">
-        <span class="ai-icon">✨</span>
-        <h4>StoreHost AI</h4>
-        <button class="ai-close" onclick="closeAIWidget()">×</button>
-    </div>
-    <div class="ai-content">
-        <p id="ai-feedback-text">Analisando sua loja...</p>
-    </div>
-    </div>
-
     <main class="main-content">
-        <!-- Input Hidden para capturar o Store ID -->
         <input type="hidden" id="storeIdHub" value="{{storeId}}">
 
         <header class="top-bar">
             <div class="search-box">
-                <i class="bi bi-search text-muted"></i>
-                <input type="text" placeholder="Pesquisar transações, produtos...">
-            </div>
+                </div>
 
-            <div class="user-nav">
+            <div class="user-nav d-flex align-items-center gap-3">
+                <button id="btnAiReport" class="btn btn-sm d-none d-sm-flex align-items-center gap-2" style="background: linear-gradient(45deg, #8B5CF6, #3B82F6); color: white; border: none; border-radius: 8px; padding: 6px 12px;">
+                    <i class="bi bi-stars"></i> Relatório IA
+                </button>
+
                 <button class="icon-btn">
                     <i class="bi bi-bell"></i>
                     <span class="notification-dot"></span>
@@ -140,190 +164,137 @@
             {{{body}}}
         </div>
     </main>
-<style>
-  :root {
-    --chat--color-primary: #0d6efd !important; 
-    --chat--color-primary-shade-50: #0a58ca !important;
-    --chat--color-primary-shade-100: #084298 !important;
-    --chat--color-secondary: #0d6efd !important;
-  }
-</style>
 
-<link href="https://cdn.jsdelivr.net/npm/@n8n/chat/dist/style.css" rel="stylesheet" />
-<script type="module">
-  import { createChat } from 'https://cdn.jsdelivr.net/npm/@n8n/chat/dist/chat.bundle.es.js';
-
-  // 📌 Captura o storeId do input hidden
-  const storeIdHub = document.getElementById('storeIdHub')?.value || '';
-
-  // 🔒 Função para gerar um UUID v4 único
-  function generateUUID() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
-      const r = Math.random() * 16 | 0;
-      const v = c === 'x' ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
-  }
-
-  // 💾 Função para obter ou criar sessionId persistente no localStorage
-  function getOrCreateSessionId() {
-    if (!storeIdHub) return generateUUID();
-    
-    const sessionKey = `storehost_chat_session_${storeIdHub}`;
-    let sessionId = localStorage.getItem(sessionKey);
-    
-    // Se não existir, cria um novo e armazena
-    if (!sessionId) {
-      sessionId = generateUUID();
-      localStorage.setItem(sessionKey, sessionId);
-    }
-    
-    return sessionId;
-  }
-
-  // Obtém ou cria o sessionId uma única vez
-  const chatSessionId = getOrCreateSessionId();
-
-  // 🚀 Inicializa o widget de chat com persistência de histórico
-  createChat({
-    webhookUrl: 'https://edu0777.app.n8n.cloud/webhook/a0d8eb84-d490-4c8c-9f60-d6818d5d9ccd/chat',
-    sessionId: chatSessionId,
-    
-    initialMessages: [
-      'Olá! 👋',
-      'Eu sou a Inteligência Artificial do StoreHost. Como posso ajudar com suas lojas hoje?'
-    ],
-    
-    // Intercepta cada mensagem enviada e injeta o store_id
-    onSendMessage: async (messageData) => {
-      messageData.store_id = storeIdHub;
-      return messageData;
-    },
-    
-    i18n: {
-      en: {
-        title: 'Assistente StoreHost',
-        subtitle: 'Pronto para ajudar com seu negócio.',
-        getStarted: 'Nova conversa',
-        inputPlaceholder: 'Digite sua pergunta...',
-      },
-      'pt-BR': {
-        title: 'Assistente StoreHost',
-        subtitle: 'Pronto para ajudar com seu negócio 24/7.',
-        getStarted: 'Nova conversa',
-        inputPlaceholder: 'Digite sua pergunta...',
-      },
-      pt: {
-        title: 'Assistente StoreHost',
-        subtitle: 'Pronto para ajudar com seu negócio 24/7.',
-        getStarted: 'Nova conversa',
-        inputPlaceholder: 'Digite sua pergunta...',
-      }
-    }
-  });
-
-</script>
-
-   <style>
-    /* Botão Flutuante */
-    .ai-chat-btn {
-        position: fixed; bottom: 25px; right: 25px; width: 55px; height: 55px;
-        border-radius: 50%; background: #2563EB; /* Azul Crisp */
-        color: white; border: none; box-shadow: 0 4px 15px rgba(37, 99, 235, 0.4);
-        font-size: 1.8rem; cursor: pointer; z-index: 99999; 
-        display: flex; align-items: center; justify-content: center; transition: 0.3s;
-    }
-    .ai-chat-btn:hover { transform: scale(1.05); }
-
-    /* Janela do Chat */
-    .ai-chat-window {
-        position: fixed; bottom: 90px; right: 25px; width: 350px; height: 500px;
-        background-color: #ffffff; border-radius: 16px;
-        box-shadow: 0 12px 28px rgba(0,0,0,0.15); display: flex; flex-direction: column;
-        z-index: 99998; opacity: 0; pointer-events: none;
-        transform: translateY(20px); transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        overflow: hidden; border: 1px solid #E2E8F0;
-    }
-    .ai-chat-window.is-open { opacity: 1; pointer-events: auto; transform: translateY(0); }
-
-    /* Cabeçalho do Chat */
-    .chat-header {
-        background: #2563EB; color: white; padding: 15px 20px;
-        display: flex; align-items: center; justify-content: space-between;
-    }
-    .chat-header h4 { margin: 0; font-size: 1rem; font-weight: 600; }
-    .close-chat { background: none; border: none; color: white; font-size: 1.5rem; cursor: pointer; opacity: 0.8;}
-    
-    /* Área de Mensagens */
-    .chat-body {
-        flex: 1; padding: 15px; overflow-y: auto; background: #F8FAFC;
-        display: flex; flex-direction: column; gap: 12px;
-    }
-    
-    /* Balões de Mensagem */
-    .msg-bubble { max-width: 85%; padding: 10px 14px; border-radius: 12px; font-size: 0.9rem; line-height: 1.4; word-wrap: break-word; }
-    .msg-user { background: #2563EB; color: white; align-self: flex-end; border-bottom-right-radius: 4px; }
-    .msg-ai { background: #E2E8F0; color: #1E293B; align-self: flex-start; border-bottom-left-radius: 4px; }
-    
-    /* Rodapé (Input) */
-    .chat-footer {
-        padding: 12px 15px; background: white; border-top: 1px solid #E2E8F0;
-        display: flex; gap: 10px; align-items: center;
-    }
-    .chat-input {
-        flex: 1; border: 1px solid #CBD5E1; border-radius: 20px; padding: 10px 15px;
-        font-size: 0.9rem; outline: none; transition: 0.2s;
-    }
-    .chat-input:focus { border-color: #2563EB; }
-    .send-btn { background: none; border: none; color: #2563EB; font-size: 1.4rem; cursor: pointer; }
-    .send-btn:disabled { color: #CBD5E1; cursor: not-allowed; }
-</style>
-
-<button class="ai-chat-btn" onclick="toggleChat()">
-    <i class="bi bi-chat-dots-fill"></i>
-</button>
-
-<div id="ai-chat-window" class="ai-chat-window">
-    <div class="chat-header">
-        <div class="d-flex align-items-center gap-2">
-            <i class="bi bi-robot fs-5"></i>
-            <h4>Assistente StoreHost</h4>
+    <div class="modal fade" id="aiModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content" style="border-top: 4px solid #8B5CF6;">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-stars text-primary"></i> Insight Inteligente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="aiContent" style="white-space: pre-line; line-height: 1.6;">
+                        <div class="text-center py-4">
+                            <div class="spinner-border text-primary" role="status"></div>
+                            <p class="mt-2 text-muted">Analisando dados da sua loja...</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                <button id="btnDownloadPdf" class="btn btn-success">
+                    <i class="bi bi-file-earmark-pdf"></i> Baixar PDF
+                </button>
+            </div>
+            </div>
         </div>
-        <button class="close-chat" onclick="toggleChat()">×</button>
     </div>
-    
-    <div id="chat-body" class="chat-body">
-        <div class="msg-bubble msg-ai">Olá! Sou a IA da StoreHost. Como posso ajudar com sua loja hoje?</div>
-    </div>
-    
-    <div class="chat-footer">
-        <input type="text" id="chat-input" class="chat-input" placeholder="Digite sua dúvida..." onkeypress="handleEnter(event)">
-        <button id="send-btn" class="send-btn" onclick="sendMessage()"><i class="bi bi-send-fill"></i></button>
-    </div>
-</div>
 
-<script>
+    <button class="ai-chat-btn" onclick="toggleChat()" title="Conversar com a IA">
+        <i class="bi bi-chat-dots-fill"></i>
+    </button>
+
+    <div id="ai-chat-window" class="ai-chat-window">
+        <div class="chat-header">
+            <div class="d-flex align-items-center gap-2">
+                <i class="bi bi-robot fs-5"></i>
+                <h4>Assistente StoreHost</h4>
+            </div>
+            <button class="close-chat" onclick="toggleChat()">×</button>
+        </div>
+        
+        <div id="chat-body" class="chat-body">
+            <div class="msg-bubble msg-ai">Olá! 👋 Sou a IA da StoreHost. Como posso ajudar com a sua loja hoje?</div>
+        </div>
+        
+        <div class="chat-footer">
+            <input type="text" id="chat-input" class="chat-input" placeholder="Digite sua dúvida..." onkeypress="handleEnter(event)">
+            <button id="send-btn" class="send-btn" onclick="sendMessage()"><i class="bi bi-send-fill"></i></button>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+    // 1. Variáveis Globais
+    let ultimoRelatorio = "";
+    const btnAi = document.getElementById('btnAiReport');
+    const aiContent = document.getElementById('aiContent');
+    const btnDownload = document.getElementById('btnDownloadPdf');
+    let aiModalInstance = null;
+
+    // 2. Lógica do Relatório de Insight
+    if (btnAi) {
+        btnAi.addEventListener('click', async () => {
+            if (!aiModalInstance) {
+                aiModalInstance = new bootstrap.Modal(document.getElementById('aiModal'));
+            }
+            
+            aiContent.innerHTML = `
+                <div class="text-center py-4">
+                    <div class="spinner-border" style="color: #8B5CF6;" role="status"></div>
+                    <p class="mt-3 text-muted">O Gemini está analisando...</p>
+                </div>
+            `;
+            aiModalInstance.show();
+
+            try {
+                const response = await fetch('/dashboard/ai-report');
+                const data = await response.json();
+
+                if (data.error) throw new Error(data.error);
+
+                ultimoRelatorio = data.relatorio; // Atualiza a variável global
+                const textoFormatado = data.relatorio.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+                aiContent.innerHTML = `<p>${textoFormatado}</p>`;
+            } catch (error) {
+                aiContent.innerHTML = `<div class="alert alert-danger">Erro ao comunicar com a IA.</div>`;
+            }
+        });
+    }
+
+    // 3. Lógica do Download do PDF (Agora garantida que roda após o carregamento)
+    if (btnDownload) {
+        btnDownload.addEventListener('click', async () => {
+            if (!ultimoRelatorio) {
+                alert("Gere o relatório antes de baixar!");
+                return;
+            }
+
+            try {
+                const response = await fetch('/dashboard/ai-report/download', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ relatorio: ultimoRelatorio })
+                });
+
+                if (!response.ok) throw new Error('Falha no servidor');
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'relatorio-storehost.pdf';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                window.URL.revokeObjectURL(url);
+            } catch (error) {
+                console.error(error);
+                alert("Erro ao baixar PDF.");
+            }
+        });
+    }
+
+    // 4. Lógica do Chat Flutuante
     const chatWindow = document.getElementById('ai-chat-window');
     const chatBody = document.getElementById('chat-body');
     const chatInput = document.getElementById('chat-input');
     const sendBtn = document.getElementById('send-btn');
+    const storeId = document.getElementById('storeIdHub')?.value || '';
 
     function toggleChat() {
         chatWindow.classList.toggle('is-open');
-        if (chatWindow.classList.contains('is-open')) chatInput.focus();
-    }
-
-    function handleEnter(e) {
-        if (e.key === 'Enter') sendMessage();
-    }
-
-    function appendMessage(text, sender) {
-        const div = document.createElement('div');
-        div.className = `msg-bubble msg-${sender}`;
-        div.innerText = text;
-        chatBody.appendChild(div);
-        chatBody.scrollTop = chatBody.scrollHeight; // Rola pro final
-        return div;
     }
 
     async function sendMessage() {
@@ -331,37 +302,34 @@
         if (!text) return;
 
         // Adiciona msg do usuário
-        appendMessage(text, 'user');
+        const divUser = document.createElement('div');
+        divUser.className = `msg-bubble msg-user`;
+        divUser.innerText = text;
+        chatBody.appendChild(divUser);
+        
         chatInput.value = '';
         sendBtn.disabled = true;
-
-        // Adiciona indicador visual de que a IA está digitando
-        const typingIndicator = appendMessage('Digitando...', 'ai');
-        typingIndicator.style.opacity = '0.5';
 
         try {
             const response = await fetch('/api/ai-chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ message: text }),
-                credentials: 'same-origin'
+                body: JSON.stringify({ message: text, store_id: storeId })
             });
-            
             const data = await response.json();
             
-            // Remove o 'Digitando...' e põe a resposta real
-            chatBody.removeChild(typingIndicator);
-            appendMessage(data.reply || "Erro ao processar resposta.", 'ai');
-
+            const divAi = document.createElement('div');
+            divAi.className = `msg-bubble msg-ai`;
+            divAi.innerText = data.reply || "Erro.";
+            chatBody.appendChild(divAi);
+            chatBody.scrollTop = chatBody.scrollHeight;
         } catch (err) {
-            chatBody.removeChild(typingIndicator);
-            appendMessage("Desculpe, falha na conexão com o servidor.", 'ai');
+            console.error(err);
         } finally {
             sendBtn.disabled = false;
-            chatInput.focus();
         }
     }
-</script>   
+</script>
 
 </body>
 </html>

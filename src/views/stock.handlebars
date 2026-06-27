@@ -1,127 +1,175 @@
+<div class="content-body">
+    
+    <section class="welcome-sec">
+        <h1>Controle de Estoque</h1>
+        <p>Monitore os níveis de produtos e registre entradas ou saídas.</p>
+    </section>
 
-    <div class="content-body">
+    <div class="main-grid">
         
-        <section class="welcome-sec">
-            <h1>Controle de Estoque</h1>
-            <p>Monitore os níveis de produtos e registre entradas ou saídas.</p>
-        </section>
+        <section class="data-card">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <h2>Níveis de Estoque</h2>
+                <div class="search-box" style="flex: 1; max-width: 300px;">
+                    <input type="text" id="searchInput" class="form-control" placeholder="🔍 Pesquisar por nome...">
+                </div>
+            </div>
 
-        <div class="main-grid">
-            
-    <section class="data-card">
-    <div class="card-header">
-        <h2>Níveis de Estoque</h2>
-    </div>
-    <div class="table-container">
-        <table class="custom-table">
-            <thead>
-                <tr>
-                    <th>Produto</th>
-                    <th>Qtd. Atual</th>
-                    <th>Valor</th>
-                    <th>Última Mov.</th>
-                    <th>Ações</th> </tr>
-            </thead>
-            <tbody>
-                {{#each produtos}}
-                    <tr>
-                        <td><strong>{{this.name}}</strong></td>
-                        
-                        <td>{{this.current_stock}} un.</td> 
-                        
-                        <td>R$ {{this.price}}</td>
-                        
-
+            <div class="table-container mt-3">
+                <table class="custom-table" id="stockTable">
+                    <thead>
+                        <tr>
+                            <th>Produto</th>
+                            <th>Qtd. Atual</th>
+                            <th>Valor</th>
+                            <th>Última Mov.</th>
+                            <th class="text-center">Ações</th> 
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        {{#each produtos}}
+                        <tr class="product-row" data-name="{{this.name}}">
+                            <td>
+                                <strong>{{this.name}}</strong><br>
+                                <small class="text-muted" style="font-size: 0.7rem;">Cód: {{#if this.barcode}}{{this.barcode}}{{else}}N/A{{/if}}</small>
+                            </td>
+                            
+                            <td>
+                                <span>
+                                       {{this.current_stock}} {{this.unit_of_measure}}
+                                </span>
+                            </td> 
+                            
+                            <td>R$ {{this.price}}</td>
+                            
                             <td class="text-muted" style="font-size: 0.85rem;">
                                 {{formatDate this.updatedAt}}
                             </td>
-                        
-                       <td>
-                         <button 
-                        class="btn btn-outline" 
-                        data-bs-toggle="modal" 
-                        data-bs-target="#editModal"
-                        data-id="{{this._id}}"
-                        data-quantity="{{this.current_stock}}">
-                        Editar
-                        </button>
+                            
+                            <td>
+                                <div class="d-flex justify-content-center align-items-center gap-2">
+                                    <button class="btn btn-outline btn-sm" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#viewModal"
+                                        data-id="{{this._id}}"
+                                        data-name="{{this.name}}"
+                                        data-image="{{this.image_url}}"
+                                        data-quantity="{{this.current_stock}}"
+                                        data-category="{{this.category}}"
+                                        data-description="{{this.description}}"
+                                        data-price="{{this.price}}"
+                                        data-stock="{{this.current_stock}}"
+                                        data-unit="{{this.unit_of_measure}}">
+                                        <i class="bi bi-eye"></i> Ver
+                                    </button>
 
-                         <button 
-                            class="btn btn-outline" 
-                            data-bs-toggle="modal" 
-                            data-bs-target="#viewModal"
-                            data-id="{{this._id}}"
-                            data-name="{{this.name}}"
-                            data-image="{{this.image_url}}"
-                            data-quantity="{{this.current_stock}}"
-                            data-category="{{this.category}}"
-                            data-description="{{this.description}}"
-                            data-price="{{this.price}}"
-                            data-stock="{{this.current_stock}}">
-                            Ver
-                        </button>
-                       </td>
-                        
-                    </tr>
-                {{else}}
-                    <tr>
-                        <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">
-                            Nenhum produto cadastrado ainda. Use o formulário ao lado para começar!
-                        </td>
-                    </tr>
-                {{/each}}
-            </tbody>
-        </table>
-    </div>
-</section>
+                                    <button class="btn btn-outline btn-sm" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#editModal"
+                                        data-id="{{this._id}}"
+                                        data-quantity="{{this.current_stock}}">
+                                        Ajustar
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {{else}}
+                        <tr id="emptyRow">
+                            <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                Nenhum produto cadastrado ainda. Use o formulário ao lado para começar!
+                            </td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
 
-            <section class="data-card">
-                <div class="card-header">
-                    <h2>Movimentar Estoque</h2>
+            <div class="d-flex justify-content-between align-items-center mt-3 p-2" id="paginationControls">
+                <button class="btn btn-outline-secondary btn-sm" id="prevPage" disabled>
+                    <i class="bi bi-chevron-left"></i> Anterior
+                </button>
+                <span id="pageIndicator" class="text-muted" style="font-size: 0.9rem;">Página 1</span>
+                <button class="btn btn-outline-secondary btn-sm" id="nextPage">
+                    Próxima <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <section class="data-card">
+            <div class="card-header">
+                <h2>Movimentar Estoque</h2>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Adicione entradas ou saídas de itens.</p>
+
+            <div id="alert-container"></div>
+            
+            <form action="/dashboard/stock/update" method="post">
+                <div class="form-group mb-2">
+                    <label>Selecionar Produto</label>
+                    <select name="product_id" class="form-input" required>
+                        <option value="">Escolha um produto...</option>
+                        {{#each produtos}}
+                            <option value="{{this._id}}">{{this.name}} (Qtd Atual: {{this.current_stock}})</option>
+                        {{/each}}
+                    </select>
                 </div>
-                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Adicione entradas ou saídas de itens.</p>
 
-                <div id="alert-container"></div>
-                
-                <form action="/dashboard/stock/update" method="post">
-                    <div class="form-group">
-                        <label>Selecionar Produto</label>
-                        <select name="product_id" class="form-input" required>
-                            <option value="">Escolha um produto...</option>
-                            {{#each produtos}}
-                                <option value="{{this._id}}">{{this.name}}</option>
-                            {{/each}}
-
+                <div class="row mb-2">
+                    <div class="col-md-6 form-group">
+                        <label>Tipo de Movimento</label>
+                        <select name="type" class="form-input" required>
+                            <option value="in">Entrada (+)</option>
+                            <option value="out">Saída (-)</option>
                         </select>
                     </div>
-                    <div class="form-group">
-                        <label>Quantidade</label>
-                        <input type="number" name="quantity" class="form-input" min="1" required>
+                    <div class="col-md-6 form-group">
+                        <label>Motivo</label>
+                        <select name="reason" class="form-input" required>
+                            <option value="compra">Nova Compra</option>
+                            <option value="venda">Venda Avulsa</option>
+                            <option value="devolucao">Devolução</option>
+                            <option value="ajuste">Ajuste de Estoque</option>
+                            <option value="perda_validade">Perda / Vencimento</option>
+                        </select>
                     </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Atualizar Estoque</button>
-                </form>
-            </section>
+                </div>
 
-        </div>
+                <div class="row mb-3">
+                    <div class="col-md-6 form-group">
+                        <label>Quantidade (Decimais permitidos)</label>
+                        <input type="number" name="quantity" class="form-input" step="0.001" min="0.001" required>
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label>Custo Total desta Ação (R$)</label>
+                        <input type="number" name="unit_value" class="form-input" step="0.01" placeholder="Opcional">
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Registrar Movimentação</button>
+            </form>
+        </section>
+
     </div>
+</div>
 
-    <div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <form id="editStockForm" method="POST">
                 <div class="modal-header">
-                    <h5 class="modal-title">Editar Colaborador</h5>
+                    <h5 class="modal-title">Ajuste Direto de Estoque</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="form-group mb-3">
-                        <label>Quantidade</label>
-                        <input type="text" name="quantity" id="edit-quantity" class="form-input" required>
+                        <label>Nova Quantidade Total</label>
+                        <input type="number" step="0.001" name="quantity" id="edit-quantity" class="form-input" required>
+                        <small class="text-muted">Isso sobrescreverá a quantidade atual do produto.</small>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+                    <button type="submit" class="btn btn-primary">Salvar Alteração</button>
                 </div>
             </form>
         </div>
@@ -153,8 +201,8 @@
                     <p id="view-description" class="text-muted"></p>
                 </div>
                 <div class="mb-3">
-                    <label class="fw-bold">Quantidade:</label>
-                    <p id="view-quantity" class="text-muted"></p>
+                    <label class="fw-bold">Quantidade Atual:</label>
+                    <p id="view-quantity" class="text-muted fw-bold"></p>
                 </div>
                <div class="mb-3 text-center">
                     <label class="fw-bold d-block mb-2">Imagem do Produto:</label>
@@ -174,70 +222,121 @@
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('sucess') === 'create') {
-            const alertContainer = document.getElementById('alert-container');
-            alertContainer.innerHTML = `
-                <div class="alert alert-success d-flex align-items-center" role="alert">
-                <svg width="20" height="20" fill="currentColor" class="bi flex-shrink-0 me-2" viewBox="0 0 16 16">
-                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
-                    </svg>
-                    <div style="font-size: 0.9rem;">Quantidade Registrada com Sucesso!</div>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            `;
+<script>
+    // ==========================================
+    // 1. LÓGICA DE ALERTS E MODAIS
+    // ==========================================
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('sucess') === 'create') {
+        const alertContainer = document.getElementById('alert-container');
+        alertContainer.innerHTML = `
+            <div class="alert alert-success d-flex align-items-center" role="alert">
+                <svg width="20" height="20" fill="currentColor" class="bi flex-shrink-0 me-2" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>
+                <div style="font-size: 0.9rem;">Estoque Atualizado com Sucesso!</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+    }
+
+    const editModal = document.getElementById('editModal');
+    if (editModal) {
+        editModal.addEventListener('show.bs.modal', event => {
+            const btn = event.relatedTarget; 
+            const id = btn.getAttribute('data-id');
+            const quantity = btn.getAttribute('data-quantity');
+
+            editModal.querySelector('#edit-quantity').value = quantity;
+            const form = editModal.querySelector('#editStockForm');
+            form.action = `/dashboard/stock/update/${id}`;
+        });
+    }
+
+    const viewModal = document.getElementById('viewModal');
+    if (viewModal) {
+        viewModal.addEventListener('show.bs.modal', event => {
+            const btn = event.relatedTarget;
+            const unit = btn.getAttribute('data-unit') || "UN";
+
+            viewModal.querySelector('#view-name').textContent = btn.getAttribute('data-name') || "Não informado";
+            viewModal.querySelector('#view-category').textContent = btn.getAttribute('data-category') || "Sem categoria";
+            const price = btn.getAttribute('data-price');
+            viewModal.querySelector('#view-price').textContent = price ? `R$ ${price}` : "Consulte";
+            viewModal.querySelector('#view-quantity').textContent = `${btn.getAttribute('data-quantity')} ${unit}`;
+            viewModal.querySelector('#view-description').textContent = btn.getAttribute('data-description') || "Nenhuma descrição disponível.";
+
+            const imgElement = viewModal.querySelector('#view-image');
+            const image = btn.getAttribute('data-image');
+            if (image && image !== "") {
+                imgElement.src = image;
+                imgElement.style.display = "block"; 
+            } else {
+                imgElement.src = "https://placehold.co/400x300?text=Produto+Sem+Foto";
+            }
+        });
+    }
+
+    // ==========================================
+    // 2. NOVA LÓGICA DE PESQUISA E PAGINAÇÃO
+    // ==========================================
+    document.addEventListener("DOMContentLoaded", function() {
+        const searchInput = document.getElementById("searchInput");
+        const allRows = Array.from(document.querySelectorAll(".product-row")); 
+        let filteredRows = [...allRows]; 
+        
+        let currentPage = 1;
+        const rowsPerPage = 10; 
+
+        const btnPrev = document.getElementById("prevPage");
+        const btnNext = document.getElementById("nextPage");
+        const pageIndicator = document.getElementById("pageIndicator");
+
+        function renderTable() {
+            allRows.forEach(row => row.style.display = "none");
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = startIndex + rowsPerPage;
+
+            const rowsToShow = filteredRows.slice(startIndex, endIndex);
+            rowsToShow.forEach(row => row.style.display = ""); 
+
+            const totalPages = Math.ceil(filteredRows.length / rowsPerPage) || 1;
+            pageIndicator.textContent = `Página ${currentPage} de ${totalPages}`;
+            
+            btnPrev.disabled = currentPage === 1;
+            btnNext.disabled = currentPage === totalPages;
         }
 
-        const editModal = document.getElementById('editModal');
-        if (editModal) {
-            editModal.addEventListener('show.bs.modal', event => {
-                const btn = event.relatedTarget; // O botão que foi clicado
-                
-                // Pegando os dados da "mochila" do botão
-                const id = btn.getAttribute('data-id');
-                const quantity = btn.getAttribute('data-quantity');
-
-                // Preenchendo o input de quantidade
-                editModal.querySelector('#edit-quantity').value = quantity;
-                
-                // IMPORTANTE: O ID do form aqui deve ser igual ao do HTML (#editStockForm)
-                const form = editModal.querySelector('#editStockForm');
-                form.action = `/dashboard/stock/update/${id}`;
+        if(searchInput) {
+            searchInput.addEventListener("input", function(e) {
+                const searchTerm = e.target.value.toLowerCase().trim();
+                filteredRows = allRows.filter(row => {
+                    const productName = row.getAttribute("data-name").toLowerCase();
+                    return productName.includes(searchTerm);
+                });
+                currentPage = 1;
+                renderTable();
             });
         }
 
-        const viewModal = document.getElementById('viewModal');
-
-        if (viewModal) {
-            viewModal.addEventListener('show.bs.modal', event => {
-                // 1. Identifica o botão que abriu o modal
-                const btn = event.relatedTarget;
-                console.log("Modal aberto pelo botão do produto ID:", btn.getAttribute('data-id'));
-
-                // 2. Extrai os dados da "mochila" (data-attributes)
-                const name = btn.getAttribute('data-name');
-                const category = btn.getAttribute('data-category');
-                const price = btn.getAttribute('data-price');
-                const description = btn.getAttribute('data-description');
-                const quantity = btn.getAttribute('data-quantity')
-                const image = btn.getAttribute('data-image');
-
-                // 3. Preenche os campos de TEXTO (usando textContent)
-                viewModal.querySelector('#view-name').textContent = name || "Não informado";
-                viewModal.querySelector('#view-category').textContent = category || "Sem categoria";
-                viewModal.querySelector('#view-price').textContent = price ? `R$ ${price}` : "Consulte";
-                viewModal.querySelector('#view-quantity').textContent = quantity || "Sem quantidade";
-                viewModal.querySelector('#view-description').textContent = description || "Nenhuma descrição disponível.";
-
-                // 4. Trata a IMAGEM (usando o atributo .src)
-                const imgElement = viewModal.querySelector('#view-image');
-                if (image && image !== "") {
-                    imgElement.src = image;
-                    imgElement.style.display = "block"; // Garante que ela apareça
-                } else {
-                    imgElement.src = "https://placehold.co/400x300?text=Produto+Sem+Foto";
+        if(btnPrev) {
+            btnPrev.addEventListener("click", () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderTable();
                 }
             });
         }
-    </script>
+
+        if(btnNext) {
+            btnNext.addEventListener("click", () => {
+                const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderTable();
+                }
+            });
+        }
+
+        // Renderiza inicial
+        renderTable();
+    });
+</script>

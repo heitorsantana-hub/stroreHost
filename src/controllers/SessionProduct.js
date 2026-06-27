@@ -1,44 +1,100 @@
-import Employee from "../models/Employee.js";
 import Product from "../models/Product.js";
-import Sale from "../models/Sale.js";
-import Store from "../models/Store.js";
 
 class SessionProduct {
   async store(req, res) {
-    const { name, price, category, description } = req.body;
+    // 1. Recebemos os novos campos do formulário
+    const {
+      name,
+      price,
+      category,
+      description,
+      unit_of_measure,
+      tags,
+      barcode,
+      cost_price,
+      min_stock,
+      max_stock,
+    } = req.body;
 
-    // O Multer coloca os dados do ficheiro aqui
     const image_url = req.file
       ? `/uploads/${req.file.filename}`
       : "/img/default.png";
 
     try {
       const storeId = req.session.storeId;
+      if (!storeId) return res.redirect("/login?error=session");
 
-      // Sessão não logada
-      if (!storeId) {
-        console.log("sesssão não criada");
-        return res.redirect("/login?error=session");
-      }
-
-      // Campos vazios
-      if (!name || !price || !category || !description) {
-        console.log("Erro, por favor insira os dados corretos");
-        return res.redirect("/dashboard/product?error=dados");
-      }
+      // 2. Transformar a string de tags em um Array (Ex: "carne, churrasco" -> ["carne", "churrasco"])
+      const tagsArray = tags ? tags.split(",").map((tag) => tag.trim()) : [];
 
       const product = await Product.create({
-        store_id: storeId, // Pega o _id que o MongoDB acabou de achar na constante "store"
+        store_id: storeId,
         name,
-        price,
         category,
         description,
         image_url,
+        // Novos campos adicionados:
+        unit_of_measure: unit_of_measure || "UN",
+        tags: tagsArray,
+        barcode,
+        cost_price: parseFloat(cost_price) || 0,
+        price: parseFloat(price) || 0,
+        min_stock: parseInt(min_stock) || 5,
+        max_stock: parseInt(max_stock) || 100,
       });
 
       console.log("Produto criado com sucesso:", product.name);
-
       return res.redirect("/dashboard/product?sucess=create");
+    } catch (err) {
+      console.log(err);
+      return res.status(500).json(err);
+    }
+  }
+
+  // ... (O método destroy continua igual)
+
+  async update(req, res) {
+    // Mesma lógica de desestruturação do store() para os novos campos
+    const {
+      name,
+      category,
+      price,
+      description,
+      unit_of_measure,
+      tags,
+      barcode,
+      cost_price,
+      min_stock,
+      max_stock,
+    } = req.body;
+
+    const { id } = req.params;
+
+    try {
+      const storeId = req.session.storeId;
+      const tagsArray = tags ? tags.split(",").map((tag) => tag.trim()) : [];
+
+      const updateData = {
+        name,
+        category,
+        description,
+        unit_of_measure,
+        tags: tagsArray,
+        barcode,
+        cost_price: parseFloat(cost_price),
+        price: parseFloat(price),
+        min_stock: parseInt(min_stock),
+        max_stock: parseInt(max_stock),
+      };
+
+      if (req.file) updateData.image_url = `/uploads/${req.file.filename}`;
+
+      await Product.updateOne(
+        { _id: id, store_id: storeId },
+        { $set: updateData },
+      );
+
+      return res.redirect("/dashboard/product?sucess=update");
     } catch (err) {
       console.log(err);
       return res.status(500).json(err);
@@ -64,34 +120,6 @@ class SessionProduct {
       console.log("ID que chegou:", product_id);
 
       return res.redirect("/dashboard/product?sucesss=create");
-    } catch (err) {
-      console.log(err);
-    }
-  }
-
-  async update(req, res) {
-    const { name, category, price } = req.body;
-    const { id } = req.params;
-    try {
-      const storeId = req.session.storeId;
-
-      const updateData = {
-        name: name,
-        category: category,
-        price: price,
-      };
-
-      // Se um novo arquivo foi enviado, adicionamos o novo caminho da imagem
-      if (req.file) {
-        updateData.image_url = `/uploads/${req.file.filename}`;
-      }
-
-      await Product.updateOne(
-        { _id: id, store_id: storeId },
-        { $set: updateData },
-      );
-
-      return res.redirect("/dashboard/product?sucess=update");
     } catch (err) {
       console.log(err);
     }

@@ -5,13 +5,17 @@
     </section>
     
     <div class="main-grid">
+        
         <section class="data-card">
-            <div class="card-header">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <h2>Últimas Vendas</h2>
+                <div class="search-box" style="flex: 1; max-width: 300px;">
+                    <input type="text" id="searchInput" class="form-control" placeholder="🔍 Pesquisar por produto ou recibo...">
+                </div>
             </div>
             
-            <div class="table-container">
-                <table class="custom-table">
+            <div class="table-container mt-3">
+                <table class="custom-table" id="salesTable">
                     <thead>
                         <tr>
                             <th>Recibo</th>
@@ -23,36 +27,39 @@
                             <th class="text-center">Ações</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="tableBody">
                         {{#each vendas}}
-                            <tr>
+                            <tr class="sale-row" data-search="{{this._id}} {{this.product_name}}">
                                 <td><span style="color: var(--text-muted); font-size: 0.85rem;">#{{this._id}}</span></td>
                                 <td><strong>{{this.product_name}}</strong></td>
                                 <td>{{this.quantity}}x</td>
-                                <td><strong>R$ {{this.total_price}}</strong></td>
-                                <td>{{this.payment_method}}</td>
+                                <td><strong class="text-success">R$ {{this.total_price}}</strong></td>
+                                <td><span class="badge bg-light text-dark border">{{this.payment_method}}</span></td>
                                 <td><span class="badge-status status-active">Concluída</span></td>
                                 <td>
                                     <div class="d-flex justify-content-center align-items-center gap-2">
                                         <button class="btn btn-outline btn-sm" 
+                                            title="Ajustar Venda"
                                             data-bs-toggle="modal" 
                                             data-bs-target="#editModal"
                                             data-id="{{this._id}}"
                                             data-product="{{this.product_id}}"
                                             data-quantity="{{this.quantity}}"
                                             data-payment="{{this.payment_method}}">
-                                            Editar
+                                            Ajustar
                                         </button>
 
-                                        <form action="/dashboard/sales/delete" method="POST" onsubmit="return confirm('Excluir venda?')" class="m-0">
+                                        <form action="/dashboard/sales/delete" method="POST" onsubmit="return confirm('Excluir esta venda irá devolver os itens ao estoque. Tem certeza?')" class="m-0">
                                             <input type="hidden" name="sale_id" value="{{this._id}}">
-                                            <button type="submit" class="btn btn-danger btn-sm">Remover</button>
+                                            <button type="submit" class="btn btn-danger btn-sm" title="Cancelar Venda">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
                                         </form>
                                     </div>
                                 </td>
                             </tr>
                         {{else}}
-                            <tr>
+                            <tr id="emptyRow">
                                 <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">
                                     Nenhuma venda registrada ainda.
                                 </td>
@@ -60,6 +67,16 @@
                         {{/each}}
                     </tbody>
                 </table>    
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-3 p-2" id="paginationControls">
+                <button class="btn btn-outline-secondary btn-sm" id="prevPage" disabled>
+                    <i class="bi bi-chevron-left"></i> Anterior
+                </button>
+                <span id="pageIndicator" class="text-muted" style="font-size: 0.9rem;">Página 1</span>
+                <button class="btn btn-outline-secondary btn-sm" id="nextPage">
+                    Próxima <i class="bi bi-chevron-right"></i>
+                </button>
             </div>
         </section>
 
@@ -70,28 +87,37 @@
             <div id="alert-container"></div>
 
             <form action="/dashboard/sales/create" method="post">
-                <div class="form-group">
+                <div class="form-group mb-3">
                     <label>Produto</label>
                     <select name="product_id" class="form-input" required>
-                        <option value="">Selecione...</option>
+                        <option value="">Selecione um produto...</option>
                         {{#each produtos}}
-                            <option value="{{this._id}}">{{this.name}} - R$ {{this.price}}</option>
+                            <option value="{{this._id}}">
+                                {{this.name}} - R$ {{this.price}} (Estoque: {{this.current_stock}} {{this.unit_of_measure}})
+                            </option>
                         {{/each}}
                     </select>
                 </div>
-                <div class="form-group">
-                    <label>Quantidade</label>
-                    <input type="number" name="quantity" min="1" class="form-input" required>
+                
+                <div class="row mb-3">
+                    <div class="col-md-6 form-group">
+                        <label>Quantidade</label>
+                        <input type="number" name="quantity" min="0.001" step="0.001" class="form-input" required>
+                    </div>
+                    <div class="col-md-6 form-group">
+                        <label>Pagamento</label>
+                        <select name="payment_method" class="form-input" required>
+                            <option value="Pix">Pix</option>
+                            <option value="Cartão de Crédito">Cartão de Crédito</option>
+                            <option value="Cartão de Débito">Cartão de Débito</option>
+                            <option value="Dinheiro">Dinheiro</option>
+                        </select>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label>Pagamento</label>
-                    <select name="payment_method" class="form-input" required>
-                        <option value="Pix">Pix</option>
-                        <option value="Cartão de Crédito">Cartão de Crédito</option>
-                        <option value="Dinheiro">Dinheiro</option>
-                    </select>
-                </div>
-                <button type="submit" class="btn btn-primary w-100 mt-2">Finalizar Venda</button>
+                
+                <button type="submit" class="btn btn-primary w-100 mt-2">
+                    <i class="bi bi-cart-check"></i> Finalizar Venda
+                </button>
             </form>
         </section>
     </div>
@@ -107,83 +133,153 @@
                 </div>
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label>Produto</label>
-                        <select name="product_id" id="edit-product" class="form-input" required>
+                        <label class="form-label">Produto</label>
+                        <select name="product_id" id="edit-product" class="form-control" required>
                             {{#each produtos}}
                                 <option value="{{this._id}}">{{this.name}}</option>
                             {{/each}}
                         </select>
                     </div>
-                    <div class="mb-3">
-                        <label>Quantidade</label>
-                        <input type="number" name="quantity" id="edit-quantity" class="form-input" required>
-                    </div>
-                    <div class="mb-3">
-                        <label>Pagamento</label>
-                        <select name="payment_method" id="edit-payment" class="form-input" required>
-                            <option value="Pix">Pix</option>
-                            <option value="Cartão de Crédito">Cartão de Crédito</option>
-                            <option value="Dinheiro">Dinheiro</option>
-                        </select>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Quantidade</label>
+                            <input type="number" name="quantity" id="edit-quantity" min="0.001" step="0.001" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Pagamento</label>
+                            <select name="payment_method" id="edit-payment" class="form-control" required>
+                                <option value="Pix">Pix</option>
+                                <option value="Cartão de Crédito">Cartão de Crédito</option>
+                                <option value="Cartão de Débito">Cartão de Débito</option>
+                                <option value="Dinheiro">Dinheiro</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Salvar</button>
+                    <button type="submit" class="btn btn-primary">Salvar Ajuste</button>
                 </div>
             </form>
         </div>
     </div>
 </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('sucess') === 'create') {
-            const alertContainer = document.getElementById('alert-container');
-            alertContainer.innerHTML = `
-                <div class="alert alert-success d-flex align-items-center" role="alert">
+<script>
+    // ==========================================
+    // 1. LÓGICA DE ALERTS E MODAIS (Seu código base)
+    // ==========================================
+    const urlParams = new URLSearchParams(window.location.search);
+    const alertContainer = document.getElementById('alert-container');
+
+    if (urlParams.get('sucess') === 'create') {
+        alertContainer.innerHTML = `
+            <div class="alert alert-success d-flex align-items-center" role="alert">
+            <svg width="20" height="20" fill="currentColor" class="bi flex-shrink-0 me-2" viewBox="0 0 16 16">
+                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
+                </svg>
+                <div style="font-size: 0.9rem;">Venda Registrada com Sucesso!</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+    } else if (urlParams.get('error') === 'quantity') {
+        alertContainer.innerHTML = `
+            <div class="alert alert-danger d-flex align-items-center alert-dismissible fade show" role="alert">
                 <svg width="20" height="20" fill="currentColor" class="bi flex-shrink-0 me-2" viewBox="0 0 16 16">
-                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
-                    </svg>
-                    <div style="font-size: 0.9rem;">Venda Cadastrada Com Sucesso!</div>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            `;
+                    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
+                </svg>
+                <div style="font-size: 0.9rem;">Erro: A quantidade vendida é maior que o estoque atual.</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+    }
+
+    const editModal = document.getElementById('editModal');
+    if (editModal) {
+        editModal.addEventListener('show.bs.modal', event => {
+            const button = event.relatedTarget;
+            
+            const id = button.getAttribute('data-id');
+            const productId = button.getAttribute('data-product');
+            const quantity = button.getAttribute('data-quantity');
+            const payment = button.getAttribute('data-payment');
+
+            editModal.querySelector('#edit-product').value = productId;
+            editModal.querySelector('#edit-quantity').value = quantity;
+            editModal.querySelector('#edit-payment').value = payment;
+            
+            editModal.querySelector('#editForm').action = `/dashboard/sales/update/${id}`;
+        });
+    }
+
+    // ==========================================
+    // 2. LÓGICA DE PESQUISA E PAGINAÇÃO 
+    // ==========================================
+    document.addEventListener("DOMContentLoaded", function() {
+        const searchInput = document.getElementById("searchInput");
+        const allRows = Array.from(document.querySelectorAll(".sale-row")); 
+        let filteredRows = [...allRows]; 
+        
+        let currentPage = 1;
+        const rowsPerPage = 10; 
+
+        const btnPrev = document.getElementById("prevPage");
+        const btnNext = document.getElementById("nextPage");
+        const pageIndicator = document.getElementById("pageIndicator");
+
+        function renderTable() {
+            allRows.forEach(row => row.style.display = "none");
+            
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = startIndex + rowsPerPage;
+
+            const rowsToShow = filteredRows.slice(startIndex, endIndex);
+            rowsToShow.forEach(row => row.style.display = ""); 
+
+            const totalPages = Math.ceil(filteredRows.length / rowsPerPage) || 1;
+            pageIndicator.textContent = `Página ${currentPage} de ${totalPages}`;
+            
+            btnPrev.disabled = currentPage === 1;
+            btnNext.disabled = currentPage === totalPages;
         }
 
-        else if (urlParams.get('error') === 'quantity') {
-            const alertContainer = document.getElementById('alert-container');
-            alertContainer.innerHTML = `
-                <div class="alert alert-danger d-flex align-items-center alert-dismissible fade show" role="alert">
-                    <svg width="20" height="20" fill="currentColor" class="bi flex-shrink-0 me-2" viewBox="0 0 16 16">
-                        <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
-                    </svg>
-                    <div style="font-size: 0.9rem;">Venda maior que a quantidade do Estoque.</div>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            `;
-        }
-
-        const editModal = document.getElementById('editModal');
-            if (editModal) {
-                editModal.addEventListener('show.bs.modal', event => {
-                    const button = event.relatedTarget;
-                    
-                    // Captura dos dados (Nomes simplificados para não dar erro)
-                    const id = button.getAttribute('data-id');
-                    const productId = button.getAttribute('data-product');
-                    const quantity = button.getAttribute('data-quantity');
-                    const payment = button.getAttribute('data-payment');
-
-                    // Preenchimento dos campos usando os IDs que adicionamos
-                    editModal.querySelector('#edit-product').value = productId;
-                    editModal.querySelector('#edit-quantity').value = quantity;
-                    editModal.querySelector('#edit-payment').value = payment;
-                    
-                    // Ajuste da rota de destino
-                    editModal.querySelector('#editForm').action = `/dashboard/sales/update/${id}`;
+        if(searchInput) {
+            searchInput.addEventListener("input", function(e) {
+                const searchTerm = e.target.value.toLowerCase().trim();
+                
+                // Pesquisa tanto pelo ID (Recibo) quanto pelo Nome do Produto
+                filteredRows = allRows.filter(row => {
+                    const searchData = row.getAttribute("data-search").toLowerCase();
+                    return searchData.includes(searchTerm);
                 });
-            }
-    </script>
+                
+                currentPage = 1;
+                renderTable();
+            });
+        }
+
+        if(btnPrev) {
+            btnPrev.addEventListener("click", () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderTable();
+                }
+            });
+        }
+
+        if(btnNext) {
+            btnNext.addEventListener("click", () => {
+                const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderTable();
+                }
+            });
+        }
+
+        // Renderiza inicial
+        renderTable();
+    });
+</script>

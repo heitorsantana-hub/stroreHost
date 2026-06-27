@@ -1,134 +1,193 @@
 <div class="content-body">
-        
-        <section class="welcome-sec">
-            <h1>Catálogo de Produtos</h1>
-            <p>Gerencie o estoque e adicione novos itens à loja.</p>
-        </section>
-        
-        <div class="main-grid">
-            
-            <section class="data-card">
-    <div class="card-header">
-        <h2>Produtos Registrados</h2>
-    </div>
     
-    <div class="table-container">
-        <table class="custom-table">
-            <thead>
-                <tr>
-                    <th>Status</th>
-                    <th>Produto</th>
-                    <th>Categoria</th>
-                    <th>Preço</th>
-                    <th class="text-center">Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{#each produtos}}
-                <tr>
-                    <td><span class="badge-status status-active">Ativo</span></td>
-                    
-                    <td>
-                        <strong>{{this.name}}</strong><br>
-                        <small class="text-muted" style="font-size: 0.7rem;">ID: {{this._id}}</small>
-                    </td>
-                    
-                    <td><span class="text-muted">{{this.category}}</span></td>
-                    
-                    <td><strong>R$ {{this.price}}</strong></td>
-                    
-                    <td>
-                        <div class="d-flex justify-content-center align-items-center gap-2">
-                            
-                            <button class="btn btn-outline btn-sm" 
-                                data-bs-toggle="modal" 
-                                data-bs-target="#viewModal"
-                                data-id="{{this._id}}"
-                                data-name="{{this.name}}"
-                                data-image="{{this.image_url}}"
-                                data-category="{{this.category}}"
-                                data-description="{{this.description}}"
-                                data-quantity="{{this.current_stock}}"
-                                data-price="{{this.price}}"
-                                data-stock="{{this.current_stock}}">
-                                <i class="bi bi-eye"></i> Ver
-                            </button>
-
-                            <button class="btn btn-outline btn-sm" 
-                                data-bs-toggle="modal" 
-                                data-bs-target="#editModal"
-                                data-id="{{this._id}}"
-                                data-name="{{this.name}}"
-                                data-category="{{this.category}}"
-                                data-price="{{this.price}}"
-                                data-imagem="{{this.image_url}}"
-                                data-description="{{this.description}}">
-                                Editar
-                            </button>
-
-                            <form action="/dashboard/product/delete" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir?')" class="m-0">
-                                <input type="hidden" name="product_id" value="{{this._id}}">
-                                <button type="submit" class="btn btn-danger btn-sm">Remover</button>
-                            </form>
-
-                        </div>
-                    </td>
-                </tr>
-                {{else}}
-                <tr>
-                    <td colspan="5" class="text-center py-4 text-muted">
-                        Nenhum produto cadastrado ainda.
-                    </td>
-                </tr>
-                {{/each}}
-            </tbody>
-        </table>    
-    </div>
-</section>
-
-            <section class="data-card">
-                <div class="card-header">
-                    <h2>Novo Produto</h2>
+    <section class="welcome-sec">
+        <h1>Catálogo de Produtos</h1>
+        <p>Gerencie o estoque e adicione novos itens à loja.</p>
+    </section>
+    
+    <div class="main-grid">
+        
+        <section class="data-card">
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <h2>Produtos Registrados</h2>
+                <div class="search-box" style="flex: 1; max-width: 300px;">
+                    <input type="text" id="searchInput" class="form-control" placeholder="🔍 Pesquisar por nome...">
                 </div>
-                <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Adicione uma nova definição de produto.</p>
+            </div>
+            
+            <div class="table-container mt-3">
+                <table class="custom-table" id="productsTable">
+                    <thead>
+                        <tr>
+                            <th>Status</th>
+                            <th>Produto</th>
+                            <th>Categoria</th>
+                            <th>Preço</th>
+                            <th class="text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        {{#each produtos}}
+                        <tr class="product-row" data-name="{{this.name}}">
+                            <td><span class="badge-status status-active">Ativo</span></td>
+                            
+                            <td>
+                                <strong>{{this.name}}</strong><br>
+                                <small class="text-muted" style="font-size: 0.7rem;">ID: {{this._id}}</small>
+                            </td>
+                            
+                            <td><span class="text-muted">{{this.category}}</span></td>
+                            
+                            <td><strong>R$ {{this.price}}</strong></td>
+                            
+                            <td>
+                                <div class="d-flex justify-content-center align-items-center gap-2">
+                                    <button class="btn btn-outline btn-sm" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#viewModal"
+                                        data-id="{{this._id}}"
+                                        data-name="{{this.name}}"
+                                        data-image="{{this.image_url}}"
+                                        data-category="{{this.category}}"
+                                        data-description="{{this.description}}"
+                                        data-quantity="{{this.current_stock}}"
+                                        data-price="{{this.price}}"
+                                        data-stock="{{this.current_stock}}"
+                                        data-cost="{{this.cost_price}}"
+                                        data-unit="{{this.unit_of_measure}}"
+                                        data-barcode="{{this.barcode}}"
+                                        data-min="{{this.min_stock}}"
+                                        data-max="{{this.max_stock}}"
+                                        data-tags="{{this.tags}}">
+                                        <i class="bi bi-eye"></i> Ver
+                                    </button>
+
+                                    <button class="btn btn-outline btn-sm" 
+                                        data-bs-toggle="modal" 
+                                        data-bs-target="#editModal"
+                                        data-id="{{this._id}}"
+                                        data-name="{{this.name}}"
+                                        data-category="{{this.category}}"
+                                        data-price="{{this.price}}"
+                                        data-imagem="{{this.image_url}}"
+                                        data-description="{{this.description}}"
+                                        data-cost="{{this.cost_price}}"
+                                        data-unit="{{this.unit_of_measure}}"
+                                        data-barcode="{{this.barcode}}"
+                                        data-min="{{this.min_stock}}"
+                                        data-max="{{this.max_stock}}"
+                                        data-tags="{{this.tags}}">
+                                        Editar
+                                    </button>
+
+                                    <form action="/dashboard/product/delete" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir?')" class="m-0">
+                                        <input type="hidden" name="product_id" value="{{this._id}}">
+                                        <button type="submit" class="btn btn-danger btn-sm">Remover</button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                        {{else}}
+                        <tr id="emptyRow">
+                            <td colspan="5" class="text-center py-4 text-muted">
+                                Nenhum produto cadastrado ainda.
+                            </td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>    
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-3 p-2" id="paginationControls">
+                <button class="btn btn-outline-secondary btn-sm" id="prevPage" disabled>
+                    <i class="bi bi-chevron-left"></i> Anterior
+                </button>
+                <span id="pageIndicator" class="text-muted" style="font-size: 0.9rem;">Página 1</span>
+                <button class="btn btn-outline-secondary btn-sm" id="nextPage">
+                    Próxima <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
+        </section>
+
+        <section class="data-card">
+            <div class="card-header">
+                <h2>Novo Produto</h2>
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Adicione uma nova definição de produto.</p>
+            
+            <div id="alert-container"></div>
+
+            <form action="/dashboard/products/create" method="post" enctype="multipart/form-data">
+                <div class="form-group mb-2">
+                    <label>Nome do Produto</label>
+                    <input type="text" name="name" placeholder="Ex: Tênis de Corrida, Alcatra" class="form-input" required>
+                </div>
                 
-                <div id="alert-container"></div>
-
-                <form action="/dashboard/products/create" method="post" enctype="multipart/form-data">
-
-
-                    <div class="form-group">
-                        <label>Nome do Produto</label>
-                        <input type="text" name="name" placeholder="Ex: Tênis de Corrida" class="form-input" required>
-                    </div>
-                    <div class="form-group">
+                <div class="row mb-2">
+                    <div class="col-md-6 form-group">
                         <label>Categoria</label>
                         <input type="text" name="category" placeholder="Nome da categoria" class="form-input" required>
                     </div>
-                    <div class="form-group">
-                        <label>Preço</label>
-                        <input type="text" name="price" placeholder="Valor do preço" class="form-input" required>
+                    <div class="col-md-6 form-group">
+                        <label>Código de Barras</label>
+                        <input type="text" name="barcode" placeholder="EAN ou QR Code" class="form-input">
                     </div>
+                </div>
 
-                    <div class="form-group">
-                        <label>Imagem do Produto</label>
-                        <input type="file" name="image" class="form-input" accept="image/*">
+                <div class="row mb-2">
+                    <div class="col-md-6 form-group">
+                        <label>Preço de Custo (R$)</label>
+                        <input type="number" step="0.01" name="cost_price" placeholder="0.00" class="form-input" required>
                     </div>
-
-                    <div class="form-group">
-                        <label>Descrição</label>
-                        <textarea name="description" class="form-input" placeholder="Detalhes do produto..." style="height: 100px; resize: none;"></textarea>
+                    <div class="col-md-6 form-group">
+                        <label>Preço de Venda (R$)</label>
+                        <input type="number" step="0.01" name="price" placeholder="0.00" class="form-input" required>
                     </div>
-                    <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 10px;">Registrar Produto</button>
-                </form>
-            </section>
+                </div>
 
-        </div>
+                <div class="row mb-2">
+                    <div class="col-md-4 form-group">
+                        <label>Unidade</label>
+                        <select name="unit_of_measure" class="form-input" required>
+                            <option value="UN">Unidade (UN)</option>
+                            <option value="KG">Quilo (KG)</option>
+                            <option value="LT">Litro (LT)</option>
+                            <option value="CX">Caixa (CX)</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4 form-group">
+                        <label>Estoque Mín.</label>
+                        <input type="number" name="min_stock" value="5" class="form-input">
+                    </div>
+                    <div class="col-md-4 form-group">
+                        <label>Estoque Máx.</label>
+                        <input type="number" name="max_stock" value="100" class="form-input">
+                    </div>
+                </div>
+
+                <div class="form-group mb-2">
+                    <label>Tags (separadas por vírgula)</label>
+                    <input type="text" name="tags" placeholder="Ex: vegano, promoção, lançamento" class="form-input">
+                </div>
+
+                <div class="form-group mb-2">
+                    <label>Imagem do Produto</label>
+                    <input type="file" name="image" class="form-input" accept="image/*">
+                </div>
+
+                <div class="form-group mb-3">
+                    <label>Descrição</label>
+                    <textarea name="description" class="form-input" placeholder="Detalhes do produto..." style="height: 80px; resize: none;"></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary" style="width: 100%;">Registrar Produto</button>
+            </form>
+        </section>
     </div>
+</div>
 
-    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg"> <div class="modal-content">
             <form id="editForm" method="POST" enctype="multipart/form-data">
                 <div class="modal-header">
                     <h5 class="modal-title" id="editModalLabel">Editar Produto</h5>
@@ -139,17 +198,62 @@
                         <label class="form-label">Nome do Produto</label>
                         <input type="text" name="name" id="edit-name" class="form-control" required>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Categoria</label>
-                        <input type="text" name="category" id="edit-category" class="form-control" required>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Categoria</label>
+                            <input type="text" name="category" id="edit-category" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Código de Barras</label>
+                            <input type="text" name="barcode" id="edit-barcode" class="form-control">
+                        </div>
                     </div>
-                    <div class="mb-3">
-                        <label class="form-label">Preço</label>
-                        <input type="text" name="price" id="edit-price" class="form-control" required>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Preço de Custo (R$)</label>
+                            <input type="number" step="0.01" name="cost_price" id="edit-cost" class="form-control" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Preço de Venda (R$)</label>
+                            <input type="number" step="0.01" name="price" id="edit-price" class="form-control" required>
+                        </div>
                     </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Unidade</label>
+                            <select name="unit_of_measure" id="edit-unit" class="form-control" required>
+                                <option value="UN">Unidade (UN)</option>
+                                <option value="KG">Quilo (KG)</option>
+                                <option value="LT">Litro (LT)</option>
+                                <option value="CX">Caixa (CX)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Estoque Mín.</label>
+                            <input type="number" name="min_stock" id="edit-min" class="form-control">
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Estoque Máx.</label>
+                            <input type="number" name="max_stock" id="edit-max" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Tags (separadas por vírgula)</label>
+                        <input type="text" name="tags" id="edit-tags" class="form-control">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Descrição</label>
+                        <textarea name="description" id="edit-description" class="form-control" style="height: 80px; resize: none;"></textarea>
+                    </div>
+
                     <div class="mb-3">
                         <label class="form-label">Nova Imagem (Opcional)</label>
-                        <input type="file" name="image" id="edit-image" class="form-input" accept="image/*">
+                        <input type="file" name="image" id="edit-image" class="form-control" accept="image/*">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -161,7 +265,6 @@
     </div>
 </div>
 
-
 <div class="modal fade" id="viewModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -170,26 +273,55 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div class="mb-3">
-                    <label class="fw-bold">Nome:</label>
-                    <span id="view-name"></span>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-bold">Nome:</label>
+                        <span id="view-name"></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-bold">Categoria:</label>
+                        <span id="view-category"></span>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label class="fw-bold">Categoria:</label>
-                    <span id="view-category"></span>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-bold">Preço Venda:</label>
+                        <span id="view-price"></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-bold">Custo:</label>
+                        <span id="view-cost"></span>
+                    </div>
                 </div>
-                <div class="mb-3">
-                    <label class="fw-bold">Preço:</label>
-                    <span id="view-price"></span>
+
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-bold">Quantidade Atual:</label>
+                        <span id="view-quantity"></span> <span id="view-unit" class="text-muted" style="font-size: 0.8em"></span>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label class="fw-bold">Cód. Barras:</label>
+                        <span id="view-barcode" class="text-muted"></span>
+                    </div>
                 </div>
+
+                <div class="row">
+                     <div class="col-md-6 mb-3">
+                        <label class="fw-bold">Mín. / Máx.:</label>
+                        <span id="view-minmax" class="text-muted"></span>
+                    </div>
+                     <div class="col-md-6 mb-3">
+                        <label class="fw-bold">Tags:</label>
+                        <span id="view-tags" class="text-muted"></span>
+                    </div>
+                </div>
+
                 <div class="mb-3">
                     <label class="fw-bold">Descrição:</label>
                     <p id="view-description" class="text-muted"></p>
                 </div>
-                <div class="mb-3">
-                    <label class="fw-bold">Quantidade:</label>
-                    <p id="view-quantity" class="text-muted"></p>
-                </div>
+                
                <div class="mb-3 text-center">
                     <label class="fw-bold d-block mb-2">Imagem do Produto:</label>
                     <img id="view-image" 
@@ -206,89 +338,154 @@
     </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // ==========================================
+    // 1. LÓGICA DE ALERTS E MODAIS
+    // ==========================================
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('sucess') === 'create') {
+        const alertContainer = document.getElementById('alert-container');
+        alertContainer.innerHTML = `
+            <div class="alert alert-success d-flex align-items-center" role="alert">
+                <svg width="20" height="20" fill="currentColor" class="bi flex-shrink-0 me-2" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>
+                <div style="font-size: 0.9rem;">Produto Cadastrado Com Sucesso!</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+    } else if (urlParams.get('sucess') === 'update') {
+        const alertContainer = document.getElementById('alert-container');
+        alertContainer.innerHTML = `
+            <div class="alert alert-success d-flex align-items-center" role="alert">
+                <svg width="20" height="20" fill="currentColor" class="bi flex-shrink-0 me-2" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>
+                <div style="font-size: 0.9rem;">Produto Atualizado Com Sucesso!</div>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        `;
+    }
 
-    <script>
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('sucess') === 'create') {
-            const alertContainer = document.getElementById('alert-container');
-            alertContainer.innerHTML = `
-                <div class="alert alert-success d-flex align-items-center" role="alert">
-                <svg width="20" height="20" fill="currentColor" class="bi flex-shrink-0 me-2" viewBox="0 0 16 16">
-                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
-                    </svg>
-                    <div style="font-size: 0.9rem;">Produto Cadastrado Com Sucesso!</div>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            `;
-        }
-        else if (urlParams.get('sucess') === 'update') {
-            const alertContainer = document.getElementById('alert-container');
-            alertContainer.innerHTML = `
-                <div class="alert alert-success d-flex align-items-center" role="alert">
-                <svg width="20" height="20" fill="currentColor" class="bi flex-shrink-0 me-2" viewBox="0 0 16 16">
-                        <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
-                    </svg>
-                    <div style="font-size: 0.9rem;">Produto Atualizado Com Sucesso!</div>
-                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-                </div>
-            `;
-        }
+    const editModal = document.getElementById('editModal');
+    if (editModal) {
+        editModal.addEventListener('show.bs.modal', event => {
+            const button = event.relatedTarget; 
+            const id = button.getAttribute('data-id');
+            
+            // Preenche os campos básicos
+            editModal.querySelector('#edit-name').value = button.getAttribute('data-name');
+            editModal.querySelector('#edit-category').value = button.getAttribute('data-category');
+            editModal.querySelector('#edit-price').value = button.getAttribute('data-price');
+            editModal.querySelector('#edit-description').value = button.getAttribute('data-description');
+            
+            // Preenche os novos campos
+            editModal.querySelector('#edit-cost').value = button.getAttribute('data-cost');
+            editModal.querySelector('#edit-barcode').value = button.getAttribute('data-barcode');
+            editModal.querySelector('#edit-unit').value = button.getAttribute('data-unit');
+            editModal.querySelector('#edit-min').value = button.getAttribute('data-min');
+            editModal.querySelector('#edit-max').value = button.getAttribute('data-max');
+            editModal.querySelector('#edit-tags').value = button.getAttribute('data-tags');
+            
+            editModal.querySelector('#editForm').action = `/dashboard/product/update/${id}`;
+        });
+    }
 
-        const editModal = document.getElementById('editModal');
-        if (editModal) {
-            editModal.addEventListener('show.bs.modal', event => {
-                const button = event.relatedTarget; // Botão que foi clicado
-                
-                // Pega os dados que guardamos no botão
-                const id = button.getAttribute('data-id');
-                const name = button.getAttribute('data-name');
-                const category = button.getAttribute('data-category');
-                const price = button.getAttribute('data-price');
-                const image_url = button.getAttribute('data-imagem');
-
-                // Preenche os inputs do Modal
-                editModal.querySelector('#edit-name').value = name;
-                editModal.querySelector('#edit-category').value = category;
-                editModal.querySelector('#edit-price').value = price;
-                
-                // Define para onde o formulário será enviado
-                editModal.querySelector('#editForm').action = `/dashboard/product/update/${id}`;
-            });
-        }
-
-        const viewModal = document.getElementById('viewModal');
-
-        if (viewModal) {
+    const viewModal = document.getElementById('viewModal');
+    if (viewModal) {
         viewModal.addEventListener('show.bs.modal', event => {
-            // 1. Identifica o botão que abriu o modal
             const btn = event.relatedTarget;
-            console.log("Modal aberto pelo botão do produto ID:", btn.getAttribute('data-id'));
-
-            // 2. Extrai os dados da "mochila" (data-attributes)
-            const name = btn.getAttribute('data-name');
-            const category = btn.getAttribute('data-category');
+            
+            // Campos básicos
+            viewModal.querySelector('#view-name').textContent = btn.getAttribute('data-name') || "Não informado";
+            viewModal.querySelector('#view-category').textContent = btn.getAttribute('data-category') || "Sem categoria";
             const price = btn.getAttribute('data-price');
-            const description = btn.getAttribute('data-description');
-            const quantity = btn.getAttribute('data-quantity');
-            const image = btn.getAttribute('data-image');
-
-            // 3. Preenche os campos de TEXTO (usando textContent)
-            viewModal.querySelector('#view-name').textContent = name || "Não informado";
-            viewModal.querySelector('#view-category').textContent = category || "Sem categoria";
             viewModal.querySelector('#view-price').textContent = price ? `R$ ${price}` : "Consulte";
-            viewModal.querySelector('#view-quantity').textContent = quantity || "Sem quantidade";
-            viewModal.querySelector('#view-description').textContent = description || "Nenhuma descrição disponível.";
+            viewModal.querySelector('#view-description').textContent = btn.getAttribute('data-description') || "Nenhuma descrição disponível.";
+            viewModal.querySelector('#view-quantity').textContent = btn.getAttribute('data-quantity') || "0";
+            
+            // Novos Campos
+            const cost = btn.getAttribute('data-cost');
+            viewModal.querySelector('#view-cost').textContent = cost ? `R$ ${cost}` : "Não inf.";
+            viewModal.querySelector('#view-barcode').textContent = btn.getAttribute('data-barcode') || "N/A";
+            viewModal.querySelector('#view-unit').textContent = `(${btn.getAttribute('data-unit') || 'UN'})`;
+            
+            const min = btn.getAttribute('data-min') || "0";
+            const max = btn.getAttribute('data-max') || "0";
+            viewModal.querySelector('#view-minmax').textContent = `${min} / ${max}`;
+            viewModal.querySelector('#view-tags').textContent = btn.getAttribute('data-tags') || "Nenhuma";
 
-            // 4. Trata a IMAGEM (usando o atributo .src)
+            // Imagem
+            const image = btn.getAttribute('data-image');
             const imgElement = viewModal.querySelector('#view-image');
             if (image && image !== "") {
                 imgElement.src = image;
-                imgElement.style.display = "block"; // Garante que ela apareça
+                imgElement.style.display = "block";
             } else {
                 imgElement.src = "https://placehold.co/400x300?text=Produto+Sem+Foto";
             }
         });
     }
-    </script>
+
+    // ==========================================
+    // 2. NOVA LÓGICA DE PESQUISA E PAGINAÇÃO
+    // ==========================================
+    document.addEventListener("DOMContentLoaded", function() {
+        const searchInput = document.getElementById("searchInput");
+        const allRows = Array.from(document.querySelectorAll(".product-row")); 
+        let filteredRows = [...allRows]; 
+        
+        let currentPage = 1;
+        const rowsPerPage = 10; 
+
+        const btnPrev = document.getElementById("prevPage");
+        const btnNext = document.getElementById("nextPage");
+        const pageIndicator = document.getElementById("pageIndicator");
+
+        function renderTable() {
+            allRows.forEach(row => row.style.display = "none");
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = startIndex + rowsPerPage;
+
+            const rowsToShow = filteredRows.slice(startIndex, endIndex);
+            rowsToShow.forEach(row => row.style.display = ""); 
+
+            const totalPages = Math.ceil(filteredRows.length / rowsPerPage) || 1;
+            pageIndicator.textContent = `Página ${currentPage} de ${totalPages}`;
+            
+            btnPrev.disabled = currentPage === 1;
+            btnNext.disabled = currentPage === totalPages;
+        }
+
+        if(searchInput) {
+            searchInput.addEventListener("input", function(e) {
+                const searchTerm = e.target.value.toLowerCase().trim();
+                filteredRows = allRows.filter(row => {
+                    const productName = row.getAttribute("data-name").toLowerCase();
+                    return productName.includes(searchTerm);
+                });
+                currentPage = 1;
+                renderTable();
+            });
+        }
+
+        if(btnPrev) {
+            btnPrev.addEventListener("click", () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderTable();
+                }
+            });
+        }
+
+        if(btnNext) {
+            btnNext.addEventListener("click", () => {
+                const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderTable();
+                }
+            });
+        }
+
+        renderTable();
+    });
+</script>

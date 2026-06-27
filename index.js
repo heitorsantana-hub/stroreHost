@@ -23,6 +23,13 @@ import { fileURLToPath } from "url";
 import SessionSale from "./src/controllers/SessionSale.js";
 import SessionDashboard from "./src/controllers/SessionDashboard.js";
 import SessionAIFeedback from "./src/controllers/SessionAIFeedback.js";
+import AiController from "./src/controllers/AiController.js";
+import ReportController from "./src/controllers/ReportController.js";
+
+// IMPORTANTE: Importando o Middleware de Permissões
+// (Certifique-se de que o caminho do arquivo esteja correto de acordo com o seu projeto)
+import { checkPermission } from "./src/middlewares/checkPermission.js";
+
 const app = express();
 const port = 8080;
 
@@ -43,14 +50,10 @@ app.engine(
     defaultLayout: "main",
 
     // Configuração de Formatação de Datas tabela
-    // Na configuração do seu app.engine('handlebars', ...)
     helpers: {
-      // ... seu helper firstLetter que já existe ...
-
       formatDate: function (date) {
         if (!date) return "Sem registro";
 
-        // Criamos um objeto de data e formatamos para o padrão Brasil
         return new Intl.DateTimeFormat("pt-BR", {
           day: "2-digit",
           month: "2-digit",
@@ -84,13 +87,10 @@ app.use(
 );
 
 // Multer para colocar imagem nos produtos
-
 const storage = multer.diskStorage({
-  // Define a pasta de destino
   destination: (req, file, cb) => {
     cb(null, path.resolve("public", "uploads"));
   },
-  // Gera um nome único para evitar ficheiros duplicados
   filename: (req, file, cb) => {
     crypto.randomBytes(16, (err, hash) => {
       if (err) cb(err);
@@ -102,40 +102,56 @@ const storage = multer.diskStorage({
 
 export const upload = multer({ storage });
 
-// Rotas
-app.get("/dashboard", SessionDashboard.index);
+// ==========================================
+// ROTAS DO DASHBOARD (COM MIDDLEWARE)
+// ==========================================
+
+// O middleware foi adicionado como o segundo parâmetro em todas as rotas protegidas
+app.get("/dashboard", checkPermission("dashboard"), SessionDashboard.index);
+
+// Rota para a IA (Note que é um GET, pois vamos chamar via Fetch no Front-end)
+app.get("/dashboard/ai-report", AiController.generateReport);
+
+// Rota para baixar o pdf da IA
+app.post("/dashboard/ai-report/download", AiController.downloadReport);
+
+// Rota de Relátorios
+app.get("/dashboard/reports", ReportController.getDashboardData);
+app.get("/dashboard/reports/csv", ReportController.exportCsv);
 
 // Sessão de Produtos
 app.post(
   "/dashboard/products/create",
+  checkPermission("products"),
   upload.single("image"),
   SessionProduct.store,
 );
 app.post(
   "/dashboard/product/update/:id",
+  checkPermission("products"),
   upload.single("image"),
   SessionProduct.update,
 );
-app.post("/dashboard/product/delete", SessionProduct.destroy);
+app.post(
+  "/dashboard/product/delete",
+  checkPermission("products"),
+  SessionProduct.destroy,
+);
 
-app.get("/dashboard/product", async (req, res) => {
-  // 1. Verifica se a pessoa está logada
+app.get("/dashboard/product", checkPermission("products"), async (req, res) => {
   if (!req.session.storeId) {
     return res.redirect("/login?error=session");
   }
 
   try {
-    // 2. Busca SÓ os produtos que pertencem à loja logada
-    // O .lean() é obrigatório para o Handlebars conseguir ler os dados!
     const meusProdutos = await Product.find({
       store_id: req.session.storeId,
     }).lean();
 
-    // 3. Envia a lista de produtos para o HTML
     res.render("product", {
       layout: "dashboard",
       produtos: meusProdutos,
-      storeName: req.session.storeName, // Enviando a variável para a view
+      storeName: req.session.storeName,
       activeProduct: true,
     });
   } catch (error) {
@@ -144,19 +160,27 @@ app.get("/dashboard/product", async (req, res) => {
   }
 });
 
-app.post("/dashboard/stock/update", SesssionStock.update);
-app.post("/dashboard/stock/update/:id", SesssionStock.update2);
+// Sessão de Estoque
+app.post(
+  "/dashboard/stock/update",
+  checkPermission("stock"),
+  SesssionStock.update,
+);
+app.post(
+  "/dashboard/stock/update/:id",
+  checkPermission("stock"),
+  SesssionStock.update,
+);
 
-app.get("/dashboard/stock", async (req, res) => {
+app.get("/dashboard/stock", checkPermission("stock"), async (req, res) => {
   if (!req.session.storeId) {
     return res.redirect("/login?error=session");
   }
 
   try {
-    // Procura de produto
     const meusProdutos = await Product.find({
       store_id: req.session.storeId,
-    }).lean(); // lean() o motivo é por causa do MongoDB
+    }).lean();
 
     res.render("stock", {
       layout: "dashboard",
@@ -170,57 +194,89 @@ app.get("/dashboard/stock", async (req, res) => {
   }
 });
 
-app.post("/dashboard/employee/post", SessionEmployee.store);
-app.post("/dashboard/employee/update/:id", SessionEmployee.update);
-app.post("/dashboard/employee/delete", SessionEmployee.destroy);
-app.post("/dashboard/employee/add/role", SessionRole.store);
+// Sessão de Funcionários
+app.post(
+  "/dashboard/employee/post",
+  checkPermission("employee"),
+  SessionEmployee.store,
+);
+app.post(
+  "/dashboard/employee/update/:id",
+  checkPermission("employee"),
+  SessionEmployee.update,
+);
+app.post(
+  "/dashboard/employee/delete",
+  checkPermission("employee"),
+  SessionEmployee.destroy,
+);
+app.post(
+  "/dashboard/employee/add/role",
+  checkPermission("employee"),
+  SessionRole.store,
+);
 
-app.get("/dashboard/employee", async (req, res) => {
+app.get(
+  "/dashboard/employee",
+  checkPermission("employee"),
+  async (req, res) => {
+    if (!req.session.storeId) {
+      return res.redirect("/login?error=session");
+    }
+
+    try {
+      const meusFuncionarios = await Employee.find({
+        store_id: req.session.storeId,
+      }).lean();
+
+      const meuCargo = await Role.find({
+        store_id: req.session.storeId,
+      }).lean();
+
+      res.render("employee", {
+        layout: "dashboard",
+        employees: meusFuncionarios,
+        storeName: req.session.storeName,
+        activeEmployee: true,
+        roles: meuCargo,
+      });
+    } catch (error) {
+      console.log("Erro ao buscar os produtos: ", error);
+      res.send("Erro ao carregar a página");
+    }
+  },
+);
+
+// Sessão de Vendas
+app.post(
+  "/dashboard/sales/create",
+  checkPermission("sales"),
+  SessionSale.store,
+);
+app.post(
+  "/dashboard/sales/delete",
+  checkPermission("sales"),
+  SessionSale.destroy,
+);
+app.post(
+  "/dashboard/sales/update/:id",
+  checkPermission("sales"),
+  SessionSale.update,
+);
+
+app.get("/dashboard/sales", checkPermission("sales"), async (req, res) => {
   if (!req.session.storeId) {
     return res.redirect("/login?error=session");
   }
 
   try {
-    // Procura de funcionario
-    const meusFuncionarios = await Employee.find({
-      store_id: req.session.storeId,
-    }).lean(); // lean() o motivo é por causa do MongoDB
-
-    const meuCargo = await Role.find({
+    const meusProdutos = await Product.find({
       store_id: req.session.storeId,
     }).lean();
 
-    res.render("employee", {
-      layout: "dashboard",
-      employees: meusFuncionarios,
-      storeName: req.session.storeName,
-      activeEmployee: true,
-      roles: meuCargo,
-    });
-  } catch (error) {
-    console.log("Erro ao buscar os produtos: ", error);
-    res.send("Erro ao carregar a página");
-  }
-});
-
-app.post("/dashboard/sales/create", SessionSale.store);
-app.post("/dashboard/sales/delete", SessionSale.destroy);
-app.post("/dashboard/sales/update/:id", SessionSale.update);
-
-app.get("/dashboard/sales", async (req, res) => {
-  if (!req.session.storeId) {
-    return res.redirect("/login?error=session");
-  }
-
-  try {
-    // Procura de produto
-    const meusProdutos = await Product.find({
-      store_id: req.session.storeId,
-    }).lean(); // lean() o motivo é por causa do MngoDB
-
     const minhasVenda = await Sale.find({
       store_id: req.session.storeId,
-    }).lean(); // lean() o motivo é por causa do MngoDB
+    }).lean();
 
     res.render("sale", {
       layout: "dashboard",
@@ -235,41 +291,75 @@ app.get("/dashboard/sales", async (req, res) => {
   }
 });
 
-// Rotas da página do Financeiro
-
-app.get("/dashboard/finance", SessionFinance.index);
-app.post("/dashboard/finance/delete", SessionFinance.destroy);
-app.post("/dashboard/finance/update/:id", SessionFinance.update);
-app.post("/dashboard/finance/create", SessionFinance.store);
+// Rotas do Financeiro
+app.get("/dashboard/finance", checkPermission("finance"), SessionFinance.index);
+app.post(
+  "/dashboard/finance/delete",
+  checkPermission("finance"),
+  SessionFinance.destroy,
+);
+app.post(
+  "/dashboard/finance/update/:id",
+  checkPermission("finance"),
+  SessionFinance.update,
+);
+app.post(
+  "/dashboard/finance/create",
+  checkPermission("finance"),
+  SessionFinance.store,
+);
 
 // ==========================================
-// ROTAS DE AGENDAMENTO (ESTILO APPLE CALENDAR)
+// ROTAS DE AGENDAMENTO
 // ==========================================
-app.get("/dashboard/scheduling", async (req, res) => {
-  if (!req.session.storeId) return res.redirect("/login?error=session");
-  return SessionScheduling.index(req, res);
-});
+app.get(
+  "/dashboard/scheduling",
+  checkPermission("appointments"),
+  async (req, res) => {
+    if (!req.session.storeId) return res.redirect("/login?error=session");
+    return SessionScheduling.index(req, res);
+  },
+);
 
-app.post("/dashboard/scheduling/create", async (req, res) => {
-  if (!req.session.storeId) return res.status(401).send("Sessão expirada.");
-  return SessionScheduling.create(req, res);
-});
+app.post(
+  "/dashboard/scheduling/create",
+  checkPermission("appointments"),
+  async (req, res) => {
+    if (!req.session.storeId) return res.status(401).send("Sessão expirada.");
+    return SessionScheduling.create(req, res);
+  },
+);
 
-app.post("/dashboard/scheduling/update/:id", async (req, res) => {
-  if (!req.session.storeId) return res.status(401).send("Sessão expirada.");
-  return SessionScheduling.update(req, res);
-});
+app.post(
+  "/dashboard/scheduling/update/:id",
+  checkPermission("appointments"),
+  async (req, res) => {
+    if (!req.session.storeId) return res.status(401).send("Sessão expirada.");
+    return SessionScheduling.update(req, res);
+  },
+);
 
-app.post("/dashboard/scheduling/delete", async (req, res) => {
-  if (!req.session.storeId) return res.status(401).send("Sessão expirada.");
-  return SessionScheduling.delete(req, res);
-});
+app.post(
+  "/dashboard/scheduling/delete",
+  checkPermission("appointments"),
+  async (req, res) => {
+    if (!req.session.storeId) return res.status(401).send("Sessão expirada.");
+    return SessionScheduling.delete(req, res);
+  },
+);
 
-// Adicione isso no seu arquivo de rotas do Node.js/Express
+// Feedback AI (Geralmente no Dashboard, então vamos exigir acesso básico ao dashboard)
+app.post(
+  "/api/ai-feedback",
+  checkPermission("dashboard"),
+  SessionAIFeedback.postChat,
+);
 
-app.post("/api/ai-feedback", SessionAIFeedback.postChat);
+// ==========================================
+// ROTAS PÚBLICAS (NÃO PRECISAM DE PERMISSÃO)
+// ==========================================
 
-//Página de Loging
+// Página de Login
 app.post("/login/post", SessionLogin.store);
 
 app.get("/login", (req, res) => {
@@ -293,4 +383,6 @@ app.get("/", (req, res) => {
   });
 });
 
-export default app;
+app.listen(port, (req, res) => {
+  console.log("servidor rodando na porta " + port);
+});

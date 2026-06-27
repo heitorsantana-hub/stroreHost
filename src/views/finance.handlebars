@@ -31,67 +31,86 @@
     <div class="main-grid">
         
         <section class="data-card">
-           <div class="table-container">
-    <table class="custom-table">
-            <thead>
-                <tr>
-                    <th>Data</th>
-                    <th>Descrição</th>
-                    <th>Categoria</th>
-                    <th>Tipo</th>
-                    <th>Valor</th>
-                    <th class="text-center">Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                {{#each transacoes}}
-                    <tr>
-                        <td style="color: var(--text-muted); font-size: 0.85rem;">{{this.data_formatada}}</td>
-                        <td><strong>{{this.description}}</strong></td>
-                        <td>{{this.category}}</td>
-                        <td>
-                            {{#if this.isIncome}}
-                                <span class="badge-status" style="background: #DCFCE7; color: #166534;">Entrada</span>
-                            {{else}}
-                                <span class="badge-status" style="background: #FEE2E2; color: #B91C1C;">Saída</span>
-                            {{/if}}
-                        </td>
-                        <td>
-                            <strong style="color: {{#if this.isIncome}}var(--success){{else}}var(--danger){{/if}};">
-                                R$ {{this.amount}}
-                            </strong>
-                        </td>
-                        <td>
-                            <div class="d-flex justify-content-center gap-2">
-                                <button class="btn btn-outline btn-sm" data-bs-toggle="modal" data-bs-target="#viewFinanceModal"
-                                    data-id="{{this._id}}" data-description="{{this.description}}" data-category="{{this.category}}"
-                                    data-amount="{{this.amount}}" data-type="{{#if this.isIncome}}Entrada{{else}}Saída{{/if}}" data-date="{{this.data_formatada}}">
-                                    Ver
-                                </button>
+            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+                <h2 class="m-0">Histórico de Transações</h2>
+                <div class="search-box" style="flex: 1; max-width: 300px;">
+                    <input type="text" id="searchInput" class="form-control" placeholder="🔍 Buscar descrição ou categoria...">
+                </div>
+            </div>
 
-                                <button class="btn btn-outline btn-sm" data-bs-toggle="modal" data-bs-target="#editFinanceModal"
-                                    data-id="{{this._id}}" data-description="{{this.description}}" data-category="{{this.category}}"
-                                    data-amount="{{this.amount}}" data-type="{{#if this.isIncome}}income{{else}}expense{{/if}}">
-                                    Editar
-                                </button>
+            <div class="table-container">
+                <table class="custom-table" id="financeTable">
+                    <thead>
+                        <tr>
+                            <th>Data</th>
+                            <th>Descrição</th>
+                            <th>Categoria</th>
+                            <th>Tipo</th>
+                            <th>Valor</th>
+                            <th class="text-center">Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody">
+                        {{#each transacoes}}
+                            <tr class="finance-row" data-search="{{this.description}} {{this.category}} {{#if this.isIncome}}entrada receita{{else}}saída despesa{{/if}}">
+                                <td style="color: var(--text-muted); font-size: 0.85rem;">{{this.data_formatada}}</td>
+                                <td><strong>{{this.description}}</strong></td>
+                                <td>{{this.category}}</td>
+                                <td>
+                                    {{#if this.isIncome}}
+                                        <span class="badge-status" style="background: #DCFCE7; color: #166534;">Entrada</span>
+                                    {{else}}
+                                        <span class="badge-status" style="background: #FEE2E2; color: #B91C1C;">Saída</span>
+                                    {{/if}}
+                                </td>
+                                <td>
+                                    <strong style="color: {{#if this.isIncome}}var(--success){{else}}var(--danger){{/if}};">
+                                        R$ {{this.amount}}
+                                    </strong>
+                                </td>
+                                <td>
+                                    <div class="d-flex justify-content-center align-items-center gap-2">
+                                        <button class="btn btn-outline btn-sm" data-bs-toggle="modal" data-bs-target="#viewFinanceModal"
+                                            data-id="{{this._id}}" data-description="{{this.description}}" data-category="{{this.category}}"
+                                            data-amount="{{this.amount}}" data-type="{{#if this.isIncome}}Entrada{{else}}Saída{{/if}}" data-date="{{this.data_formatada}}">
+                                            <i class="bi bi-eye"></i> Ver
+                                        </button>
 
-                                <form action="/dashboard/finance/delete" method="POST" onsubmit="return confirm('Excluir este lançamento?')">
-                                    <input type="hidden" name="transaction_id" value="{{this._id}}">
-                                    <button type="submit" class="btn btn-danger btn-sm">Remover</button>
-                                </form>
-                            </div>
-                        </td>
-                    </tr>
-                {{else}}
-                    <tr>
-                        <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">
-                            Nenhuma transação registrada ainda.
-                        </td>
-                    </tr>
-                {{/each}}
-            </tbody>
-        </table>    
-    </div>
+                                        <button class="btn btn-outline btn-sm" data-bs-toggle="modal" data-bs-target="#editFinanceModal"
+                                            data-id="{{this._id}}" data-description="{{this.description}}" data-category="{{this.category}}"
+                                            data-amount="{{this.amount}}" data-type="{{#if this.isIncome}}income{{else}}expense{{/if}}">
+                                            Editar
+                                        </button>
+
+                                        <form action="/dashboard/finance/delete" method="POST" onsubmit="return confirm('Excluir este lançamento?')" class="m-0">
+                                            <input type="hidden" name="transaction_id" value="{{this._id}}">
+                                            <button type="submit" class="btn btn-danger btn-sm">
+                                                <i class="bi bi-trash"></i>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {{else}}
+                            <tr id="emptyRow">
+                                <td colspan="6" style="text-align: center; padding: 2rem; color: var(--text-muted);">
+                                    Nenhuma transação registrada ainda.
+                                </td>
+                            </tr>
+                        {{/each}}
+                    </tbody>
+                </table>    
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center mt-3 p-2" id="paginationControls">
+                <button class="btn btn-outline-secondary btn-sm" id="prevPage" disabled>
+                    <i class="bi bi-chevron-left"></i> Anterior
+                </button>
+                <span id="pageIndicator" class="text-muted" style="font-size: 0.9rem;">Página 1</span>
+                <button class="btn btn-outline-secondary btn-sm" id="nextPage">
+                    Próxima <i class="bi bi-chevron-right"></i>
+                </button>
+            </div>
         </section>
 
         <section class="data-card">
@@ -104,7 +123,7 @@
 
             <form action="/dashboard/finance/create" method="post">
                 
-                <div class="form-group">
+                <div class="form-group mb-3">
                     <label>Tipo de Lançamento</label>
                     <select name="type" class="form-input" required>
                         <option value="income">Entrada (Receita)</option>
@@ -112,17 +131,17 @@
                     </select>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group mb-3">
                     <label>Descrição</label>
                     <input type="text" name="description" placeholder="Ex: Conta de Luz, Venda Externa..." class="form-input" required>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group mb-3">
                     <label>Categoria</label>
                     <input type="text" name="category" placeholder="Ex: Contas Fixas, Serviços..." class="form-input" required>
                 </div>
 
-                <div class="form-group">
+                <div class="form-group mb-3">
                     <label>Valor (R$)</label>
                     <input type="number" step="0.01" name="amount" placeholder="0.00" class="form-input" required>
                 </div>
@@ -162,6 +181,9 @@
                     <label class="fw-bold">Data:</label>
                     <span id="view-fin-date"></span>
                 </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
             </div>
         </div>
     </div>
@@ -206,10 +228,12 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-
+    // ==========================================
+    // 1. LÓGICA DE ALERTS E MODAIS (Original mantido)
+    // ==========================================
     const urlParams = new URLSearchParams(window.location.search);
     const alertContainer = document.getElementById('alert-container');
 
@@ -220,9 +244,12 @@
                 <div>Lançamento Cadastrado Com Sucesso!</div>
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>`;
-    } 
+    } else if (urlParams.get('sucess') === 'update') {
+        alertContainer.innerHTML = `<div class="alert alert-success alert-dismissible fade show">Lançamento atualizado! <button class="btn-close" data-bs-dismiss="alert"></button></div>`;
+    } else if (urlParams.get('sucess') === 'delete') {
+        alertContainer.innerHTML = `<div class="alert alert-warning alert-dismissible fade show">Lançamento removido com sucesso. <button class="btn-close" data-bs-dismiss="alert"></button></div>`;
+    }
 
-    // Lógica para o Modal de Visualização
     const viewFinModal = document.getElementById('viewFinanceModal');
     if (viewFinModal) {
         viewFinModal.addEventListener('show.bs.modal', event => {
@@ -235,7 +262,6 @@
         });
     }
 
-    // Lógica para o Modal de Edição
     const editFinModal = document.getElementById('editFinanceModal');
     if (editFinModal) {
         editFinModal.addEventListener('show.bs.modal', event => {
@@ -247,18 +273,13 @@
             editFinModal.querySelector('#edit-fin-cat').value = btn.getAttribute('data-category');
             editFinModal.querySelector('#edit-fin-amount').value = btn.getAttribute('data-amount');
 
-            // Define a rota de atualização dinamicamente
             editFinModal.querySelector('#editFinanceForm').action = `/dashboard/finance/update/${id}`;
         });
     }
 
-    // Tratamento de Alertas Extras (Update e Delete)
-    if (urlParams.get('sucess') === 'update') {
-        alertContainer.innerHTML = `<div class="alert alert-success alert-dismissible fade show">Lançamento atualizado! <button class="btn-close" data-bs-dismiss="alert"></button></div>`;
-    } else if (urlParams.get('sucess') === 'delete') {
-        alertContainer.innerHTML = `<div class="alert alert-warning alert-dismissible fade show">Lançamento removido com sucesso. <button class="btn-close" data-bs-dismiss="alert"></button></div>`;
-    }
-
+    // ==========================================
+    // 2. LÓGICA DOS GRÁFICOS (Original mantido)
+    // ==========================================
     const labelsEntradas = {{{ labelsEntradas }}};
     const dadosEntradas = {{{ dadosEntradas }}};
     
@@ -271,18 +292,15 @@
     const chartOptions = {
         responsive: true,
         maintainAspectRatio: false,
-        plugins: {
-            legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
-        }
+        plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } }
     };
 
-    // 1. Gráfico de Entradas (Receitas Dinâmicas)
     new Chart(document.getElementById('chartEntradas'), {
         type: 'doughnut',
         data: {
             labels: labelsEntradas.length > 0 ? labelsEntradas : ['Sem Dados'],
             datasets: [{
-                data: dadosEntradas.length > 0 ? dadosEntradas : [1], // Se não tiver nada, mostra 1 pedaço cinza
+                data: dadosEntradas.length > 0 ? dadosEntradas : [1], 
                 backgroundColor: dadosEntradas.length > 0 ? ['#10B981', '#34D399', '#A7F3D0', '#059669', '#6EE7B7'] : ['#E2E8F0'],
                 borderWidth: 0
             }]
@@ -290,7 +308,6 @@
         options: chartOptions
     });
 
-    // 2. Gráfico de Saídas (Despesas Dinâmicas)
     new Chart(document.getElementById('chartSaidas'), {
         type: 'doughnut',
         data: {
@@ -304,7 +321,6 @@
         options: chartOptions
     });
 
-    // 3. Gráfico Resumo (Entradas x Saídas Dinâmico)
     new Chart(document.getElementById('chartResumo'), {
         type: 'pie',
         data: {
@@ -317,5 +333,71 @@
         },
         options: chartOptions
     });
-    
+
+    // ==========================================
+    // 3. NOVA LÓGICA DE PESQUISA E PAGINAÇÃO
+    // ==========================================
+    document.addEventListener("DOMContentLoaded", function() {
+        const searchInput = document.getElementById("searchInput");
+        const allRows = Array.from(document.querySelectorAll(".finance-row")); 
+        let filteredRows = [...allRows]; 
+        
+        let currentPage = 1;
+        const rowsPerPage = 10; 
+
+        const btnPrev = document.getElementById("prevPage");
+        const btnNext = document.getElementById("nextPage");
+        const pageIndicator = document.getElementById("pageIndicator");
+
+        function renderTable() {
+            allRows.forEach(row => row.style.display = "none");
+            
+            const startIndex = (currentPage - 1) * rowsPerPage;
+            const endIndex = startIndex + rowsPerPage;
+
+            const rowsToShow = filteredRows.slice(startIndex, endIndex);
+            rowsToShow.forEach(row => row.style.display = ""); 
+
+            const totalPages = Math.ceil(filteredRows.length / rowsPerPage) || 1;
+            if(pageIndicator) pageIndicator.textContent = `Página ${currentPage} de ${totalPages}`;
+            
+            if(btnPrev) btnPrev.disabled = currentPage === 1;
+            if(btnNext) btnNext.disabled = currentPage === totalPages;
+        }
+
+        if(searchInput) {
+            searchInput.addEventListener("input", function(e) {
+                const searchTerm = e.target.value.toLowerCase().trim();
+                
+                filteredRows = allRows.filter(row => {
+                    const searchData = row.getAttribute("data-search").toLowerCase();
+                    return searchData.includes(searchTerm);
+                });
+                
+                currentPage = 1;
+                renderTable();
+            });
+        }
+
+        if(btnPrev) {
+            btnPrev.addEventListener("click", () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderTable();
+                }
+            });
+        }
+
+        if(btnNext) {
+            btnNext.addEventListener("click", () => {
+                const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderTable();
+                }
+            });
+        }
+
+        renderTable();
+    });
 </script>
