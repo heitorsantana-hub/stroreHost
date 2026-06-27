@@ -383,6 +383,4 @@ app.get("/", (req, res) => {
   });
 });
 
-app.listen(port, (req, res) => {
-  console.log("servidor rodando na porta " + port);
-});
+export default app;
