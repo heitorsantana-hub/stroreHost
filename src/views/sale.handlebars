@@ -9,8 +9,20 @@
         <section class="data-card">
             <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
                 <h2>Últimas Vendas</h2>
-                <div class="search-box" style="flex: 1; max-width: 300px;">
-                    <input type="text" id="searchInput" class="form-control" placeholder="🔍 Pesquisar por produto ou recibo...">
+                
+                <div style="flex: 1; max-width: 320px;">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white border-end-0 text-muted" style="border-radius: 10px 0 0 10px;">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" id="searchInput" class="form-control border-start-0 border-end-0 ps-0" placeholder="Pesquisar produto ou data..." style="font-size: 0.9rem; outline: none; box-shadow: none;">
+                        <button class="btn btn-outline-secondary bg-white border-start-0 text-primary" type="button" id="btn-voz-pdv" title="Pesquisar por voz" style="border-radius: 0 10px 10px 0; border: 1px solid #dee2e6;">
+                            <i class="bi bi-mic-fill" id="icone-microfone"></i>
+                        </button>
+                    </div>
+                    <div id="status-voz" class="form-text text-danger d-none ps-2 pt-1" style="font-size: 0.8rem; font-weight: 500;">
+                        <span class="spinner-grow spinner-grow-sm" role="status"></span> Ouvindo o operador...
+                    </div>
                 </div>
             </div>
             
@@ -18,7 +30,7 @@
                 <table class="custom-table" id="salesTable">
                     <thead>
                         <tr>
-                            <th>Recibo</th>
+                            <th>Data</th>
                             <th>Produto</th>
                             <th>Qtd.</th>
                             <th>Total</th>
@@ -29,8 +41,8 @@
                     </thead>
                     <tbody id="tableBody">
                         {{#each vendas}}
-                            <tr class="sale-row" data-search="{{this._id}} {{this.product_name}}">
-                                <td><span style="color: var(--text-muted); font-size: 0.85rem;">#{{this._id}}</span></td>
+                            <tr class="sale-row" data-search="{{this._id}} {{this.product_name}} {{formatDate this.createdAt}}">
+                                <td><span style="font-size: 0.9rem; color: var(--text-main);">{{formatDate this.createdAt}}</span></td>
                                 <td><strong>{{this.product_name}}</strong></td>
                                 <td>{{this.quantity}}x</td>
                                 <td><strong class="text-success">R$ {{this.total_price}}</strong></td>
@@ -38,6 +50,16 @@
                                 <td><span class="badge-status status-active">Concluída</span></td>
                                 <td>
                                     <div class="d-flex justify-content-center align-items-center gap-2">
+                                        <!-- NOVO: Botão de WhatsApp para reenviar comprovante histórico se necessário -->
+                                        <button class="btn btn-success btn-sm btn-wpp-share" 
+                                            title="Enviar por WhatsApp"
+                                            data-product="{{this.product_name}}"
+                                            data-quantity="{{this.quantity}}"
+                                            data-total="{{this.total_price}}"
+                                            data-payment="{{this.payment_method}}">
+                                            <i class="bi bi-whatsapp"></i>
+                                        </button>
+
                                         <button class="btn btn-outline btn-sm" 
                                             title="Ajustar Venda"
                                             data-bs-toggle="modal" 
@@ -86,13 +108,14 @@
             </div>
             <div id="alert-container"></div>
 
-            <form action="/dashboard/sales/create" method="post">
+            <!-- MODIFICADO: Adicionado id para interceptação JavaScript -->
+            <form action="/dashboard/sales/create" method="post" id="novaVendaForm">
                 <div class="form-group mb-3">
                     <label>Produto</label>
-                    <select name="product_id" class="form-input" required>
+                    <select name="product_id" id="form-select-product" class="form-input" required>
                         <option value="">Selecione um produto...</option>
                         {{#each produtos}}
-                            <option value="{{this._id}}">
+                            <option value="{{this._id}}" data-name="{{this.name}}" data-price="{{this.price}}">
                                 {{this.name}} - R$ {{this.price}} (Estoque: {{this.current_stock}} {{this.unit_of_measure}})
                             </option>
                         {{/each}}
@@ -102,11 +125,11 @@
                 <div class="row mb-3">
                     <div class="col-md-6 form-group">
                         <label>Quantidade</label>
-                        <input type="number" name="quantity" min="0.001" step="0.001" class="form-input" required>
+                        <input type="number" name="quantity" id="form-input-quantity" min="0.001" step="0.001" class="form-input" required>
                     </div>
                     <div class="col-md-6 form-group">
                         <label>Pagamento</label>
-                        <select name="payment_method" class="form-input" required>
+                        <select name="payment_method" id="form-select-payment" class="form-input" required>
                             <option value="Pix">Pix</option>
                             <option value="Cartão de Crédito">Cartão de Crédito</option>
                             <option value="Cartão de Débito">Cartão de Débito</option>
@@ -168,9 +191,6 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
-    // ==========================================
-    // 1. LÓGICA DE ALERTS E MODAIS (Seu código base)
-    // ==========================================
     const urlParams = new URLSearchParams(window.location.search);
     const alertContainer = document.getElementById('alert-container');
 
@@ -214,9 +234,6 @@
         });
     }
 
-    // ==========================================
-    // 2. LÓGICA DE PESQUISA E PAGINAÇÃO 
-    // ==========================================
     document.addEventListener("DOMContentLoaded", function() {
         const searchInput = document.getElementById("searchInput");
         const allRows = Array.from(document.querySelectorAll(".sale-row")); 
@@ -228,6 +245,10 @@
         const btnPrev = document.getElementById("prevPage");
         const btnNext = document.getElementById("nextPage");
         const pageIndicator = document.getElementById("pageIndicator");
+
+        const btnVoz = document.getElementById("btn-voz-pdv");
+        const statusVoz = document.getElementById("status-voz");
+        const iconeMic = document.getElementById("icone-microfone");
 
         function renderTable() {
             allRows.forEach(row => row.style.display = "none");
@@ -245,41 +266,150 @@
             btnNext.disabled = currentPage === totalPages;
         }
 
+        function executarFiltro(termo) {
+            const searchTerm = termo.toLowerCase().trim();
+            
+            filteredRows = allRows.filter(row => {
+                const searchData = row.getAttribute("data-search").toLowerCase();
+                return searchData.includes(searchTerm);
+            });
+            
+            currentPage = 1;
+            renderTable();
+        }
+
         if(searchInput) {
             searchInput.addEventListener("input", function(e) {
-                const searchTerm = e.target.value.toLowerCase().trim();
-                
-                // Pesquisa tanto pelo ID (Recibo) quanto pelo Nome do Produto
-                filteredRows = allRows.filter(row => {
-                    const searchData = row.getAttribute("data-search").toLowerCase();
-                    return searchData.includes(searchTerm);
+                executarFiltro(e.target.value);
+            });
+        }
+
+        // 🎙️ WEB SPEECH API
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (SpeechRecognition) {
+            const recognition = new SpeechRecognition();
+            recognition.lang = "pt-BR";
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            if (btnVoz) {
+                btnVoz.addEventListener("click", () => {
+                    try { recognition.start(); } catch (err) { console.warn("Reconhecimento já ativo."); }
                 });
+            }
+
+            recognition.onstart = () => {
+                statusVoz.classList.remove("d-none");
+                iconeMic.className = "bi bi-record-circle-fill text-danger";
+                btnVoz.style.borderColor = "#dc3545";
+            };
+
+            recognition.onend = () => {
+                statusVoz.classList.add("d-none");
+                iconeMic.className = "bi bi-mic-fill text-primary";
+                btnVoz.style.borderColor = "#dee2e6";
+            };
+
+            recognition.onresult = (event) => {
+                const textoFalado = event.results[0][0].transcript;
+                const textoLimpo = textoFalado.replace(/\.$/g, ''); 
+                searchInput.value = textoLimpo;
+                executarFiltro(textoLimpo); 
+            };
+        }
+
+        // ==========================================
+// 🚀 LÓGICA DO WHATSAPP (VERSÃO COM SÍMBOLOS UNIVERSAIS)
+// ==========================================
+
+function dispararWhatsApp(telefone, dados) {
+    // Remove caracteres não numéricos do telefone
+    const numLimpo = telefone.replace(/\D/g, "");
+    const DDI = numLimpo.length <= 11 ? "55" : ""; // Adiciona DDI Brasil se o lojista não digitar
+    
+    // Símbolos de texto geométricos universais (Zero bugs de codificação)
+    const simboLoja      = "[+]";
+    const simboProduto   = "->";
+    const simboQtd       = "#";
+    const simboPagamento = "($)";
+    const simboTotal     = "[R$]";
+    const simboSucesso   = "(*)";
+
+    const mensagem = simboLoja + " *COMPROVANTE DE COMPRA* \n\n" +
+                     simboProduto + " *Produto:* " + dados.produto + "\n" +
+                     simboQtd + " *Quantidade:* " + dados.quantidade + "\n" +
+                     simboPagamento + " *Forma de Pagamento:* " + dados.pagamento + "\n" +
+                     simboTotal + " *Valor Total:* R$ " + dados.total + "\n\n" +
+                     "Obrigado pela preferência! Volte sempre. " + simboSucesso;
+
+    // Concatenação limpa e segura para a URL do WhatsApp
+    const urlWpp = "https://wa.me/" + DDI + numLimpo + "?text=" + encodeURIComponent(mensagem);
+    window.open(urlWpp, "_blank");
+}
+
+
+        // Fluxo 1: Captura o clique de envio nas linhas da tabela (Histórico)
+        document.querySelectorAll(".btn-wpp-share").forEach(botao => {
+            botao.addEventListener("click", function() {
+                const dadosVenda = {
+                    produto: this.getAttribute("data-product"),
+                    quantidade: this.getAttribute("data-quantity"),
+                    total: this.getAttribute("data-total"),
+                    pagamento: this.getAttribute("data-payment")
+                };
+
+                const telefoneCliente = prompt("Digite o WhatsApp do cliente com o DDD (Ex: 71999999999):");
+                if (telefoneCliente) {
+                    dispararWhatsApp(telefoneCliente, dadosVenda);
+                }
+            });
+        });
+
+        // Fluxo 2: Intercepta o formulário de NOVA VENDA para disparar o WhatsApp ANTES de salvar
+        const formNovaVenda = document.getElementById("novaVendaForm");
+        if (formNovaVenda) {
+            formNovaVenda.addEventListener("submit", function(e) {
+                // Previne temporariamente para processarmos o alert/prompt do número
+                e.preventDefault();
+
+                const selectProduto = document.getElementById("form-select-product");
+                const opcaoSelecionada = selectProduto.options[selectProduto.selectedIndex];
                 
-                currentPage = 1;
-                renderTable();
+                const produtoNome = opcaoSelecionada.getAttribute("data-name");
+                const produtoPreco = parseFloat(opcaoSelecionada.getAttribute("data-price"));
+                const qtd = parseFloat(document.getElementById("form-input-quantity").value);
+                const pagamento = document.getElementById("form-select-payment").value;
+                const totalCalculado = (produtoPreco * qtd).toFixed(2);
+
+                const telefoneCliente = prompt("Venda confirmada! Deseja enviar o recibo por WhatsApp?\n\nDigite o número com o DDD ou clique em 'Cancelar' para salvar sem enviar:");
+                
+                if (telefoneCliente && telefoneCliente.trim() !== "") {
+                    dispararWhatsApp(telefoneCliente, {
+                        produto: produtoNome,
+                        quantidade: qtd,
+                        total: totalCalculado,
+                        pagamento: pagamento
+                    });
+                }
+
+                // Após processar o fluxo do WhatsApp, envia o formulário de verdade para persistir no MongoDB
+                formNovaVenda.submit();
             });
         }
 
         if(btnPrev) {
             btnPrev.addEventListener("click", () => {
-                if (currentPage > 1) {
-                    currentPage--;
-                    renderTable();
-                }
+                if (currentPage > 1) { currentPage--; renderTable(); }
             });
         }
 
         if(btnNext) {
             btnNext.addEventListener("click", () => {
                 const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
-                if (currentPage < totalPages) {
-                    currentPage++;
-                    renderTable();
-                }
+                if (currentPage < totalPages) { currentPage++; renderTable(); }
             });
         }
 
-        // Renderiza inicial
         renderTable();
     });
 </script>

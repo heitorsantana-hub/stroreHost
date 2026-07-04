@@ -7,6 +7,12 @@ const StoreSchema = new Schema({
   address: String,
   phone: String,
   cnpj: String,
+  // NOVO: Campo de cor para o White-Label Dinâmico
+  primaryColor: {
+    type: String,
+    default: "#2563EB", // Azul padrão do StoreHost
+  },
+  logoUrl: { type: String, default: "" },
 });
 
-export default model("Store", StoreSchema); //Primeiro argumento nome do Model, Segundo Argumento esquema do Model
+export default model("Store", StoreSchema);

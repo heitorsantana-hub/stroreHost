@@ -82,9 +82,28 @@ app.use(
   session({
     secret: "chave-secreta-do-storehost",
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true,
   }),
 );
+
+app.use(async (req, res, next) => {
+  if (req.session && req.session.storeId) {
+    try {
+      const Store = (await import("./src/models/Store.js")).default;
+      const loja = await Store.findById(req.session.storeId).lean();
+
+      if (loja) {
+        // Força a injeção global idêntica para TODOS os controladores
+        res.locals.storeName = loja.name || "Minha Loja";
+        res.locals.storeColor = loja.primaryColor || "#2563EB";
+        res.locals.storeLogo = loja.logoUrl || "";
+      }
+    } catch (err) {
+      console.error("Erro no middleware global:", err);
+    }
+  }
+  next();
+});
 
 // Multer para colocar imagem nos produtos
 const storage = multer.diskStorage({
@@ -108,6 +127,13 @@ export const upload = multer({ storage });
 
 // O middleware foi adicionado como o segundo parâmetro em todas as rotas protegidas
 app.get("/dashboard", checkPermission("dashboard"), SessionDashboard.index);
+
+// Rota para configuração de personalização do sistema
+app.post(
+  "/dashboard/settings",
+  upload.single("logo"),
+  SessionDashboard.updateSettings,
+);
 
 // Rota para a IA (Note que é um GET, pois vamos chamar via Fetch no Front-end)
 app.get("/dashboard/ai-report", AiController.generateReport);
@@ -151,7 +177,6 @@ app.get("/dashboard/product", checkPermission("products"), async (req, res) => {
     res.render("product", {
       layout: "dashboard",
       produtos: meusProdutos,
-      storeName: req.session.storeName,
       activeProduct: true,
     });
   } catch (error) {
@@ -185,7 +210,6 @@ app.get("/dashboard/stock", checkPermission("stock"), async (req, res) => {
     res.render("stock", {
       layout: "dashboard",
       produtos: meusProdutos,
-      storeName: req.session.storeName,
       activeStock: true,
     });
   } catch (error) {
@@ -236,7 +260,6 @@ app.get(
       res.render("employee", {
         layout: "dashboard",
         employees: meusFuncionarios,
-        storeName: req.session.storeName,
         activeEmployee: true,
         roles: meuCargo,
       });
@@ -282,7 +305,6 @@ app.get("/dashboard/sales", checkPermission("sales"), async (req, res) => {
       layout: "dashboard",
       produtos: meusProdutos,
       vendas: minhasVenda,
-      storeName: req.session.storeName,
       activeSales: true,
     });
   } catch (error) {
@@ -383,4 +405,6 @@ app.get("/", (req, res) => {
   });
 });
 
-export default app;
+app.listen(port, (req, res) => {
+  console.log("Servidor Rodando");
+});

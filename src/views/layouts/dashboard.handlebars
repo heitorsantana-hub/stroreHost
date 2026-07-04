@@ -13,10 +13,17 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
-    <link rel="stylesheet" href="/css/dashboard.css">
+    
     
     <style>
         /* Estilos do Chat Flutuante (Otimizados) */
+
+        
+        :root {
+            /* Se a variável storeColor vier do banco, usa ela. Se não vier, usa o azul padrão */
+            --theme-primary: {{#if storeColor}}{{storeColor}}{{else}}#2563EB{{/if}};
+        }
+
         .ai-chat-btn {
             position: fixed; bottom: 25px; right: 25px; width: 55px; height: 55px;
             border-radius: 50%; background: #2563EB; color: white; border: none; 
@@ -64,12 +71,18 @@
         .send-btn { background: none; border: none; color: #2563EB; font-size: 1.4rem; cursor: pointer; }
         .send-btn:disabled { color: #CBD5E1; cursor: not-allowed; }
     </style>
+
+    <link rel="stylesheet" href="/css/dashboard.css">
 </head>
 <body>
     
     <aside class="sidebar">
-        <a href="/" class="sidebar-brand">
-            <i class="bi bi-box-fill text-primary me-2"></i> Store<span>Host</span>
+        <a href="/" class="sidebar-brand d-flex align-items-center justify-content-center px-3">
+            {{#if storeLogo}}
+                <img src="{{storeLogo}}" alt="Logo {{storeName}}" style="max-height: 45px; max-width: 100%; object-fit: contain;">
+            {{else}}
+                <i class="bi bi-box-fill text-primary me-2"></i> Store<span>Host</span>
+            {{/if}}
         </a>
         
         <ul class="nav-list mt-4">
@@ -148,15 +161,16 @@
                     <span class="notification-dot"></span>
                 </button>
 
-                <div class="user-profile">
+                <div class="user-profile d-flex align-items-center gap-2">
+                    <button class="btn btn-link text-secondary p-0 me-1" data-bs-toggle="modal" data-bs-target="#settingsModal" title="Configurações da Loja">
+                        <i class="bi bi-gear-fill fs-5"></i>
+                    </button>
+
                     <div class="user-name text-end d-none d-md-flex">
-                        <span class="store-name-text">{{storeName}}</span>
+                        <!-- ALTERADO: Se storeName estiver vazio no escopo local do controller, usa o @root.storeName (global do index.js) -->
+                        <span class="store-name-text">{{#if storeName}}{{storeName}}{{else}}{{@root.storeName}}{{/if}}</span>
                         <span class="user-role-text">Administrador</span>
                     </div>
-                    <div class="avatar shadow-sm">
-                        <i class="bi bi-person-fill"></i>
-                    </div>
-                </div>
             </div>
         </header>
 
@@ -210,6 +224,47 @@
         <div class="chat-footer">
             <input type="text" id="chat-input" class="chat-input" placeholder="Digite sua dúvida..." onkeypress="handleEnter(event)">
             <button id="send-btn" class="send-btn" onclick="sendMessage()"><i class="bi bi-send-fill"></i></button>
+        </div>
+    </div>
+
+    <div class="modal fade" id="settingsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content" style="border-top: 4px solid var(--theme-primary);">
+                <div class="modal-header">
+                    <h5 class="modal-title"><i class="bi bi-palette-fill text-primary"></i> Personalizar Plataforma</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <form action="/dashboard/settings" method="POST" enctype="multipart/form-data">
+                    <div class="modal-body">
+                        
+                        <div class="mb-4">
+                            <label class="form-label fw-semibold">Cor Identidade do Sistema</label>
+                            <div class="d-flex align-items-center gap-3">
+                                <input type="color" class="form-control form-control-color" name="primaryColor" value="{{storeColor}}" title="Escolha a cor do seu sistema">
+                                <span class="text-muted small">Selecione a cor que mais combina com a sua marca para botões e destaques.</span>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold">Logomarca da Loja</label>
+                            <input type="file" class="form-control" name="logo" accept="image/*">
+                            <div class="form-text">Envie uma imagem com fundo transparente (PNG) de preferência para substituir o texto do menu.</div>
+                            
+                            {{#if storeLogo}}
+                                <div class="mt-3 p-2 bg-light rounded text-center">
+                                    <p class="text-muted small mb-1">Sua Logo atual:</p>
+                                    <img src="{{storeLogo}}" alt="Logo Atual" style="max-height: 40px; object-fit: contain;">
+                                </div>
+                            {{/if}}
+                        </div>
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" style="background-color: var(--theme-primary); border-color: var(--theme-primary);">Salvar Modificações</button>
+                    </div>
+                </form>
+            </div>
         </div>
     </div>
 

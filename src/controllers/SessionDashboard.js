@@ -165,7 +165,7 @@ class DashboardController {
       res.render("dashboard", {
         layout: "dashboard",
         storeId: storeId,
-        storeName: loja ? loja.name : "Minha Loja",
+
         kpiVendas: totalVendas.toFixed(2),
         kpiProdutos: produtosCount,
         kpiEstoqueBaixo: estoqueBaixoCount,
@@ -198,6 +198,30 @@ class DashboardController {
           error: process.env.NODE_ENV === "development" ? error : {},
         });
       }
+    }
+  }
+
+  // NOVO MÉTODO: Salva as configurações de cor e logo da loja
+  async updateSettings(req, res) {
+    try {
+      const storeId = req.session.storeId;
+      if (!storeId) return res.redirect("/login?error=session_expired");
+
+      const { primaryColor } = req.body;
+      let updateData = { primaryColor };
+
+      // Se o usuário fez upload de uma nova imagem de logo
+      if (req.file) {
+        updateData.logoUrl = `/uploads/${req.file.filename}`;
+      }
+
+      await Store.findByIdAndUpdate(storeId, updateData);
+
+      // Redireciona de volta para o painel para ver as mudanças aplicadas na hora!
+      return res.redirect("/dashboard");
+    } catch (error) {
+      console.error("❌ Erro ao salvar configurações da loja:", error);
+      return res.redirect("/dashboard?error=settings_failed");
     }
   }
 }
