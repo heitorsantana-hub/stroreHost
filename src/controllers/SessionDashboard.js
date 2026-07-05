@@ -165,6 +165,8 @@ class DashboardController {
       res.render("dashboard", {
         layout: "dashboard",
         storeId: storeId,
+        onboardingCompleted: loja.onboardingCompleted || false,
+        storeDiagnostic: loja.diagnostic || "",
 
         kpiVendas: totalVendas.toFixed(2),
         kpiProdutos: produtosCount,

@@ -31,7 +31,7 @@ import ReportController from "./src/controllers/ReportController.js";
 import { checkPermission } from "./src/middlewares/checkPermission.js";
 
 const app = express();
-const port = 8080;
+const port = 8888;
 
 dotenv.config(); //Configurando o arquivo .env
 mongoose.connect(process.env.MONGO_URL); //Lendo o Arquivo .env
@@ -128,6 +128,20 @@ export const upload = multer({ storage });
 // O middleware foi adicionado como o segundo parâmetro em todas as rotas protegidas
 app.get("/dashboard", checkPermission("dashboard"), SessionDashboard.index);
 
+// Rota para o Cockpit Inteligente da IA
+app.get(
+  "/api/cockpit",
+  checkPermission("dashboard"),
+  AiController.generateCockpit,
+);
+
+// Rota de busca por data de venda
+app.get(
+  "/api/reports/daily-sales",
+  checkPermission("dashboard"),
+  ReportController.getDailySales,
+);
+
 // Rota para configuração de personalização do sistema
 app.post(
   "/dashboard/settings",
@@ -137,6 +151,13 @@ app.post(
 
 // Rota para a IA (Note que é um GET, pois vamos chamar via Fetch no Front-end)
 app.get("/dashboard/ai-report", AiController.generateReport);
+
+// Rota para IA gerar o Diagnostico de sistema
+app.post(
+  "/api/ai-diagnostic",
+  checkPermission("dashboard"),
+  AiController.generateDiagnostic,
+);
 
 // Rota para baixar o pdf da IA
 app.post("/dashboard/ai-report/download", AiController.downloadReport);

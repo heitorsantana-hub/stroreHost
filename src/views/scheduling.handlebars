@@ -1,42 +1,92 @@
 <div class="content-body">
   
-  <section class="welcome-sec d-flex justify-content-between align-items-center mb-4">
+  <section class="welcome-sec d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3">
     <div>
-      <h1 class="mb-1">Agendamentos</h1>
-      <p class="text-muted">Gerencie os compromissos da loja com o visual Apple Calendar.</p>
+      <h1 class="mb-1" style="color: var(--secondary); font-weight: 800;">Agenda Operacional</h1>
+      <p class="text-muted mb-0">Faça a gestão dos compromissos da loja e acompanhe o estado de cada serviço.</p>
     </div>
-    <button class="btn btn-primary create-btn" data-bs-toggle="modal" data-bs-target="#createModal">
-      <i class="fas fa-plus"></i> Novo Agendamento
+    <button class="btn btn-primary create-btn fw-semibold shadow-sm px-4 py-2" data-bs-toggle="modal" data-bs-target="#createModal" style="border-radius: 8px;">
+      <i class="bi bi-plus-lg me-2"></i> Novo Agendamento
     </button>
   </section>
+
+  <div class="row g-3 mb-4">
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #ffc107;">
+        <div class="card-body d-flex align-items-center">
+          <div class="me-3 rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background-color: #fff8e6; color: #ffc107; font-size: 1.5rem;">
+            <i class="bi bi-clock-history"></i>
+          </div>
+          <div>
+            <h6 class="mb-0 text-muted text-uppercase fw-bold" style="font-size: 0.75rem;">A Aguardar</h6>
+            <h3 class="mb-0 fw-bold" id="count-pendentes" style="color: var(--secondary);">0</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #0d6efd;">
+        <div class="card-body d-flex align-items-center">
+          <div class="me-3 rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background-color: #eaf3ff; color: #0d6efd; font-size: 1.5rem;">
+            <i class="bi bi-calendar-check"></i>
+          </div>
+          <div>
+            <h6 class="mb-0 text-muted text-uppercase fw-bold" style="font-size: 0.75rem;">Confirmados</h6>
+            <h3 class="mb-0 fw-bold" id="count-confirmados" style="color: var(--secondary);">0</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="card border-0 shadow-sm h-100" style="border-left: 4px solid #198754;">
+        <div class="card-body d-flex align-items-center">
+          <div class="me-3 rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background-color: #e6f9ed; color: #198754; font-size: 1.5rem;">
+            <i class="bi bi-check2-circle"></i>
+          </div>
+          <div>
+            <h6 class="mb-0 text-muted text-uppercase fw-bold" style="font-size: 0.75rem;">Concluídos</h6>
+            <h3 class="mb-0 fw-bold" id="count-concluidos" style="color: var(--secondary);">0</h3>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   
-  <div class="calendar-container data-card">
-    <div class="calendar-header">
-      <h3>Próximos Compromissos</h3>
+  <div class="calendar-container data-card border-0 shadow-sm">
+    <div class="calendar-header d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4 border-bottom pb-3">
+      <h4 class="mb-0 fw-bold" style="color: var(--secondary);">Lista de Compromissos</h4>
+      
+      <div class="btn-group shadow-sm" role="group" id="filter-buttons">
+        <button type="button" class="btn btn-outline-secondary active fw-semibold" data-filter="all">Todos</button>
+        <button type="button" class="btn btn-outline-warning fw-semibold" data-filter="Pendente">Pendentes</button>
+        <button type="button" class="btn btn-outline-primary fw-semibold" data-filter="Confirmado">Confirmados</button>
+      </div>
     </div>
     
     <div class="calendar-events-list">
       {{#if schedules}}
         {{#each schedules}}
-          <div class="apple-event-card status-{{this.status}}">
+          <div class="apple-event-card status-{{this.status}}" data-status="{{this.status}}">
             <div class="event-time-col">
               <span class="event-time">{{this.scheduled_time}}</span>
               <span class="event-date">{{formatDate this.scheduled_date}}</span>
             </div>
             
             <div class="event-info-col">
-              <h4 class="event-title">{{this.service_type}}</h4>
-              <p class="event-customer">
-                <strong>{{this.customer_name}}</strong> • {{this.customer_phone}}
+              <h5 class="event-title fw-bold" style="color: var(--secondary);">{{this.service_type}}</h5>
+              <p class="event-customer mb-1">
+                <strong><i class="bi bi-person-circle me-1 text-muted"></i>{{this.customer_name}}</strong> <span class="text-muted ms-2"><i class="bi bi-telephone me-1"></i>{{this.customer_phone}}</span>
               </p>
-              <p class="event-employee text-muted">Com: {{this.employee_name}}</p>
+              <p class="event-employee text-muted mb-0" style="font-size: 0.85rem;">
+                <i class="bi bi-briefcase me-1"></i> Profissional: {{this.employee_name}}
+              </p>
             </div>
             
             <div class="event-actions-col">
-              <span class="badge-status {{this.status}}">{{this.status}}</span>
+              <span class="badge-status {{this.status}} mb-2">{{this.status}}</span>
               
-              <div class="action-buttons mt-2">
-                <button class="btn btn-sm btn-outline-secondary" 
+              <div class="action-buttons">
+                <button class="btn btn-sm btn-light border fw-semibold shadow-sm me-1" 
                   data-bs-toggle="modal" 
                   data-bs-target="#editModal"
                   data-id="{{this._id}}"
@@ -44,18 +94,15 @@
                   data-time="{{this.scheduled_time}}"
                   data-customer-name="{{this.customer_name}}"
                   data-customer-phone="{{this.customer_phone}}"
-                  data-customer-email="{{this.customer_email}}"
                   data-service-type="{{this.service_type}}"
-                  data-description="{{this.description}}"
-                  data-duration="{{this.duration_minutes}}"
                   data-status="{{this.status}}"
                   data-notes="{{this.notes}}">
-                  Editar
+                  <i class="bi bi-pencil"></i>
                 </button>
 
-                <form action="/dashboard/scheduling/delete" method="POST" style="display: inline;" onsubmit="return confirm('Tem certeza que deseja deletar este agendamento?');">
+                <form action="/dashboard/scheduling/delete" method="POST" style="display: inline;" onsubmit="return confirm('Tem certeza que deseja apagar este agendamento?');">
                   <input type="hidden" name="schedule_id" value="{{this._id}}">
-                  <button type="submit" class="btn btn-sm btn-outline-danger">Apagar</button>
+                  <button type="submit" class="btn btn-sm btn-outline-danger fw-semibold shadow-sm"><i class="bi bi-trash"></i></button>
                 </form>
               </div>
             </div>
@@ -63,7 +110,9 @@
         {{/each}}
       {{else}}
         <div class="empty-state">
-          <p>Nenhum agendamento registrado. Clique em "Novo Agendamento" para começar.</p>
+          <i class="bi bi-calendar-x" style="font-size: 3rem; color: #cbd5e1; display: block; margin-bottom: 1rem;"></i>
+          <h5 class="fw-bold" style="color: var(--secondary);">Agenda Livre</h5>
+          <p class="text-muted">Nenhum compromisso registado. Clique em "Novo Agendamento" para começar.</p>
         </div>
       {{/if}}
     </div>
@@ -71,19 +120,19 @@
 </div>
 
 <div class="modal fade" id="createModal" tabindex="-1">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Novo Agendamento</h5>
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header border-bottom-0 pb-0">
+        <h5 class="modal-title fw-bold" style="color: var(--secondary);">Novo Agendamento</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <form action="/dashboard/scheduling/create" method="POST" class="form-container">
-        <div class="modal-body grid-form">
+        <div class="modal-body grid-form pt-4">
           
           <div class="form-group">
-            <label for="employee_id">Funcionário</label>
-            <select id="employee_id" name="employee_id" required class="form-control">
-              <option value="">Selecione um funcionário</option>
+            <label for="employee_id" class="fw-semibold mb-1">Funcionário</label>
+            <select id="employee_id" name="employee_id" required class="form-select bg-light">
+              <option value="">Selecione um profissional</option>
               {{#each employees}}
                 <option value="{{this._id}}">{{this.name}}</option>
               {{/each}}
@@ -91,39 +140,39 @@
           </div>
 
           <div class="form-group">
-            <label for="scheduled_date">Data</label>
-            <input type="date" id="scheduled_date" name="scheduled_date" required class="form-control">
+            <label for="scheduled_date" class="fw-semibold mb-1">Data</label>
+            <input type="date" id="scheduled_date" name="scheduled_date" required class="form-control bg-light">
           </div>
 
           <div class="form-group">
-            <label for="scheduled_time">Horário</label>
-            <input type="time" id="scheduled_time" name="scheduled_time" required class="form-control">
+            <label for="scheduled_time" class="fw-semibold mb-1">Horário</label>
+            <input type="time" id="scheduled_time" name="scheduled_time" required class="form-control bg-light">
           </div>
 
           <div class="form-group">
-            <label for="service_type">Tipo de Serviço</label>
-            <input type="text" id="service_type" name="service_type" placeholder="Ex: Corte, Manicure..." required class="form-control">
+            <label for="service_type" class="fw-semibold mb-1">Tipo de Serviço</label>
+            <input type="text" id="service_type" name="service_type" placeholder="Ex: Corte, Manutenção..." required class="form-control bg-light">
           </div>
 
           <div class="form-group">
-            <label for="customer_name">Nome do Cliente</label>
-            <input type="text" id="customer_name" name="customer_name" placeholder="Nome do cliente" required class="form-control">
+            <label for="customer_name" class="fw-semibold mb-1">Nome do Cliente</label>
+            <input type="text" id="customer_name" name="customer_name" placeholder="Nome completo" required class="form-control bg-light">
           </div>
 
           <div class="form-group">
-            <label for="customer_phone">Telefone do Cliente</label>
-            <input type="tel" id="customer_phone" name="customer_phone" placeholder="(11) 99999-9999" required class="form-control">
+            <label for="customer_phone" class="fw-semibold mb-1">Telefone</label>
+            <input type="tel" id="customer_phone" name="customer_phone" placeholder="(00) 00000-0000" required class="form-control bg-light">
           </div>
 
           <div class="form-group full-width">
-            <label for="notes">Observações</label>
-            <textarea id="notes" name="notes" placeholder="Adicione observações importantes" rows="2" class="form-control"></textarea>
+            <label for="notes" class="fw-semibold mb-1">Observações (Opcional)</label>
+            <textarea id="notes" name="notes" placeholder="Detalhes importantes sobre o serviço" rows="2" class="form-control bg-light"></textarea>
           </div>
 
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Salvar Agendamento</button>
+        <div class="modal-footer border-top-0 pt-0">
+          <button type="button" class="btn btn-light fw-semibold" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary fw-semibold px-4">Salvar</button>
         </div>
       </form>
     </div>
@@ -131,37 +180,37 @@
 </div>
 
 <div class="modal fade" id="editModal" tabindex="-1">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Editar Agendamento</h5>
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg">
+      <div class="modal-header border-bottom-0 pb-0">
+        <h5 class="modal-title fw-bold" style="color: var(--secondary);">Atualizar Estado</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <form action="/dashboard/scheduling/update/0" method="POST" id="editForm">
-        <div class="modal-body grid-form">
+        <div class="modal-body grid-form pt-4">
           <div class="form-group">
-            <label for="editDate">Data</label>
-            <input type="date" id="editDate" name="scheduled_date" class="form-control">
+            <label for="editDate" class="fw-semibold mb-1">Data</label>
+            <input type="date" id="editDate" name="scheduled_date" class="form-control bg-light">
           </div>
           <div class="form-group">
-            <label for="editTime">Horário</label>
-            <input type="time" id="editTime" name="scheduled_time" class="form-control">
+            <label for="editTime" class="fw-semibold mb-1">Horário</label>
+            <input type="time" id="editTime" name="scheduled_time" class="form-control bg-light">
           </div>
           <div class="form-group">
-            <label for="editServiceType">Tipo de Serviço</label>
-            <input type="text" id="editServiceType" name="service_type" class="form-control">
+            <label for="editServiceType" class="fw-semibold mb-1">Serviço</label>
+            <input type="text" id="editServiceType" name="service_type" class="form-control bg-light">
           </div>
           <div class="form-group">
-            <label for="editCustomerName">Nome do Cliente</label>
-            <input type="text" id="editCustomerName" name="customer_name" class="form-control">
+            <label for="editCustomerName" class="fw-semibold mb-1">Cliente</label>
+            <input type="text" id="editCustomerName" name="customer_name" class="form-control bg-light">
           </div>
           <div class="form-group">
-            <label for="editCustomerPhone">Telefone</label>
-            <input type="tel" id="editCustomerPhone" name="customer_phone" class="form-control">
+            <label for="editCustomerPhone" class="fw-semibold mb-1">Telefone</label>
+            <input type="tel" id="editCustomerPhone" name="customer_phone" class="form-control bg-light">
           </div>
           <div class="form-group">
-            <label for="editStatus">Status</label>
-            <select id="editStatus" name="status" class="form-control">
+            <label for="editStatus" class="fw-semibold mb-1 text-primary">Estado do Serviço</label>
+            <select id="editStatus" name="status" class="form-select border-primary">
               <option value="Pendente">Pendente</option>
               <option value="Confirmado">Confirmado</option>
               <option value="Concluído">Concluído</option>
@@ -169,9 +218,9 @@
             </select>
           </div>
         </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-          <button type="submit" class="btn btn-primary">Salvar Alterações</button>
+        <div class="modal-footer border-top-0 pt-0">
+          <button type="button" class="btn btn-light fw-semibold" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary fw-semibold px-4">Guardar Alterações</button>
         </div>
       </form>
     </div>
@@ -179,42 +228,76 @@
 </div>
 
 <script>
-  const editModal = document.getElementById('editModal');
-  if (editModal) {
-    editModal.addEventListener('show.bs.modal', function(event) {
-      const button = event.relatedTarget;
-      
-      document.getElementById('editForm').action = `/dashboard/scheduling/update/${button.dataset.id}`;
-      document.getElementById('editDate').value = button.dataset.date ? new Date(button.dataset.date).toISOString().split('T')[0] : '';
-      document.getElementById('editTime').value = button.dataset.time;
-      document.getElementById('editCustomerName').value = button.dataset.customerName;
-      document.getElementById('editCustomerPhone').value = button.dataset.customerPhone;
-      document.getElementById('editServiceType').value = button.dataset.serviceType;
-      document.getElementById('editStatus').value = button.dataset.status;
+  document.addEventListener("DOMContentLoaded", () => {
+    // 1. Lógica do Modal de Edição
+    const editModal = document.getElementById('editModal');
+    if (editModal) {
+      editModal.addEventListener('show.bs.modal', function(event) {
+        const button = event.relatedTarget;
+        
+        document.getElementById('editForm').action = `/dashboard/scheduling/update/${button.dataset.id}`;
+        document.getElementById('editDate').value = button.dataset.date ? new Date(button.dataset.date).toISOString().split('T')[0] : '';
+        document.getElementById('editTime').value = button.dataset.time;
+        document.getElementById('editCustomerName').value = button.dataset.customerName;
+        document.getElementById('editCustomerPhone').value = button.dataset.customerPhone;
+        document.getElementById('editServiceType').value = button.dataset.serviceType;
+        document.getElementById('editStatus').value = button.dataset.status;
+      });
+    }
+
+    // 2. Lógica de Contagem de KPIs e Filtros
+    const cards = document.querySelectorAll('.apple-event-card');
+    
+    // Contagem Inicial
+    let countPendentes = 0, countConfirmados = 0, countConcluidos = 0;
+    
+    cards.forEach(card => {
+      const status = card.getAttribute('data-status');
+      if(status === 'Pendente') countPendentes++;
+      if(status === 'Confirmado') countConfirmados++;
+      if(status === 'Concluído') countConcluidos++;
     });
-  }
+
+    // Atualiza os números no topo do ecrã
+    if(document.getElementById('count-pendentes')) document.getElementById('count-pendentes').innerText = countPendentes;
+    if(document.getElementById('count-confirmados')) document.getElementById('count-confirmados').innerText = countConfirmados;
+    if(document.getElementById('count-concluidos')) document.getElementById('count-concluidos').innerText = countConcluidos;
+
+    // Lógica dos Botões de Filtro
+    const filterButtons = document.querySelectorAll('#filter-buttons .btn');
+    
+    filterButtons.forEach(button => {
+      button.addEventListener('click', (e) => {
+        // Remove a classe 'active' de todos os botões e adiciona no clicado
+        filterButtons.forEach(btn => btn.classList.remove('active', 'btn-secondary', 'text-white'));
+        e.target.classList.add('active');
+
+        const filterValue = e.target.getAttribute('data-filter');
+
+        // Esconde ou mostra os cartões
+        cards.forEach(card => {
+          if(filterValue === 'all') {
+            card.style.display = 'flex';
+          } else {
+            if(card.getAttribute('data-status') === filterValue) {
+              card.style.display = 'flex';
+            } else {
+              card.style.display = 'none';
+            }
+          }
+        });
+      });
+    });
+  });
 </script>
 
 <style>
-  /* Base e Tipografia (Mantendo o estilo do StoreHost) */
   .data-card {
     background: #ffffff;
     border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
     padding: 1.5rem;
-    margin-bottom: 2rem;
   }
 
-  .calendar-header h3 {
-    font-size: 1.25rem;
-    font-weight: 600;
-    color: #1c1c1c;
-    margin-bottom: 1.5rem;
-    padding-bottom: 1rem;
-    border-bottom: 1px solid #f0f0f0;
-  }
-
-  /* Estilo Apple Calendar para os Blocos de Evento */
   .calendar-events-list {
     display: flex;
     flex-direction: column;
@@ -225,115 +308,48 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 1rem 1.5rem;
-    border-radius: 8px;
-    background-color: #f8f9fa;
-    border-left: 5px solid #ccc; /* Cor padrão */
+    padding: 1.2rem 1.5rem;
+    border-radius: 10px;
+    background-color: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-left: 6px solid #ccc;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.02);
     transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
 
   .apple-event-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+    box-shadow: 0 8px 16px rgba(0,0,0,0.06);
   }
 
-  /* Cores Baseadas no Status (A Magia do Visual Apple) */
-  .apple-event-card.status-Confirmado {
-    background-color: #eaf3ff;
-    border-left-color: #0d6efd; /* Azul do StoreHost */
-  }
-  .apple-event-card.status-Pendente {
-    background-color: #fff8e6;
-    border-left-color: #ffc107; /* Amarelo */
-  }
-  .apple-event-card.status-Concluído {
-    background-color: #e6f9ed;
-    border-left-color: #198754; /* Verde */
-  }
-  .apple-event-card.status-Cancelado {
-    background-color: #fdf0f0;
-    border-left-color: #dc3545; /* Vermelho */
-  }
+  /* Cores Baseadas no Status */
+  .apple-event-card.status-Confirmado { border-left-color: #0d6efd; }
+  .apple-event-card.status-Pendente { border-left-color: #ffc107; }
+  .apple-event-card.status-Concluído { border-left-color: #198754; }
+  .apple-event-card.status-Cancelado { border-left-color: #dc3545; opacity: 0.7; }
 
-  /* Colunas Internas do Card */
-  .event-time-col {
-    min-width: 120px;
-    display: flex;
-    flex-direction: column;
-  }
-  
-  .event-time {
-    font-size: 1.15rem;
-    font-weight: 700;
-    color: #333;
-  }
-  
-  .event-date {
-    font-size: 0.85rem;
-    color: #666;
-  }
+  .event-time-col { min-width: 120px; display: flex; flex-direction: column; border-right: 1px solid #f1f5f9; padding-right: 1rem; }
+  .event-time { font-size: 1.25rem; font-weight: 800; color: #1e293b; }
+  .event-date { font-size: 0.85rem; color: #64748b; font-weight: 600; }
+  .event-info-col { flex-grow: 1; padding: 0 1.5rem; }
+  .event-actions-col { text-align: right; min-width: 150px; display: flex; flex-direction: column; align-items: flex-end; }
 
-  .event-info-col {
-    flex-grow: 1;
-    padding: 0 1.5rem;
-  }
-
-  .event-title {
-    font-size: 1.05rem;
-    font-weight: 600;
-    color: #222;
-    margin: 0 0 0.25rem 0;
-  }
-
-  .event-customer {
-    margin: 0;
-    font-size: 0.95rem;
-    color: #444;
-  }
-
-  .event-employee {
-    margin: 0;
-    font-size: 0.85rem;
-  }
-
-  .event-actions-col {
-    text-align: right;
-    min-width: 150px;
-  }
-
-  /* Badges e Botões */
+  /* Badges */
   .badge-status {
     display: inline-block;
-    padding: 0.25rem 0.75rem;
-    border-radius: 12px;
+    padding: 0.35rem 0.85rem;
+    border-radius: 20px;
     font-size: 0.75rem;
-    font-weight: 600;
+    font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.5px;
   }
-
   .badge-status.Confirmado { color: #0d6efd; background: rgba(13, 110, 253, 0.1); }
-  .badge-status.Pendente { color: #d39e00; background: rgba(255, 193, 7, 0.15); }
+  .badge-status.Pendente { color: #b48600; background: rgba(255, 193, 7, 0.15); }
   .badge-status.Concluído { color: #198754; background: rgba(25, 135, 84, 0.1); }
   .badge-status.Cancelado { color: #dc3545; background: rgba(220, 53, 69, 0.1); }
 
-  /* Formulários dentro dos Modais */
-  .grid-form {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-  }
-
-  .full-width {
-    grid-column: span 2;
-  }
-
-  .empty-state {
-    text-align: center;
-    padding: 3rem 1rem;
-    color: #888;
-    background: #fdfdfd;
-    border: 1px dashed #ddd;
-    border-radius: 8px;
-  }
+  .grid-form { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+  .full-width { grid-column: span 2; }
+  .empty-state { text-align: center; padding: 4rem 1rem; background: #f8fafc; border: 2px dashed #e2e8f0; border-radius: 12px; }
 </style>
