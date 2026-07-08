@@ -1,207 +1,180 @@
 <style>
-    /* MÁGICA DO PDF: Estas regras só são aplicadas quando o utilizador clica em Imprimir/Salvar PDF */
+    /* MÁGICA DO PDF: Mantida e adaptada para Tailwind */
     @media print {
         @page { margin: 1cm; size: A4 portrait; }
         body { background-color: #ffffff !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-        
-        /* Esconde a barra lateral, o cabeçalho superior e botões que não devem ir para o PDF */
-        .sidebar, .top-header, .btn-no-print, .modal-backdrop { display: none !important; }
-        
-        /* Ajusta o conteúdo para ocupar 100% da folha */
-        .content-body { margin-left: 0 !important; padding: 0 !important; width: 100% !important; }
-        
-        /* Força a quebra de página a não cortar os cartões ao meio */
-        .data-card { page-break-inside: avoid; border: 1px solid #e2e8f0 !important; box-shadow: none !important; }
-        
-        /* Remove o fundo escuro do texto da IA para economizar tinta/ficar limpo */
-        #ai-summary-card { background-color: #f8fafc !important; }
+        .sidebar, header, .btn-no-print, .modal-backdrop { display: none !important; }
+        .content-body, main { margin: 0 !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; }
+        .print-card { page-break-inside: avoid; border: 1px solid #e2e8f0 !important; box-shadow: none !important; }
+        #ai-summary-card { background-color: #f8fafc !important; border: 1px solid #e2e8f0 !important; }
     }
 </style>
 
-<div class="content-body" id="printable-report">
-    <section class="welcome-sec d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+<div class="space-y-6 p-4 sm:p-6 max-w-[1600px] mx-auto" id="printable-report">
+    
+    <!-- Cabeçalho Principal -->
+    <div class="flex flex-wrap items-end justify-between gap-4 btn-no-print">
         <div>
-            <h1 style="color: var(--secondary); font-weight: 800;">Relatório Executivo Mensal</h1>
-            <p class="mb-0 text-muted">Análise de desempenho, fluxo de caixa e inteligência de vendas da loja.</p>
+            <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">Relatório Executivo</h1>
+            <p class="mt-1 text-sm text-slate-500 max-w-2xl">
+                Análise de desempenho, fluxo de caixa e inteligência de vendas da loja.
+            </p>
         </div>
-        
-        <div class="btn-no-print d-flex gap-2">
-            <a href="/dashboard/reports/csv" class="btn btn-outline-success fw-semibold shadow-sm">
-                <i class="bi bi-file-earmark-spreadsheet me-1"></i> Exportar CSV
+        <div class="flex items-center gap-2">
+            <a href="/dashboard/reports/csv" class="h-9 px-4 rounded-lg text-sm font-bold border border-slate-200 bg-white hover:bg-slate-50 transition-colors inline-flex items-center gap-2 text-slate-700 shadow-sm">
+                <i data-lucide="file-spreadsheet" class="h-4 w-4 text-emerald-600"></i> Exportar CSV
             </a>
-            <button onclick="window.print()" class="btn btn-primary fw-semibold shadow-sm">
-                <i class="bi bi-file-earmark-pdf me-1"></i> Salvar como PDF
+            <button onclick="window.print()" class="h-9 px-4 rounded-lg text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-indigo-500 shadow-md shadow-indigo-600/10 hover:from-indigo-500 hover:to-indigo-600 transition-all inline-flex items-center gap-2">
+                <i data-lucide="printer" class="h-4 w-4"></i> Salvar PDF
             </button>
+        </div>
+    </div>
+
+    <!-- Resumo IA -->
+    <div class="rounded-2xl border border-indigo-100 bg-indigo-50/40 p-6 shadow-sm relative overflow-hidden print-card" id="ai-summary-card">
+        <div class="inline-flex items-center gap-1.5 rounded-full bg-indigo-100 px-2.5 py-1 text-[11px] font-bold text-indigo-700 mb-3">
+            <i data-lucide="bot" class="h-3 w-3"></i> Resumo Estratégico IA
+        </div>
+        <div id="ai-report-content" class="text-sm text-slate-800 leading-relaxed whitespace-pre-wrap">
+            <div class="flex items-center gap-2 text-indigo-600 font-bold">
+                <i data-lucide="loader-2" class="h-4 w-4 animate-spin"></i> O Gemini está a analisar os dados deste mês...
+            </div>
+        </div>
+    </div>
+
+    <!-- KPIs -->
+    <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm print-card">
+            <div class="flex items-start justify-between">
+                <div class="text-xs font-bold uppercase tracking-[0.25em] text-slate-400">Faturamento</div>
+                <div class="h-9 w-9 grid place-items-center rounded-lg bg-emerald-50 text-emerald-600">
+                    <i data-lucide="dollar-sign" class="h-4 w-4"></i>
+                </div>
+            </div>
+            <div class="mt-3 text-2xl font-bold tracking-tight text-slate-900">R$ {{kpiVendas}}</div>
+            <div class="mt-1 text-xs font-bold text-slate-500">Total acumulado</div>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm print-card">
+            <div class="flex items-start justify-between">
+                <div class="text-xs font-bold uppercase tracking-[0.25em] text-slate-400">Despesas</div>
+                <div class="h-9 w-9 grid place-items-center rounded-lg bg-rose-50 text-rose-600">
+                    <i data-lucide="trending-down" class="h-4 w-4"></i>
+                </div>
+            </div>
+            <div class="mt-3 text-2xl font-bold tracking-tight text-slate-900">R$ {{kpiDespesas}}</div>
+            <div class="mt-1 text-xs font-bold text-slate-500">Saídas registadas</div>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm print-card">
+            <div class="flex items-start justify-between">
+                <div class="text-xs font-bold uppercase tracking-[0.25em] text-slate-400">Catálogo</div>
+                <div class="h-9 w-9 grid place-items-center rounded-lg bg-indigo-50 text-indigo-600">
+                    <i data-lucide="package" class="h-4 w-4"></i>
+                </div>
+            </div>
+            <div class="mt-3 text-2xl font-bold tracking-tight text-slate-900">{{kpiProdutos}}</div>
+            <div class="mt-1 text-xs font-bold text-slate-500">Produtos ativos</div>
+        </div>
+
+        <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm print-card">
+            <div class="flex items-start justify-between">
+                <div class="text-xs font-bold uppercase tracking-[0.25em] text-slate-400">Risco de Estoque</div>
+                <div class="h-9 w-9 grid place-items-center rounded-lg bg-amber-50 text-amber-600">
+                    <i data-lucide="alert-triangle" class="h-4 w-4"></i>
+                </div>
+            </div>
+            <div class="mt-3 text-2xl font-bold tracking-tight text-slate-900">{{kpiEstoqueBaixo}}</div>
+            <div class="mt-1 text-xs font-bold text-amber-600">Itens críticos</div>
         </div>
     </section>
 
-    <div class="card border-0 shadow-sm mb-4" id="ai-summary-card" style="background-color: var(--primary-light); border-left: 5px solid var(--primary) !important;">
-        <div class="card-body p-4">
-            <h5 class="fw-bold mb-3 d-flex align-items-center" style="color: var(--secondary);">
-                <i class="bi bi-robot text-primary me-2 fs-4"></i> Resumo Estratégico gerado por IA
-            </h5>
-            <div id="ai-report-content" style="color: var(--text-main); font-size: 0.95rem; line-height: 1.7;">
-                <div class="d-flex align-items-center">
-                    <span class="spinner-border spinner-border-sm text-primary me-2" role="status"></span>
-                    <span class="text-primary fw-semibold">A inteligência artificial está a ler os dados deste mês para gerar o parecer executivo...</span>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="stats-grid mb-4">
-        <div class="stat-card border-0 shadow-sm">
-            <div class="stat-header">
-                <div>
-                    <h6 class="text-muted text-uppercase fw-bold mb-1" style="font-size: 0.8rem;">Faturamento Comercial</h6>
-                    <div class="stat-value text-dark fw-bolder fs-3">R$ {{kpiVendas}}</div>
-                </div>
-                <div class="stat-icon" style="background-color: #D1FAE5; color: #10B981;">
-                    <i class="bi bi-currency-dollar fs-4"></i>
-                </div>
-            </div>
-            <div class="trend text-muted mt-2" style="font-size: 0.8rem;"><i class="bi bi-graph-up-arrow"></i> Total acumulado no período</div>
-        </div>
-
-        <div class="stat-card border-0 shadow-sm">
-            <div class="stat-header">
-                <div>
-                    <h6 class="text-muted text-uppercase fw-bold mb-1" style="font-size: 0.8rem;">Despesas Totais</h6>
-                    <div class="stat-value text-dark fw-bolder fs-3">R$ {{kpiDespesas}}</div>
-                </div>
-                <div class="stat-icon" style="background-color: #FEE2E2; color: #EF4444;">
-                    <i class="bi bi-wallet2 fs-4"></i>
-                </div>
-            </div>
-            <div class="trend text-muted mt-2" style="font-size: 0.8rem;"><i class="bi bi-graph-down-arrow"></i> Saídas registadas</div>
-        </div>
-
-        <div class="stat-card border-0 shadow-sm">
-            <div class="stat-header">
-                <div>
-                    <h6 class="text-muted text-uppercase fw-bold mb-1" style="font-size: 0.8rem;">Catálogo Ativo</h6>
-                    <div class="stat-value text-dark fw-bolder fs-3">{{kpiProdutos}}</div>
-                </div>
-                <div class="stat-icon" style="background-color: #DBEAFE; color: #3B82F6;">
-                    <i class="bi bi-box-seam fs-4"></i>
-                </div>
-            </div>
-            <div class="trend text-muted mt-2" style="font-size: 0.8rem;"><i class="bi bi-tags"></i> Produtos disponíveis</div>
-        </div>
-
-        <div class="stat-card border-0 shadow-sm">
-            <div class="stat-header">
-                <div>
-                    <h6 class="text-muted text-uppercase fw-bold mb-1" style="font-size: 0.8rem;">Estoque Crítico</h6>
-                    <div class="stat-value text-dark fw-bolder fs-3">{{kpiEstoqueBaixo}}</div>
-                </div>
-                <div class="stat-icon" style="background-color: #FEF3C7; color: #F59E0B;">
-                    <i class="bi bi-exclamation-triangle fs-4"></i>
-                </div>
-            </div>
-            <div class="trend text-muted mt-2" style="font-size: 0.8rem;"><i class="bi bi-info-circle"></i> Precisam de reposição</div>
-        </div>
-    </div>
-
-    <div class="row g-4 mb-4">
-    <div class="col-md-8">
-        <div class="data-card border-0 shadow-sm h-100 p-4">
-            <h5 class="fw-bold mb-4" style="color: var(--secondary);">Evolução do Faturamento (Ano)</h5>
-            <div style="position: relative; height: 300px; width: 100%;">
+    <!-- Gráficos -->
+    <section class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 lg:col-span-2 shadow-sm print-card">
+            <h3 class="text-base font-bold text-slate-900 mb-4">Evolução do Faturamento Anual</h3>
+            <div class="h-72 relative w-full">
                 <canvas id="chartFaturamento"></canvas>
             </div>
         </div>
-    </div>
 
-    <div class="col-md-4">
-        <div class="data-card border-0 shadow-sm h-100 p-4">
-            <h5 class="fw-bold mb-4" style="color: var(--secondary);">Receita por Pagamento</h5>
-            <div style="position: relative; height: 300px; width: 100%;">
+        <div class="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm print-card">
+            <h3 class="text-base font-bold text-slate-900 mb-4">Receita por Pagamento</h3>
+            <div class="h-72 relative w-full flex items-center justify-center">
                 <canvas id="chartPagamentos"></canvas>
+            </div>
+            <span class="hidden" id="dados-pagamento">{{{ faturamentoPagamento }}}</span>
+        </div>
+    </section>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Top 5 Produtos -->
+        <div class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden lg:col-span-1 print-card">
+            <div class="p-5 border-b border-slate-100 bg-slate-50/50">
+                <h3 class="text-base font-bold text-slate-900">Top 5 Mais Vendidos</h3>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <tbody class="divide-y divide-slate-100 text-sm">
+                        {{#each topProdutos}}
+                        <tr class="hover:bg-slate-50/50 transition">
+                            <td class="py-3 px-4">
+                                <div class="flex items-center gap-2">
+                                    <span class="h-6 w-6 rounded-full bg-amber-100 text-amber-600 grid place-items-center text-xs font-bold shrink-0">
+                                        <i data-lucide="star" class="h-3 w-3"></i>
+                                    </span>
+                                    <span class="font-bold text-slate-800">{{this._id}}</span>
+                                </div>
+                            </td>
+                            <td class="py-3 px-4 text-right font-bold text-emerald-600">{{this.totalVendido}} un.</td>
+                        </tr>
+                        {{else}}
+                        <tr>
+                            <td colspan="2" class="text-center py-8 text-slate-400 font-medium">Ainda sem dados suficientes.</td>
+                        </tr>
+                        {{/each}}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Auditoria de Caixa Diário (AJAX) -->
+        <div class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden lg:col-span-2 print-card h-[400px] flex flex-col">
+            <div class="p-5 border-b border-slate-100 bg-slate-50/50 flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <h3 class="text-base font-bold text-slate-900">Auditoria de Caixa Diário</h3>
+                    <p class="text-xs text-slate-500">Histórico de transações de um dia específico.</p>
+                </div>
+                <div class="flex items-center gap-2 btn-no-print">
+                    <input type="date" id="search-date" class="px-3 py-1.5 border border-slate-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-semibold text-slate-700">
+                    <button id="btn-search-sales" class="px-4 py-1.5 text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg shadow-sm transition flex items-center gap-1.5">
+                        <i data-lucide="search" class="h-3.5 w-3.5"></i> Buscar
+                    </button>
+                </div>
+            </div>
+            <div class="overflow-y-auto flex-1 p-0">
+                <table class="w-full text-left border-collapse">
+                    <thead class="sticky top-0 bg-white/90 backdrop-blur">
+                        <tr class="border-b border-slate-100 text-xs font-bold uppercase tracking-wider text-slate-400">
+                            <th class="py-3 px-4">Hora</th>
+                            <th class="py-3 px-4">Produto</th>
+                            <th class="py-3 px-4 text-center">Pgto</th>
+                            <th class="py-3 px-4 text-center">Qtd</th>
+                            <th class="py-3 px-4 text-right">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="daily-sales-results" class="divide-y divide-slate-100 text-sm">
+                        <tr>
+                            <td colspan="5" class="text-center py-16 text-slate-400 font-medium">
+                                <i data-lucide="calendar-search" class="h-10 w-10 mx-auto mb-2 opacity-30"></i>
+                                Selecione uma data acima para visualizar as vendas.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
     </div>
-</div>
-
-<span class="d-none" id="dados-pagamento">{{{ faturamentoPagamento }}}</span>
-
-    <div class="row">
-        <div class="col-12">
-            <section class="data-card border-0 shadow-sm p-4">
-                <h5 class="fw-bold mb-3" style="color: var(--secondary);">Produtos Mais Vendidos (Top 5)</h5>
-                <div class="table-container">
-                    <table class="custom-table" style="color: var(--text-main);">
-                        <thead style="color: var(--text-muted); border-bottom: 2px solid #f1f5f9;">
-                            <tr>
-                                <th class="py-3">Produto</th>
-                                <th class="text-end py-3">Performance de Vendas</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {{#each topProdutos}}
-                            <tr>
-                                <td class="py-3">
-                                    <div class="d-flex align-items-center">
-                                        <span class="bg-light rounded p-2 me-3 fs-5">🌟</span>
-                                        <strong>{{this._id}}</strong>
-                                    </div>
-                                </td>
-                                <td class="text-end py-3 fw-bold text-success">{{this.totalVendido}} unidades</td>
-                            </tr>
-                            {{else}}
-                            <tr>
-                                <td colspan="2" class="text-center py-4 text-muted">Ainda não existem vendas suficientes para o ranking.</td>
-                            </tr>
-                            {{/each}}
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-        </div>
-    </div>
-
-
-    <div class="row mt-4 mb-5">
-        <div class="col-12">
-            <section class="data-card border-0 shadow-sm p-4 h-100">
-                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-3 border-bottom pb-3">
-                    <div>
-                        <h5 class="fw-bold mb-1" style="color: var(--secondary);">Auditoria de Caixa Diário</h5>
-                        <p class="mb-0 text-muted" style="font-size: 0.85rem;">Consulte o histórico exato de transações de um dia específico.</p>
-                    </div>
-                    <div class="d-flex gap-2 align-items-center btn-no-print">
-                        <input type="date" id="search-date" class="form-control border-primary text-primary fw-semibold shadow-sm" style="max-width: 180px;">
-                        <button id="btn-search-sales" class="btn btn-primary fw-semibold shadow-sm px-4">
-                            <i class="bi bi-search me-1"></i> Buscar
-                        </button>
-                    </div>
-                </div>
-
-                <div class="table-container">
-                    <table class="custom-table" style="color: var(--text-main);">
-                        <thead style="color: var(--text-muted); border-bottom: 2px solid #f1f5f9;">
-                            <tr>
-                                <th class="py-3">Horário</th>
-                                <th class="py-3">Produto</th>
-                                <th class="py-3 text-center">Forma de Pagamento</th>
-                                <th class="py-3 text-center">Quantidade</th>
-                                <th class="py-3 text-end">Total da Venda</th>
-                            </tr>
-                        </thead>
-                        <tbody id="daily-sales-results">
-                            <tr>
-                                <td colspan="5" class="text-center py-5 text-muted">
-                                    <i class="bi bi-calendar2-date fs-2 d-block mb-2 opacity-50"></i>
-                                    Selecione uma data acima para visualizar as vendas.
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </section>
-        </div>
-    </div>
-
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -209,20 +182,25 @@
 <script>
 document.addEventListener('DOMContentLoaded', async function() {
     
-    // 1. CARREGAMENTO DOS GRÁFICOS (Renderizados perfeitamente no PDF)
+    // Injeta os ícones 
+    if (window.lucide) window.lucide.createIcons();
+
+    // =======================================================
+    // 1. CARREGAMENTO DOS GRÁFICOS
+    // =======================================================
     const labelsFaturamento = {{{ labelsFaturamento }}};
     const dadosFaturamento = {{{ dadosFaturamento }}};
     const ctxArea = document.getElementById('chartFaturamento');
     
     if (ctxArea) {
         new Chart(ctxArea, {
-            type: 'bar', // Alterado para barras para melhor visualização impressa
+            type: 'bar',
             data: {
                 labels: labelsFaturamento.length > 0 ? labelsFaturamento : ['Sem Dados'],
                 datasets: [{
                     label: 'Faturamento (R$)',
                     data: dadosFaturamento.length > 0 ? dadosFaturamento : [0], 
-                    backgroundColor: '#0A57E8',
+                    backgroundColor: '#4f46e5', // Tailwind indigo-600
                     borderRadius: 4
                 }]
             },
@@ -231,66 +209,18 @@ document.addEventListener('DOMContentLoaded', async function() {
                 plugins: { legend: { display: false } },
                 scales: {
                     x: { grid: { display: false } },
-                    y: { grid: { borderDash: [5, 5] }, beginAtZero: true }
+                    y: { grid: { borderDash: [5, 5], color: '#f1f5f9' }, beginAtZero: true }
                 }
             }
         });
     }
 
-    const labelsDespesas = {{{ labelsDespesas }}};
-    const dadosDespesas = {{{ dadosDespesas }}};
-    const ctxPie = document.getElementById('chartDespesas');
-    
-    if (ctxPie) {
-        const hasData = labelsDespesas.length > 0;
-        new Chart(ctxPie, {
-            type: 'doughnut',
-            data: {
-                labels: hasData ? labelsDespesas : ['Sem Despesas'],
-                datasets: [{
-                    data: hasData ? dadosDespesas : [1],
-                    backgroundColor: hasData ? ['#EF4444', '#F59E0B', '#0A57E8', '#10B981', '#8B5CF6'] : ['#E2E8F0'],
-                    borderWidth: 0
-                }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false, cutout: '70%',
-                plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } }
-            }
-        });
-    }
-
-    // 2. BUSCA DO RESUMO EXECUTIVO DA IA
-    try {
-        // Aproveitamos a rota que já usou no Cockpit, ou a rota de relatório
-        const response = await fetch('/dashboard/ai-report');
-        const contentEl = document.getElementById('ai-report-content');
-        
-        if (response.ok) {
-            const data = await response.json();
-            // Substitui negritos Markdown por HTML e injeta
-            const textoFormatado = data.relatorio.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
-            contentEl.innerHTML = `<p class="mb-0">${textoFormatado.replace(/\n/g, '<br>')}</p>`;
-        } else {
-            contentEl.innerHTML = `<p class="mb-0 text-muted">Não foi possível carregar o resumo estratégico neste momento.</p>`;
-        }
-    } catch (error) {
-        document.getElementById('ai-report-content').innerHTML = `<p class="mb-0 text-muted">Aguardando dados para análise.</p>`;
-    }
-});
-
-// =======================================================
-    // GRÁFICO 2: Receita por Pagamento (PIX, Cartão, etc)
-    // =======================================================
     const rawDadosPagamento = document.getElementById('dados-pagamento');
     const ctxPagamentos = document.getElementById('chartPagamentos');
     
     if (ctxPagamentos && rawDadosPagamento && rawDadosPagamento.innerText) {
         try {
-            // Pega o texto do HTML e converte de volta para código
             const arrPagamentos = JSON.parse(rawDadosPagamento.innerText);
-            
-            // Separa os nomes (PIX, Cartão) e os Valores Totais
             const labelsPag = arrPagamentos.map(item => item._id || "Não Informado");
             const totaisPag = arrPagamentos.map(item => item.total);
 
@@ -300,16 +230,15 @@ document.addEventListener('DOMContentLoaded', async function() {
                     labels: labelsPag.length > 0 ? labelsPag : ['Sem Vendas'],
                     datasets: [{
                         data: totaisPag.length > 0 ? totaisPag : [1],
-                        // Cores exclusivas para diferenciar os pagamentos
-                        backgroundColor: ['#10B981', '#3B82F6', '#F59E0B', '#8B5CF6'], 
+                        backgroundColor: ['#10b981', '#3b82f6', '#f59e0b', '#8b5cf6', '#f43f5e'], 
                         borderWidth: 0
                     }]
                 },
                 options: {
                     responsive: true, 
                     maintainAspectRatio: false, 
-                    cutout: '70%',
-                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 12 } } }
+                    cutout: '75%',
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: {family: 'system-ui'} } } }
                 }
             });
         } catch (e) {
@@ -317,30 +246,47 @@ document.addEventListener('DOMContentLoaded', async function() {
         }
     }
 
+    // =======================================================
+    // 2. BUSCA DO RESUMO EXECUTIVO DA IA
+    // =======================================================
+    try {
+        const response = await fetch('/dashboard/ai-report');
+        const contentEl = document.getElementById('ai-report-content');
+        
+        if (response.ok) {
+            const data = await response.json();
+            // Formata Markdown para HTML
+            const textoFormatado = data.relatorio.replace(/\*\*(.*?)\*\*/g, '<strong class="text-slate-900">$1</strong>');
+            contentEl.innerHTML = textoFormatado;
+        } else {
+            contentEl.innerHTML = `<p class="text-slate-500">Não foi possível carregar o resumo estratégico neste momento.</p>`;
+        }
+    } catch (error) {
+        document.getElementById('ai-report-content').innerHTML = `<p class="text-slate-500">Aguardando dados para análise.</p>`;
+    }
 
     // =======================================================
-    // MOTOR DE BUSCA: Vendas Diárias
+    // 3. MOTOR DE BUSCA: Vendas Diárias (AJAX)
     // =======================================================
     const btnSearch = document.getElementById('btn-search-sales');
-    
     if (btnSearch) {
         btnSearch.addEventListener('click', async () => {
             const dateInput = document.getElementById('search-date').value;
             const tbody = document.getElementById('daily-sales-results');
 
             if (!dateInput) {
-                alert("Por favor, selecione uma data no calendário.");
+                alert("Por favor, selecione uma data.");
                 return;
             }
 
-            // Estado de carregamento
             tbody.innerHTML = `
                 <tr>
-                    <td colspan="5" class="text-center py-5">
-                        <span class="spinner-border text-primary mb-2" role="status"></span>
-                        <p class="text-muted mb-0 fw-semibold">Procurando registros...</p>
+                    <td colspan="5" class="text-center py-12">
+                        <i data-lucide="loader-2" class="h-6 w-6 animate-spin text-indigo-600 mx-auto mb-2"></i>
+                        <p class="text-slate-500 text-sm font-semibold">Procurando registros...</p>
                     </td>
                 </tr>`;
+            if (window.lucide) window.lucide.createIcons();
 
             try {
                 const response = await fetch(`/api/reports/daily-sales?date=${dateInput}`);
@@ -348,28 +294,32 @@ document.addEventListener('DOMContentLoaded', async function() {
                 if (response.ok) {
                     const vendas = await response.json();
 
-                    // Se não houver vendas naquele dia
                     if (vendas.length === 0) {
                         tbody.innerHTML = `
                             <tr>
-                                <td colspan="5" class="text-center py-5 text-muted">
-                                    <i class="bi bi-inbox fs-2 d-block mb-2 opacity-50"></i>
+                                <td colspan="5" class="text-center py-12 text-slate-400">
+                                    <i data-lucide="inbox" class="h-8 w-8 mx-auto mb-2 opacity-50"></i>
                                     Nenhuma venda registada nesta data.
                                 </td>
                             </tr>`;
+                        if (window.lucide) window.lucide.createIcons();
                         return;
                     }
 
-                    // Se houver vendas, desenha a tabela
                     tbody.innerHTML = '';
                     vendas.forEach(v => {
                         const tr = document.createElement('tr');
+                        tr.className = "hover:bg-slate-50/50 transition";
                         tr.innerHTML = `
-                            <td class="py-3 text-muted fw-semibold">${v.hora}</td>
-                            <td class="py-3 fw-bold">${v.product_name}</td>
-                            <td class="py-3 text-center"><span class="badge bg-light text-dark border rounded-pill">${v.payment_method}</span></td>
-                            <td class="py-3 text-center">${v.quantity} un.</td>
-                            <td class="py-3 text-end fw-bold text-success">R$ ${v.total_price}</td>
+                            <td class="py-3 px-4 text-slate-500 font-medium whitespace-nowrap">${v.hora}</td>
+                            <td class="py-3 px-4 font-bold text-slate-800">${v.product_name}</td>
+                            <td class="py-3 px-4 text-center">
+                                <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-600 border border-slate-200">
+                                    ${v.payment_method}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4 text-center font-bold text-slate-700">${v.quantity}</td>
+                            <td class="py-3 px-4 text-right font-bold text-emerald-600">R$ ${v.total_price}</td>
                         `;
                         tbody.appendChild(tr);
                     });
@@ -380,12 +330,12 @@ document.addEventListener('DOMContentLoaded', async function() {
                 console.error(error);
                 tbody.innerHTML = `
                     <tr>
-                        <td colspan="5" class="text-center py-4 text-danger fw-semibold">
-                            Houve um erro de comunicação com o servidor. Tente novamente.
+                        <td colspan="5" class="text-center py-8 text-rose-500 font-semibold text-sm">
+                            Houve um erro de comunicação. Tente novamente.
                         </td>
                     </tr>`;
             }
         });
     }
-
+});
 </script>

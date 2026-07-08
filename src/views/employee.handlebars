@@ -1,317 +1,34 @@
-<div class="content-body">
-    <section class="welcome-sec">
-        <h1>Gestão de Equipe</h1>
-        <p>Administre os colaboradores e permissões do sistema.</p>
-    </section>
-
-    <div class="main-grid">
-        
-        <!-- SEÇÃO DA TABELA DE COLABORADORES -->
-        <section class="data-card">
-            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
-                <h2>Membros da Equipe</h2>
-                <div class="search-box" style="flex: 1; max-width: 300px;">
-                    <input type="text" id="searchInput" class="form-control" placeholder="🔍 Pesquisar colaborador...">
-                </div>
-            </div>
-            
-            <div class="table-container mt-3">
-                <table class="custom-table" id="employeeTable">
-                    <thead>
-                        <tr>
-                            <th>Status</th>
-                            <th>Colaborador</th>
-                            <th>Cargo</th>
-                            <th class="text-center">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                        {{#each employees}}
-                            <!-- Adicionada classe employee-row e data-search -->
-                            <tr class="employee-row" data-search="{{this.name}} {{this.email}} {{this.cargo}}">
-                                <td><span class="badge-status status-active">Ativo</span></td>
-                                <td>
-                                    <div class="user-cell">
-                                        <div>
-                                            <strong>{{this.name}}</strong><br>
-                                            <span style="font-size: 0.8rem; color: var(--text-muted);">{{this.email}}</span>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td>{{this.cargo}}</td>
-                                <td>
-                                    <div class="d-flex justify-content-center align-items-center gap-2">
-                                        <button class="btn btn-outline btn-sm" 
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#editEmployeeModal"
-                                            data-id="{{this._id}}"
-                                            data-name="{{this.name}}"
-                                            data-email="{{this.email}}"
-                                            data-cargo="{{this.cargo_id}}"> <!-- Certifique-se de passar o ID do cargo aqui se for um relacionamento -->
-                                            Editar
-                                        </button>
-
-                                        <form action="/dashboard/employee/delete" method="POST" onsubmit="return confirm('Excluir este colaborador?')" class="m-0">
-                                            <input type="hidden" name="employee_id" value="{{this._id}}">
-                                            <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        {{else}}
-                            <tr id="emptyRow">
-                                <td colspan="4" class="text-center py-4 text-muted">Nenhum membro encontrado.</td>
-                            </tr>
-                        {{/each}}
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Controles de Paginação -->
-            <div class="d-flex justify-content-between align-items-center mt-3 p-2" id="paginationControls">
-                <button class="btn btn-outline-secondary btn-sm" id="prevPage" disabled>
-                    <i class="bi bi-chevron-left"></i> Anterior
-                </button>
-                <span id="pageIndicator" class="text-muted" style="font-size: 0.9rem;">Página 1</span>
-                <button class="btn btn-outline-secondary btn-sm" id="nextPage">
-                    Próxima <i class="bi bi-chevron-right"></i>
-                </button>
-            </div>
-        </section>
-
-        <!-- SEÇÃO DE ADICIONAR NOVO COLABORADOR -->
-        <section class="data-card">
-            <div class="card-header">
-                <h2>Novo Utilizador</h2>
-            </div>
-            <div id="alert-container"></div>
-            
-            <form action="/dashboard/employee/post" method="post">
-                <div class="form-group mb-3">
-                    <label>Nome Completo</label>
-                    <input type="text" name="name" class="form-input" placeholder="Nome do funcionário" required>
-                </div>
-                <div class="form-group mb-3">
-                    <label>Email Corporativo</label>
-                    <input type="email" name="email" class="form-input" placeholder="exemplo@loja.com" required>
-                </div>
-                <div class="form-group mb-3">
-                    <label>Cargo</label>
-                    <div class="d-flex gap-2">
-                        <select name="cargo" class="form-input" style="flex: 1;" required>
-                            <option value="">Selecione um cargo...</option>
-                            {{#each roles}}
-                                <option value="{{this._id}}">{{this.name_role}}</option>
-                            {{/each}}
-                        </select>
-                        <button type="button" class="btn btn-outline-primary" data-bs-toggle="modal" data-bs-target="#addRoleModal">
-                            + Novo Cargo
-                        </button>
-                    </div>
-                </div>
-                <div class="form-group mb-3">
-                    <label>Senha Provisória</label>
-                    <input type="password" name="password" class="form-input" required>
-                </div>
-                <button type="submit" class="btn btn-primary w-100 mt-2">Adicionar à Equipe</button>
-            </form>
-        </section>
-    </div>
-</div>
-
-<!-- MODAL EDITAR COLABORADOR -->
-<div class="modal fade" id="editEmployeeModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="editEmployeeForm" method="POST">
-                <div class="modal-header">
-                    <h5 class="modal-title">Editar Colaborador</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group mb-3">
-                        <label>Nome</label>
-                        <input type="text" name="name" id="edit-name" class="form-control" required>
-                    </div>
-                    <div class="form-group mb-3">
-                        <label>Email</label>
-                        <input type="email" name="email" id="edit-email" class="form-control" required>
-                    </div>
-                    <div class="form-group mb-3">
-                        <label>Cargo</label>
-                        <select name="cargo" id="edit-cargo" class="form-control" required>
-                            <option value="">Selecione...</option>
-                            {{#each roles}}
-                                <option value="{{this._id}}">{{this.name_role}}</option>
-                            {{/each}}
-                        </select>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Salvar Alterações</button>
-                </div>
-            </form>
+<section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+    {{#each funcionarios}}
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="flex items-center gap-3">
+        <div class="h-12 w-12 rounded-full bg-gradient-to-r from-indigo-600 to-indigo-500 grid place-items-center text-white font-bold shadow-sm shadow-indigo-500/10 shrink-0">
+          {{this.iniciais}}
         </div>
-    </div>
-</div>
-
-<!-- MODAL ADICIONAR CARGO -->
-<div class="modal fade" id="addRoleModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <!-- Rota fixa de criação movida diretamente para o formulário -->
-            <form id="addRoleForm" action="/dashboard/employee/add/role" method="POST">
-                <div class="modal-header">
-                    <h5 class="modal-title">Criar Novo Cargo</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group mb-4">
-                        <label>Nome do Cargo</label>
-                        <input type="text" name="name_role" class="form-control" placeholder="Ex: Gerente, Caixa" required>
-                    </div>
-                    
-                    <div class="form-group mb-3">
-                        <p class="form-label text-muted"><strong>Permissões de Acesso</strong></p>
-                        <div class="checkbox-group" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                            
-                            <!-- IDs e FORs corrigidos e alinhados -->
-                            <div class="checkbox-item d-flex align-items-center gap-2">
-                                <input type="checkbox" name="view_dashboard" id="add_dashboard" value="true">
-                                <label for="add_dashboard" class="m-0" style="cursor: pointer;">Dashboard</label>
-                            </div>
-
-                            <div class="checkbox-item d-flex align-items-center gap-2">
-                                <input type="checkbox" name="view_finance" id="add_finance" value="true">
-                                <label for="add_finance" class="m-0" style="cursor: pointer;">Financeiro</label>
-                            </div>
-
-                            <div class="checkbox-item d-flex align-items-center gap-2">
-                                <input type="checkbox" name="view_stock" id="add_stock" value="true">
-                                <label for="add_stock" class="m-0" style="cursor: pointer;">Estoque</label>
-                            </div>
-
-                            <div class="checkbox-item d-flex align-items-center gap-2">
-                                <input type="checkbox" name="view_products" id="add_products" value="true">
-                                <label for="add_products" class="m-0" style="cursor: pointer;">Produtos</label>
-                            </div>
-
-                            <div class="checkbox-item d-flex align-items-center gap-2">
-                                <input type="checkbox" name="view_sales" id="add_sales" value="true">
-                                <label for="add_sales" class="m-0" style="cursor: pointer;">Vendas</label>
-                            </div>
-
-                            <div class="checkbox-item d-flex align-items-center gap-2">
-                                <input type="checkbox" name="view_employee" id="add_employee" value="true">
-                                <label for="add_employee" class="m-0" style="cursor: pointer;">Equipe</label>
-                            </div>
-
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Salvar Cargo</button>
-                </div>
-            </form>
+        <div class="min-w-0 flex-1">
+          <div class="font-bold truncate text-slate-900">{{this.name}}</div>
+          <div class="text-xs font-medium text-slate-400">{{this.cargo}}</div>
         </div>
+      </div>
+      <div class="mt-4 space-y-1.5 text-xs text-slate-500">
+        <div class="flex items-center gap-2"><i data-lucide="mail" class="h-3.5 w-3.5 text-slate-400"></i> {{this.email}}</div>
+        <div class="flex items-center gap-2"><i data-lucide="phone" class="h-3.5 w-3.5 text-slate-400"></i> {{this.telefone}}</div>
+      </div>
+      <div class="mt-4">
+        <div class="flex justify-between text-xs mb-1.5 text-slate-500">
+          <span>Meta do mês</span>
+          <span class="font-bold text-slate-900">{{this.vendas}} / {{this.meta}}</span>
+        </div>
+        <div class="h-1.5 rounded-full bg-slate-100 overflow-hidden">
+          <div class="h-full rounded-full bg-indigo-600" style="width: {{this.pct}}%"></div>
+        </div>
+        <div class="mt-1 text-[11px] font-medium text-slate-400">{{this.pct}}% concluído</div>
+      </div>
     </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-
-<script>
-    // ==========================================
-    // 1. LÓGICA DE MODAIS
-    // ==========================================
-    const editModal = document.getElementById('editEmployeeModal');
-    if (editModal) {
-        editModal.addEventListener('show.bs.modal', event => {
-            const btn = event.relatedTarget;
-            
-            // Preenche os campos de texto
-            editModal.querySelector('#edit-name').value = btn.getAttribute('data-name');
-            editModal.querySelector('#edit-email').value = btn.getAttribute('data-email');
-            
-            // Preenche o Select de Cargo
-            const cargoId = btn.getAttribute('data-cargo');
-            const cargoSelect = editModal.querySelector('#edit-cargo');
-            if(cargoSelect && cargoId) {
-                cargoSelect.value = cargoId;
-            }
-            
-            // Atualiza a rota de submissão
-            const empId = btn.getAttribute('data-id');
-            editModal.querySelector('#editEmployeeForm').action = `/dashboard/employee/update/${empId}`;
-        });
-    }
-
-    // ==========================================
-    // 2. LÓGICA DE PESQUISA E PAGINAÇÃO
-    // ==========================================
-    document.addEventListener("DOMContentLoaded", function() {
-        const searchInput = document.getElementById("searchInput");
-        const allRows = Array.from(document.querySelectorAll(".employee-row")); 
-        let filteredRows = [...allRows]; 
-        
-        let currentPage = 1;
-        const rowsPerPage = 10; 
-
-        const btnPrev = document.getElementById("prevPage");
-        const btnNext = document.getElementById("nextPage");
-        const pageIndicator = document.getElementById("pageIndicator");
-
-        function renderTable() {
-            allRows.forEach(row => row.style.display = "none");
-            
-            const startIndex = (currentPage - 1) * rowsPerPage;
-            const endIndex = startIndex + rowsPerPage;
-
-            const rowsToShow = filteredRows.slice(startIndex, endIndex);
-            rowsToShow.forEach(row => row.style.display = ""); 
-
-            const totalPages = Math.ceil(filteredRows.length / rowsPerPage) || 1;
-            if(pageIndicator) pageIndicator.textContent = `Página ${currentPage} de ${totalPages}`;
-            
-            if(btnPrev) btnPrev.disabled = currentPage === 1;
-            if(btnNext) btnNext.disabled = currentPage === totalPages;
-        }
-
-        if(searchInput) {
-            searchInput.addEventListener("input", function(e) {
-                const searchTerm = e.target.value.toLowerCase().trim();
-                
-                filteredRows = allRows.filter(row => {
-                    const searchData = row.getAttribute("data-search").toLowerCase();
-                    return searchData.includes(searchTerm);
-                });
-                
-                currentPage = 1;
-                renderTable();
-            });
-        }
-
-        if(btnPrev) {
-            btnPrev.addEventListener("click", () => {
-                if (currentPage > 1) {
-                    currentPage--;
-                    renderTable();
-                }
-            });
-        }
-
-        if(btnNext) {
-            btnNext.addEventListener("click", () => {
-                const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
-                if (currentPage < totalPages) {
-                    currentPage++;
-                    renderTable();
-                }
-            });
-        }
-
-        // Renderiza a tabela na primeira vez
-        renderTable();
-    });
-</script>
+    {{else}}
+    <div class="col-span-full py-12 text-center text-slate-500">
+      <i data-lucide="users" class="h-10 w-10 mx-auto mb-3 opacity-50"></i>
+      <p>Nenhum colaborador registado na loja.</p>
+    </div>
+    {{/each}}
+  </section>

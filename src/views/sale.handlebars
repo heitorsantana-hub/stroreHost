@@ -1,415 +1,397 @@
-<div class="content-body">
-    <section class="welcome-sec">
-        <h1>Ponto de Venda (PDV)</h1>
-        <p>Registre as saídas de produtos e acompanhe o histórico de vendas recentes.</p>
-    </section>
+<div class="space-y-6">
+  <div class="flex flex-wrap items-end justify-between gap-4 mb-2">
+    <div>
+      <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">Ponto de Venda (PDV)</h1>
+      <p class="mt-1 text-sm text-slate-500 max-w-2xl">
+        Registe novas vendas, adicione produtos ao carrinho e faça o fecho da transação.
+      </p>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     
-    <div class="main-grid">
-        
-        <section class="data-card">
-            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
-                <h2>Últimas Vendas</h2>
-                
-                <div style="flex: 1; max-width: 320px;">
-                    <div class="input-group">
-                        <span class="input-group-text bg-white border-end-0 text-muted" style="border-radius: 10px 0 0 10px;">
-                            <i class="bi bi-search"></i>
-                        </span>
-                        <input type="text" id="searchInput" class="form-control border-start-0 border-end-0 ps-0" placeholder="Pesquisar produto ou data..." style="font-size: 0.9rem; outline: none; box-shadow: none;">
-                        <button class="btn btn-outline-secondary bg-white border-start-0 text-primary" type="button" id="btn-voz-pdv" title="Pesquisar por voz" style="border-radius: 0 10px 10px 0; border: 1px solid #dee2e6;">
-                            <i class="bi bi-mic-fill" id="icone-microfone"></i>
-                        </button>
-                    </div>
-                    <div id="status-voz" class="form-text text-danger d-none ps-2 pt-1" style="font-size: 0.8rem; font-weight: 500;">
-                        <span class="spinner-grow spinner-grow-sm" role="status"></span> Ouvindo o operador...
-                    </div>
-                </div>
-            </div>
-            
-            <div class="table-container mt-3">
-                <table class="custom-table" id="salesTable">
-                    <thead>
-                        <tr>
-                            <th>Data</th>
-                            <th>Produto</th>
-                            <th>Qtd.</th>
-                            <th>Total</th>
-                            <th>Pagamento</th>
-                            <th>Status</th>
-                            <th class="text-center">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                        {{#each vendas}}
-                            <tr class="sale-row" data-search="{{this._id}} {{this.product_name}} {{formatDate this.createdAt}}">
-                                <td><span style="font-size: 0.9rem; color: var(--text-main);">{{formatDate this.createdAt}}</span></td>
-                                <td><strong>{{this.product_name}}</strong></td>
-                                <td>{{this.quantity}}x</td>
-                                <td><strong class="text-success">R$ {{this.total_price}}</strong></td>
-                                <td><span class="badge bg-light text-dark border">{{this.payment_method}}</span></td>
-                                <td><span class="badge-status status-active">Concluída</span></td>
-                                <td>
-                                    <div class="d-flex justify-content-center align-items-center gap-2">
-                                        <!-- NOVO: Botão de WhatsApp para reenviar comprovante histórico se necessário -->
-                                        <button class="btn btn-success btn-sm btn-wpp-share" 
-                                            title="Enviar por WhatsApp"
-                                            data-product="{{this.product_name}}"
-                                            data-quantity="{{this.quantity}}"
-                                            data-total="{{this.total_price}}"
-                                            data-payment="{{this.payment_method}}">
-                                            <i class="bi bi-whatsapp"></i>
-                                        </button>
-
-                                        <button class="btn btn-outline btn-sm" 
-                                            title="Ajustar Venda"
-                                            data-bs-toggle="modal" 
-                                            data-bs-target="#editModal"
-                                            data-id="{{this._id}}"
-                                            data-product="{{this.product_id}}"
-                                            data-quantity="{{this.quantity}}"
-                                            data-payment="{{this.payment_method}}">
-                                            Ajustar
-                                        </button>
-
-                                        <form action="/dashboard/sales/delete" method="POST" onsubmit="return confirm('Excluir esta venda irá devolver os itens ao estoque. Tem certeza?')" class="m-0">
-                                            <input type="hidden" name="sale_id" value="{{this._id}}">
-                                            <button type="submit" class="btn btn-danger btn-sm" title="Cancelar Venda">
-                                                <i class="bi bi-trash"></i>
-                                            </button>
-                                        </form>
-                                    </div>
-                                </td>
-                            </tr>
-                        {{else}}
-                            <tr id="emptyRow">
-                                <td colspan="7" style="text-align: center; padding: 2rem; color: var(--text-muted);">
-                                    Nenhuma venda registrada ainda.
-                                </td>
-                            </tr>
-                        {{/each}}
-                    </tbody>
-                </table>    
-            </div>
-
-            <div class="d-flex justify-content-between align-items-center mt-3 p-2" id="paginationControls">
-                <button class="btn btn-outline-secondary btn-sm" id="prevPage" disabled>
-                    <i class="bi bi-chevron-left"></i> Anterior
-                </button>
-                <span id="pageIndicator" class="text-muted" style="font-size: 0.9rem;">Página 1</span>
-                <button class="btn btn-outline-secondary btn-sm" id="nextPage">
-                    Próxima <i class="bi bi-chevron-right"></i>
-                </button>
-            </div>
-        </section>
-
-        <section class="data-card">
-            <div class="card-header">
-                <h2>Nova Venda</h2>
-            </div>
-            <div id="alert-container"></div>
-
-            <!-- MODIFICADO: Adicionado id para interceptação JavaScript -->
-            <form action="/dashboard/sales/create" method="post" id="novaVendaForm">
-                <div class="form-group mb-3">
-                    <label>Produto</label>
-                    <select name="product_id" id="form-select-product" class="form-input" required>
-                        <option value="">Selecione um produto...</option>
-                        {{#each produtos}}
-                            <option value="{{this._id}}" data-name="{{this.name}}" data-price="{{this.price}}">
-                                {{this.name}} - R$ {{this.price}} (Estoque: {{this.current_stock}} {{this.unit_of_measure}})
-                            </option>
-                        {{/each}}
-                    </select>
-                </div>
-                
-                <div class="row mb-3">
-                    <div class="col-md-6 form-group">
-                        <label>Quantidade</label>
-                        <input type="number" name="quantity" id="form-input-quantity" min="0.001" step="0.001" class="form-input" required>
-                    </div>
-                    <div class="col-md-6 form-group">
-                        <label>Pagamento</label>
-                        <select name="payment_method" id="form-select-payment" class="form-input" required>
-                            <option value="Pix">Pix</option>
-                            <option value="Cartão de Crédito">Cartão de Crédito</option>
-                            <option value="Cartão de Débito">Cartão de Débito</option>
-                            <option value="Dinheiro">Dinheiro</option>
-                        </select>
-                    </div>
-                </div>
-                
-                <button type="submit" class="btn btn-primary w-100 mt-2">
-                    <i class="bi bi-cart-check"></i> Finalizar Venda
-                </button>
-            </form>
-        </section>
-    </div>
-</div>
-
-<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="editForm" method="POST">
-                <div class="modal-header">
-                    <h5 class="modal-title">Ajustar Venda</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label">Produto</label>
-                        <select name="product_id" id="edit-product" class="form-control" required>
-                            {{#each produtos}}
-                                <option value="{{this._id}}">{{this.name}}</option>
-                            {{/each}}
-                        </select>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Quantidade</label>
-                            <input type="number" name="quantity" id="edit-quantity" min="0.001" step="0.001" class="form-control" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Pagamento</label>
-                            <select name="payment_method" id="edit-payment" class="form-control" required>
-                                <option value="Pix">Pix</option>
-                                <option value="Cartão de Crédito">Cartão de Crédito</option>
-                                <option value="Cartão de Débito">Cartão de Débito</option>
-                                <option value="Dinheiro">Dinheiro</option>
-                            </select>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Salvar Ajuste</button>
-                </div>
-            </form>
+    <div class="lg:col-span-2 rounded-2xl border border-slate-200 bg-white p-5 shadow-sm flex flex-col h-[600px]">
+      <div class="flex items-center gap-2 mb-4">
+        <div class="flex-1 flex items-center gap-2 rounded-lg border border-slate-200 bg-slate-50 h-10 px-3 focus-within:border-indigo-500 transition-colors">
+          <i data-lucide="search" class="h-4 w-4 text-slate-400"></i>
+          <input id="search-product" onkeyup="filterProducts()" placeholder="Buscar produto no catálogo…" class="flex-1 bg-transparent outline-none text-sm text-slate-900 placeholder:text-slate-400" />
         </div>
+        <button class="h-10 px-3 rounded-lg border border-slate-200 bg-slate-50 hover:bg-slate-100 transition-colors text-sm font-bold inline-flex items-center gap-1.5 text-slate-700">
+          <i data-lucide="scan-line" class="h-4 w-4 text-slate-500"></i>
+          Ler código
+        </button>
+      </div>
+
+      <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 overflow-y-auto pr-2 pb-2" id="products-grid">
+        {{#each produtos}}
+          <button onclick="addToCart('{{this._id}}', '{{this.name}}', {{this.price}}, {{this.current_stock}})" 
+                  class="product-card text-left rounded-xl border border-slate-200 p-4 hover:border-indigo-600 hover:shadow-md transition-all bg-slate-50/50 hover:bg-white group"
+                  data-name="{{this.name}}">
+            <div class="h-20 rounded-lg mb-3 flex items-center justify-center overflow-hidden border border-slate-200 shadow-inner group-hover:shadow-md transition-all">
+                <img src="{{this.image_url}}" class="h-full w-full object-cover" alt="{{this.name}}"
+                    onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{this.name}}&background=6366f1&color=ffffff&bold=true&size=256';">
+                </div>
+            <div class="text-sm font-bold leading-tight text-slate-900 truncate">{{this.name}}</div>
+            <div class="mt-1 flex items-center justify-between">
+              <div class="text-sm font-bold tabular-nums text-indigo-600">R$ {{this.price}}</div>
+              <div class="text-[10px] font-bold px-2 py-0.5 rounded-full {{#if this.current_stock}}bg-emerald-100 text-emerald-700{{else}}bg-rose-100 text-rose-700{{/if}}">
+                {{this.current_stock}} un
+              </div>
+            </div>
+          </button>
+        {{else}}
+          <div class="col-span-full flex flex-col items-center justify-center py-12 text-slate-400">
+            <i data-lucide="package-x" class="h-10 w-10 mb-2"></i>
+            <p>Nenhum produto cadastrado no catálogo.</p>
+          </div>
+        {{/each}}
+      </div>
     </div>
+
+    <div class="rounded-2xl border border-slate-200 bg-white flex flex-col h-[600px] shadow-sm overflow-hidden">
+      <div class="p-5 border-b border-slate-200 bg-slate-50/50 flex justify-between items-center">
+        <div>
+          <h2 class="text-base font-bold text-slate-900">Carrinho</h2>
+          <p class="text-xs font-medium text-slate-400" id="cart-count">0 item(s)</p>
+        </div>
+        <button onclick="clearCart()" class="text-xs font-bold text-rose-600 hover:text-rose-700 flex items-center gap-1">
+          <i data-lucide="trash" class="h-3 w-3"></i> Limpar
+        </button>
+      </div>
+
+      <div class="flex-1 overflow-y-auto">
+        <ul id="cart-items" class="divide-y divide-slate-200">
+          <li class="p-8 text-center text-slate-400 flex flex-col items-center justify-center h-full">
+            <i data-lucide="shopping-cart" class="h-8 w-8 mb-2 opacity-50"></i>
+            <span class="text-sm">O carrinho está vazio.</span>
+          </li>
+        </ul>
+      </div>
+
+      <div class="p-5 border-t border-slate-200 bg-slate-50/30 space-y-3">
+        <div class="flex items-center justify-between text-base font-bold text-slate-900 pt-1">
+          <span>Total</span>
+          <span class="tabular-nums text-2xl text-slate-900" id="cart-total">R$ 0.00</span>
+        </div>
+
+        <button onclick="openPaymentModal()" id="btn-checkout" disabled class="w-full h-11 rounded-lg text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-indigo-500 shadow-md shadow-indigo-600/10 hover:from-indigo-500 hover:to-indigo-600 transition-all inline-flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+          <i data-lucide="credit-card" class="h-4 w-4"></i>
+          Avançar para Pagamento
+        </button>
+        <p class="text-[10px] font-medium text-center text-slate-400">
+          O stock será abatido automaticamente.
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-8 rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+    <div class="p-5 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
+      <div>
+        <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+          <i data-lucide="history" class="h-5 w-5 text-indigo-600"></i> Histórico de Vendas
+        </h2>
+        <p class="text-xs font-medium text-slate-500 mt-1">Registo das transações concluídas.</p>
+      </div>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-xs font-bold uppercase tracking-[0.25em] text-slate-400 bg-slate-50 border-b border-slate-200">
+            <th class="text-left px-5 py-4">Data da Venda</th>
+            <th class="text-left px-5 py-4">Produto Vendido</th>
+            <th class="text-center px-5 py-4">Quantidade</th>
+            <th class="text-center px-5 py-4">Pagamento</th>
+            <th class="text-right px-5 py-4">Total</th>
+            <th class="text-right px-5 py-4">Ação</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-100">
+          {{#each vendas}}
+          <tr class="hover:bg-slate-50/60 transition-colors">
+            <td class="px-5 py-4 text-slate-500 font-medium">{{formatDate this.createdAt}}</td>
+            <td class="px-5 py-4 font-bold text-slate-800">{{this.product_name}}</td>
+            <td class="px-5 py-4 text-center font-bold text-slate-700">{{this.quantity}} un</td>
+            <td class="px-5 py-4 text-center">
+              <span class="inline-flex items-center rounded-full bg-slate-100 border border-slate-200 px-2.5 py-0.5 text-xs font-bold text-slate-700">
+                {{this.payment_method}}
+              </span>
+            </td>
+            <td class="px-5 py-4 text-right font-bold tabular-nums text-emerald-600">R$ {{this.total_price}}</td>
+            <td class="px-5 py-4 text-right">
+              <form action="/dashboard/sales/delete" method="POST" onsubmit="return confirm('ATENÇÃO: Deseja estornar esta venda? O valor será registado como saída e o stock devolvido.');" class="m-0 inline-block">
+                <input type="hidden" name="sale_id" value="{{this._id}}">
+                <button type="submit" class="h-8 w-8 rounded-md grid place-items-center text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors" title="Estornar Venda">
+                  <i data-lucide="rotate-ccw" class="h-4 w-4"></i>
+                </button>
+              </form>
+            </td>
+          </tr>
+          {{else}}
+          <tr>
+            <td colspan="6" class="px-5 py-8 text-center text-slate-400">
+              Nenhuma venda registada até o momento.
+            </td>
+          </tr>
+          {{/each}}
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<div id="payment-modal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm p-4 sm:p-6" style="z-index: 9999;">
+  <div class="mx-auto flex min-h-full max-w-md items-center justify-center">
+    
+    <div class="w-full rounded-2xl border border-slate-200 bg-white shadow-2xl flex flex-col max-h-[90vh] overflow-hidden">
+      
+      <div class="p-6 border-b border-slate-200 bg-slate-50 flex items-center justify-between shrink-0">
+        <h3 class="text-lg font-bold text-slate-900">Finalizar Transação</h3>
+        <button type="button" onclick="closePaymentModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
+          <i data-lucide="x" class="h-5 w-5"></i>
+        </button>
+      </div>
+      
+      <div class="p-6 space-y-5 overflow-y-auto flex-1">
+        <div class="bg-indigo-50 border border-indigo-100 rounded-xl p-4 text-center">
+          <p class="text-xs font-bold uppercase tracking-widest text-indigo-400 mb-1">Total a Pagar</p>
+          <p class="text-3xl font-bold text-indigo-700" id="modal-total">R$ 0.00</p>
+        </div>
+
+        <div>
+          <label class="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-slate-700">Forma de Pagamento</label>
+          <select id="payment_method" class="h-12 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-bold text-slate-800 outline-none focus:border-indigo-500 focus:bg-white transition-colors">
+            <option value="Pix">Pix</option>
+            <option value="Cartão de Crédito">Cartão de Crédito</option>
+            <option value="Cartão de Débito">Cartão de Débito</option>
+            <option value="Dinheiro">Dinheiro</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-slate-700">Notas Adicionais (Opcional)</label>
+          <input type="text" id="sale_notes" placeholder="Ex: Cliente solicitou fatura..." class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:bg-white transition-colors">
+        </div>
+
+        <div>
+          <label class="mb-2 block text-xs font-bold uppercase tracking-[0.2em] text-emerald-600">WhatsApp do Cliente (Opcional)</label>
+          <div class="relative rounded-xl shadow-sm">
+            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-emerald-500">
+              <i data-lucide="message-circle" class="h-4 w-4"></i>
+            </div>
+            <input type="text" id="customer_whatsapp" placeholder="Ex: 5571999999999" class="w-full pl-9 pr-3 py-2 border border-slate-200 rounded-xl text-sm placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-500 transition-colors">
+          </div>
+          <p class="text-[10px] text-slate-500 mt-1">Insira o código do país + DDD + número (Apenas números).</p>
+        </div>
+      </div>
+
+      <div class="p-6 border-t border-slate-100 bg-white shrink-0">
+        <button onclick="processCheckout()" id="btn-confirm-sale" class="w-full h-12 rounded-lg text-sm font-bold text-white bg-gradient-to-r from-emerald-500 to-emerald-600 shadow-md shadow-emerald-500/20 hover:from-emerald-600 hover:to-emerald-700 transition-all flex items-center justify-center gap-2">
+          <i data-lucide="check-circle" class="h-5 w-5"></i> Confirmar Recebimento
+        </button>
+      </div>
+
+    </div>
+  </div>
+</div>
 
 <script>
-    const urlParams = new URLSearchParams(window.location.search);
-    const alertContainer = document.getElementById('alert-container');
+  let cart = [];
 
-    if (urlParams.get('sucess') === 'create') {
-        alertContainer.innerHTML = `
-            <div class="alert alert-success d-flex align-items-center" role="alert">
-            <svg width="20" height="20" fill="currentColor" class="bi flex-shrink-0 me-2" viewBox="0 0 16 16">
-                    <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/>
-                </svg>
-                <div style="font-size: 0.9rem;">Venda Registrada com Sucesso!</div>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        `;
-    } else if (urlParams.get('error') === 'quantity') {
-        alertContainer.innerHTML = `
-            <div class="alert alert-danger d-flex align-items-center alert-dismissible fade show" role="alert">
-                <svg width="20" height="20" fill="currentColor" class="bi flex-shrink-0 me-2" viewBox="0 0 16 16">
-                    <path d="M8.982 1.566a1.13 1.13 0 0 0-1.96 0L.165 13.233c-.457.778.091 1.767.98 1.767h13.713c.889 0 1.438-.99.98-1.767L8.982 1.566zM8 5c.535 0 .954.462.9.995l-.35 3.507a.552.552 0 0 1-1.1 0L7.1 5.995A.905.905 0 0 1 8 5zm.002 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z"/>
-                </svg>
-                <div style="font-size: 0.9rem;">Erro: A quantidade vendida é maior que o estoque atual.</div>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        `;
-    }
-
-    const editModal = document.getElementById('editModal');
-    if (editModal) {
-        editModal.addEventListener('show.bs.modal', event => {
-            const button = event.relatedTarget;
-            
-            const id = button.getAttribute('data-id');
-            const productId = button.getAttribute('data-product');
-            const quantity = button.getAttribute('data-quantity');
-            const payment = button.getAttribute('data-payment');
-
-            editModal.querySelector('#edit-product').value = productId;
-            editModal.querySelector('#edit-quantity').value = quantity;
-            editModal.querySelector('#edit-payment').value = payment;
-            
-            editModal.querySelector('#editForm').action = `/dashboard/sales/update/${id}`;
-        });
-    }
-
-    document.addEventListener("DOMContentLoaded", function() {
-        const searchInput = document.getElementById("searchInput");
-        const allRows = Array.from(document.querySelectorAll(".sale-row")); 
-        let filteredRows = [...allRows]; 
-        
-        let currentPage = 1;
-        const rowsPerPage = 10; 
-
-        const btnPrev = document.getElementById("prevPage");
-        const btnNext = document.getElementById("nextPage");
-        const pageIndicator = document.getElementById("pageIndicator");
-
-        const btnVoz = document.getElementById("btn-voz-pdv");
-        const statusVoz = document.getElementById("status-voz");
-        const iconeMic = document.getElementById("icone-microfone");
-
-        function renderTable() {
-            allRows.forEach(row => row.style.display = "none");
-            
-            const startIndex = (currentPage - 1) * rowsPerPage;
-            const endIndex = startIndex + rowsPerPage;
-
-            const rowsToShow = filteredRows.slice(startIndex, endIndex);
-            rowsToShow.forEach(row => row.style.display = ""); 
-
-            const totalPages = Math.ceil(filteredRows.length / rowsPerPage) || 1;
-            pageIndicator.textContent = `Página ${currentPage} de ${totalPages}`;
-            
-            btnPrev.disabled = currentPage === 1;
-            btnNext.disabled = currentPage === totalPages;
-        }
-
-        function executarFiltro(termo) {
-            const searchTerm = termo.toLowerCase().trim();
-            
-            filteredRows = allRows.filter(row => {
-                const searchData = row.getAttribute("data-search").toLowerCase();
-                return searchData.includes(searchTerm);
-            });
-            
-            currentPage = 1;
-            renderTable();
-        }
-
-        if(searchInput) {
-            searchInput.addEventListener("input", function(e) {
-                executarFiltro(e.target.value);
-            });
-        }
-
-        // 🎙️ WEB SPEECH API
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (SpeechRecognition) {
-            const recognition = new SpeechRecognition();
-            recognition.lang = "pt-BR";
-            recognition.continuous = false;
-            recognition.interimResults = false;
-
-            if (btnVoz) {
-                btnVoz.addEventListener("click", () => {
-                    try { recognition.start(); } catch (err) { console.warn("Reconhecimento já ativo."); }
-                });
-            }
-
-            recognition.onstart = () => {
-                statusVoz.classList.remove("d-none");
-                iconeMic.className = "bi bi-record-circle-fill text-danger";
-                btnVoz.style.borderColor = "#dc3545";
-            };
-
-            recognition.onend = () => {
-                statusVoz.classList.add("d-none");
-                iconeMic.className = "bi bi-mic-fill text-primary";
-                btnVoz.style.borderColor = "#dee2e6";
-            };
-
-            recognition.onresult = (event) => {
-                const textoFalado = event.results[0][0].transcript;
-                const textoLimpo = textoFalado.replace(/\.$/g, ''); 
-                searchInput.value = textoLimpo;
-                executarFiltro(textoLimpo); 
-            };
-        }
-
-        // ==========================================
-// 🚀 LÓGICA DO WHATSAPP (VERSÃO COM SÍMBOLOS UNIVERSAIS)
-// ==========================================
-
-function dispararWhatsApp(telefone, dados) {
-    // Remove caracteres não numéricos do telefone
-    const numLimpo = telefone.replace(/\D/g, "");
-    const DDI = numLimpo.length <= 11 ? "55" : ""; // Adiciona DDI Brasil se o lojista não digitar
+  // Função para pesquisar produtos na grelha
+  function filterProducts() {
+    const input = document.getElementById('search-product').value.toLowerCase();
+    const cards = document.querySelectorAll('.product-card');
     
-    // Símbolos de texto geométricos universais (Zero bugs de codificação)
-    const simboLoja      = "[+]";
-    const simboProduto   = "->";
-    const simboQtd       = "#";
-    const simboPagamento = "($)";
-    const simboTotal     = "[R$]";
-    const simboSucesso   = "(*)";
-
-    const mensagem = simboLoja + " *COMPROVANTE DE COMPRA* \n\n" +
-                     simboProduto + " *Produto:* " + dados.produto + "\n" +
-                     simboQtd + " *Quantidade:* " + dados.quantidade + "\n" +
-                     simboPagamento + " *Forma de Pagamento:* " + dados.pagamento + "\n" +
-                     simboTotal + " *Valor Total:* R$ " + dados.total + "\n\n" +
-                     "Obrigado pela preferência! Volte sempre. " + simboSucesso;
-
-    // Concatenação limpa e segura para a URL do WhatsApp
-    const urlWpp = "https://wa.me/" + DDI + numLimpo + "?text=" + encodeURIComponent(mensagem);
-    window.open(urlWpp, "_blank");
-}
-
-
-        // Fluxo 1: Captura o clique de envio nas linhas da tabela (Histórico)
-        document.querySelectorAll(".btn-wpp-share").forEach(botao => {
-            botao.addEventListener("click", function() {
-                const dadosVenda = {
-                    produto: this.getAttribute("data-product"),
-                    quantidade: this.getAttribute("data-quantity"),
-                    total: this.getAttribute("data-total"),
-                    pagamento: this.getAttribute("data-payment")
-                };
-
-                const telefoneCliente = prompt("Digite o WhatsApp do cliente com o DDD (Ex: 71999999999):");
-                if (telefoneCliente) {
-                    dispararWhatsApp(telefoneCliente, dadosVenda);
-                }
-            });
-        });
-
-        // Fluxo 2: Intercepta o formulário de NOVA VENDA para disparar o WhatsApp ANTES de salvar
-        const formNovaVenda = document.getElementById("novaVendaForm");
-        if (formNovaVenda) {
-            formNovaVenda.addEventListener("submit", function(e) {
-                // Previne temporariamente para processarmos o alert/prompt do número
-                e.preventDefault();
-
-                const selectProduto = document.getElementById("form-select-product");
-                const opcaoSelecionada = selectProduto.options[selectProduto.selectedIndex];
-                
-                const produtoNome = opcaoSelecionada.getAttribute("data-name");
-                const produtoPreco = parseFloat(opcaoSelecionada.getAttribute("data-price"));
-                const qtd = parseFloat(document.getElementById("form-input-quantity").value);
-                const pagamento = document.getElementById("form-select-payment").value;
-                const totalCalculado = (produtoPreco * qtd).toFixed(2);
-
-                const telefoneCliente = prompt("Venda confirmada! Deseja enviar o recibo por WhatsApp?\n\nDigite o número com o DDD ou clique em 'Cancelar' para salvar sem enviar:");
-                
-                if (telefoneCliente && telefoneCliente.trim() !== "") {
-                    dispararWhatsApp(telefoneCliente, {
-                        produto: produtoNome,
-                        quantidade: qtd,
-                        total: totalCalculado,
-                        pagamento: pagamento
-                    });
-                }
-
-                // Após processar o fluxo do WhatsApp, envia o formulário de verdade para persistir no MongoDB
-                formNovaVenda.submit();
-            });
-        }
-
-        if(btnPrev) {
-            btnPrev.addEventListener("click", () => {
-                if (currentPage > 1) { currentPage--; renderTable(); }
-            });
-        }
-
-        if(btnNext) {
-            btnNext.addEventListener("click", () => {
-                const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
-                if (currentPage < totalPages) { currentPage++; renderTable(); }
-            });
-        }
-
-        renderTable();
+    cards.forEach(card => {
+      const name = card.getAttribute('data-name').toLowerCase();
+      card.style.display = name.includes(input) ? 'block' : 'none';
     });
+  }
+
+  // Adicionar produto ao carrinho
+  function addToCart(id, name, price, stock) {
+    if (stock <= 0) {
+      alert("Este produto está esgotado!");
+      return;
+    }
+
+    const existingItem = cart.find(item => item.id === id);
+    if (existingItem) {
+      if (existingItem.quantity >= stock) {
+        alert("Quantidade máxima em stock atingida!");
+        return;
+      }
+      existingItem.quantity += 1;
+    } else {
+      cart.push({ id, name, price: parseFloat(price), quantity: 1, maxStock: stock });
+    }
+    renderCart();
+  }
+
+  // Alterar a quantidade (+ ou -)
+  function updateQuantity(id, delta) {
+    const item = cart.find(i => i.id === id);
+    if (item) {
+      const newQuantity = item.quantity + delta;
+      if (newQuantity <= 0) {
+        cart = cart.filter(i => i.id !== id);
+      } else if (newQuantity > item.maxStock) {
+        alert("Quantidade máxima em stock atingida!");
+      } else {
+        item.quantity = newQuantity;
+      }
+      renderCart();
+    }
+  }
+
+  // Remover produto do carrinho
+  function removeFromCart(id) {
+    cart = cart.filter(item => item.id !== id);
+    renderCart();
+  }
+
+  // Limpar todo o carrinho
+  function clearCart() {
+    cart = [];
+    renderCart();
+  }
+
+  // Atualizar a interface do carrinho
+  function renderCart() {
+    const cartList = document.getElementById('cart-items');
+    const cartCount = document.getElementById('cart-count');
+    const cartTotal = document.getElementById('cart-total');
+    const btnCheckout = document.getElementById('btn-checkout');
+
+    cartList.innerHTML = '';
+    let total = 0;
+    let totalItems = 0;
+
+    if (cart.length === 0) {
+      cartList.innerHTML = `
+        <li class="p-8 text-center text-slate-400 flex flex-col items-center justify-center h-full">
+          <i data-lucide="shopping-cart" class="h-8 w-8 mb-2 opacity-50"></i>
+          <span class="text-sm">O carrinho está vazio.</span>
+        </li>`;
+      btnCheckout.disabled = true;
+    } else {
+      btnCheckout.disabled = false;
+      cart.forEach(item => {
+        total += item.price * item.quantity;
+        totalItems += item.quantity;
+
+        const li = document.createElement('li');
+        li.className = "p-4 flex items-center gap-3 hover:bg-slate-50/40 transition-colors";
+        li.innerHTML = `
+          <div class="flex-1 min-w-0">
+            <div class="text-sm font-bold truncate text-slate-800">${item.name}</div>
+            <div class="text-xs font-medium text-slate-400">R$ ${item.price.toFixed(2)} un</div>
+          </div>
+          <div class="flex items-center gap-1">
+            <button onclick="updateQuantity('${item.id}', -1)" class="h-7 w-7 grid place-items-center rounded-md border border-slate-200 hover:bg-slate-100 text-slate-600 transition-colors">
+              <i data-lucide="minus" class="h-3 w-3"></i>
+            </button>
+            <span class="w-7 text-center text-sm font-bold tabular-nums text-slate-800">${item.quantity}</span>
+            <button onclick="updateQuantity('${item.id}', 1)" class="h-7 w-7 grid place-items-center rounded-md border border-slate-200 hover:bg-slate-100 text-slate-600 transition-colors">
+              <i data-lucide="plus" class="h-3 w-3"></i>
+            </button>
+          </div>
+          <button onclick="removeFromCart('${item.id}')" class="h-7 w-7 grid place-items-center rounded-md text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors">
+            <i data-lucide="trash-2" class="h-3.5 w-3.5"></i>
+          </button>
+        `;
+        cartList.appendChild(li);
+      });
+    }
+
+    cartCount.innerText = `${totalItems} item(s)`;
+    cartTotal.innerText = `R$ ${total.toFixed(2)}`;
+    
+    // Atualizar ícones do Lucide nos novos elementos gerados
+    if (window.lucide) window.lucide.createIcons();
+  }
+
+  // Lógica do Modal de Pagamento
+  function openPaymentModal() {
+    if(cart.length === 0) return;
+    const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+    document.getElementById('modal-total').innerText = `R$ ${total.toFixed(2)}`;
+    document.getElementById('payment-modal').classList.remove('hidden');
+    document.getElementById('payment-modal').classList.add('flex');
+  }
+
+  function closePaymentModal() {
+    document.getElementById('payment-modal').classList.add('hidden');
+    document.getElementById('payment-modal').classList.remove('flex');
+  }
+
+  // O "Motor" que envia o carrinho para o Back-end e gera o Recibo no WhatsApp
+  async function processCheckout() {
+    const btn = document.getElementById('btn-confirm-sale');
+    const paymentMethod = document.getElementById('payment_method').value;
+    const notes = document.getElementById('sale_notes').value;
+    
+    // Captura o WhatsApp e remove qualquer espaço ou traço que o utilizador possa ter digitado
+    const rawWhatsapp = document.getElementById('customer_whatsapp').value;
+    const whatsapp = rawWhatsapp.replace(/\D/g, ''); 
+
+    btn.disabled = true;
+    btn.innerHTML = `<i data-lucide="loader" class="h-5 w-5 animate-spin"></i> Processando...`;
+    if (window.lucide) window.lucide.createIcons();
+
+    try {
+      // 1. Envia as vendas para o seu MongoDB
+      const requests = cart.map(item => {
+        const formData = new URLSearchParams();
+        formData.append('product_id', item.id);
+        formData.append('quantity', item.quantity);
+        formData.append('payment_method', paymentMethod);
+        formData.append('notes', notes);
+
+        return fetch('/dashboard/sales/create', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+          body: formData
+        });
+      });
+
+      await Promise.all(requests);
+      
+      // 2. LÓGICA DO WHATSAPP: Se o cliente forneceu um número, cria a mensagem
+      if (whatsapp && whatsapp.length >= 10) {
+        const total = cart.reduce((sum, item) => sum + (item.price * item.quantity), 0);
+        
+        // Monta o texto do recibo usando formatação do WhatsApp (asteriscos para negrito)
+        let msg = `🧾 *COMPROVANTE DE COMPRA*\n_StoreHost PDV_\n\n`;
+        msg += `*Itens adquiridos:*\n`;
+        cart.forEach(item => {
+          msg += `▪️ ${item.quantity}x ${item.name} (R$ ${(item.price * item.quantity).toFixed(2)})\n`;
+        });
+        msg += `\n💰 *Total Pago:* R$ ${total.toFixed(2)}`;
+        msg += `\n💳 *Pagamento:* ${paymentMethod}`;
+        if (notes) msg += `\n📝 *Notas:* ${notes}`;
+        msg += `\n\n_Obrigado pela preferência! Volte sempre._ 🛍️`;
+        
+        // Converte o texto para formato de link (URL)
+        const encodedMsg = encodeURIComponent(msg);
+        const whatsappUrl = `https://api.whatsapp.com/send?phone=${whatsapp}&text=${encodedMsg}`;
+        
+        // Abre o WhatsApp numa nova aba
+        window.open(whatsappUrl, '_blank');
+      }
+
+      // 3. Aguarda meio segundo e atualiza a tela do sistema para limpar o PDV
+      setTimeout(() => {
+          window.location.href = '/dashboard/sales?sucess=create';
+      }, 500);
+
+    } catch (error) {
+      console.error("Erro ao finalizar a venda:", error);
+      alert("Houve um erro ao processar a venda. Tente novamente.");
+      btn.disabled = false;
+      btn.innerHTML = `<i data-lucide="check-circle" class="h-5 w-5"></i> Confirmar Recebimento`;
+      if (window.lucide) window.lucide.createIcons();
+    }
+  }
 </script>

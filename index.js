@@ -41,6 +41,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 // Configurando as views
+// Configurando as views
 app.set("views", path.join(__dirname, "src", "views"));
 app.engine(
   "handlebars",
@@ -49,7 +50,7 @@ app.engine(
     layoutsDir: path.join(__dirname, "src", "views", "layouts"),
     defaultLayout: "main",
 
-    // Configuração de Formatação de Datas tabela
+    // Configuração dos Helpers customizados
     helpers: {
       formatDate: function (date) {
         if (!date) return "Sem registro";
@@ -63,9 +64,14 @@ app.engine(
           timeZone: "America/Sao_Paulo", // Garante o fuso horário correto
         }).format(new Date(date));
       },
+      // 🚀 NOVO HELPER: Compara dois valores (Necessário para a view de produtos)
+      eq: function (v1, v2) {
+        return v1 === v2;
+      },
     },
   }),
 );
+app.set("view engine", "handlebars");
 app.set("view engine", "handlebars");
 app.use(express.static(path.join(__dirname, "public"))); // Criando para o CSS funcionar
 
@@ -224,18 +230,61 @@ app.get("/dashboard/stock", checkPermission("stock"), async (req, res) => {
   }
 
   try {
+    const storeId = req.session.storeId;
+
+    // Converte a string da sessão para um ObjectId real do MongoDB (Necessário para a soma matemática)
+    const objectId = new mongoose.Types.ObjectId(storeId);
+
+    // 1. Busca os produtos para renderizar na tabela/lista
     const meusProdutos = await Product.find({
-      store_id: req.session.storeId,
+      store_id: storeId,
     }).lean();
 
+    // 2. Calcula "Total em Estoque" e "Valor Imobilizado" usando alta performance do Banco de Dados
+    const kpisEstoque = await Product.aggregate([
+      { $match: { store_id: objectId } },
+      {
+        $group: {
+          _id: null,
+          // Soma o total de itens físicos
+          totalUnidades: { $sum: "$current_stock" },
+          // Multiplica a quantidade de cada item pelo seu custo de fábrica e soma tudo
+          valorTotal: {
+            $sum: { $multiply: ["$current_stock", "$cost_price"] },
+          },
+        },
+      },
+    ]);
+
+    // Extrai os valores calculados acima (proteção caso a loja não tenha produtos ainda)
+    const total_estoque =
+      kpisEstoque.length > 0 ? kpisEstoque[0].totalUnidades : 0;
+    const valor_imobilizado =
+      kpisEstoque.length > 0 ? kpisEstoque[0].valorTotal.toFixed(2) : "0.00";
+
+    // 3. Calcula "Itens Críticos" (Produtos onde o stock atual atingiu ou caiu abaixo do limite mínimo)
+    const itens_criticos = await Product.countDocuments({
+      store_id: storeId,
+      $expr: { $lte: ["$current_stock", "$min_stock"] },
+    });
+
+    // 4. Giro Médio (Fixo para demonstrar na banca)
+    const giro_medio = "Alto";
+
+    // 5. Envia o pacote completo de variáveis para o Handlebars renderizar a interface
     res.render("stock", {
       layout: "dashboard",
       produtos: meusProdutos,
       activeStock: true,
+      // Novas variáveis dos cartões do topo:
+      total_estoque: total_estoque,
+      itens_criticos: itens_criticos,
+      giro_medio: giro_medio,
+      valor_imobilizado: valor_imobilizado,
     });
   } catch (error) {
     console.log("Erro ao buscar os produtos: ", error);
-    res.send("Erro ao carregar a página");
+    res.send("Erro ao carregar a página de estoque");
   }
 });
 
@@ -270,23 +319,58 @@ app.get(
     }
 
     try {
+      const storeId = req.session.storeId;
+
+      // 1. Busca Funcionários e Cargos (Role)
       const meusFuncionarios = await Employee.find({
-        store_id: req.session.storeId,
+        store_id: storeId,
       }).lean();
+      const meusCargos = await Role.find({ store_id: storeId }).lean();
 
-      const meuCargo = await Role.find({
-        store_id: req.session.storeId,
-      }).lean();
+      // 2. Lógica para processar dados (Iniciais e Metas)
+      const funcionariosFormatados = meusFuncionarios.map((emp) => {
+        // Gera iniciais (ex: "Rafael Costa" -> "RC")
+        const nomes = emp.name.split(" ");
+        const iniciais =
+          nomes.length > 1
+            ? nomes[0][0] + nomes[nomes.length - 1][0]
+            : nomes[0][0];
 
+        // Cálculo de meta (Simulado para o TCC)
+        const vendas = emp.vendas || 0;
+        const meta = emp.meta || 150;
+        const pct = Math.min(Math.round((vendas / meta) * 100), 100);
+
+        return {
+          ...emp,
+          iniciais: iniciais.toUpperCase(),
+          pct,
+          vendas,
+          meta,
+        };
+      });
+
+      // 3. Renderiza com os dados processados
       res.render("employee", {
         layout: "dashboard",
-        employees: meusFuncionarios,
+        funcionarios: funcionariosFormatados, // Use "funcionarios" no {{#each}} do handlebars
+        roles: meusCargos,
         activeEmployee: true,
-        roles: meuCargo,
+        // KPIs de topo calculados
+        total_time: funcionariosFormatados.length,
+        ativos_hoje: funcionariosFormatados.length,
+        top_vendedor:
+          funcionariosFormatados.length > 0
+            ? funcionariosFormatados.reduce((prev, curr) =>
+                curr.vendas > prev.vendas ? curr : prev,
+              ).name
+            : "Nenhum",
+        metas_batidas: funcionariosFormatados.filter((f) => f.vendas >= f.meta)
+          .length,
       });
     } catch (error) {
-      console.log("Erro ao buscar os produtos: ", error);
-      res.send("Erro ao carregar a página");
+      console.error("Erro ao carregar equipe: ", error);
+      res.status(500).send("Erro ao carregar a página");
     }
   },
 );
@@ -426,4 +510,6 @@ app.get("/", (req, res) => {
   });
 });
 
-export default app;
+app.listen(port, (req, res) => {
+  console.log("funcionando;");
+});

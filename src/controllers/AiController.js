@@ -6,6 +6,37 @@ import mongoose from "mongoose";
 import PDFDocument from "pdfkit";
 import Store from "../models/Store.js";
 
+// --- FUNÇÕES AUXILIARES PARA LIDAR COM O ERRO 429 ---
+const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
+
+async function generateWithRetry(
+  model,
+  prompt,
+  retries = 3,
+  initialDelay = 9000,
+) {
+  for (let attempt = 0; attempt < retries; attempt++) {
+    try {
+      // Tenta fazer a requisição para o Gemini
+      const result = await model.generateContent(prompt);
+      return result;
+    } catch (error) {
+      // Verifica se é o erro 429 (Too Many Requests) e se ainda temos tentativas
+      if (error.status === 429 && attempt < retries - 1) {
+        console.warn(
+          `⏳ Cota excedida (Erro 429). Aguardando ${initialDelay / 1000}s antes da tentativa ${attempt + 2}...`,
+        );
+        await delay(initialDelay);
+        initialDelay *= 1.5; // Aumenta o tempo em 50% para a próxima tentativa, se falhar de novo
+      } else {
+        // Se for outro erro (ex: falha de rede) ou acabaram as tentativas, repassa o erro
+        throw error;
+      }
+    }
+  }
+}
+// ----------------------------------------------------
+
 class AiController {
   async generateReport(req, res) {
     try {
@@ -51,9 +82,10 @@ class AiController {
 
       // 3. Chamando a IA do Gemini
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-      const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" }); // Modelo rápido e barato
+      const model = genAI.getGenerativeModel({ model: "gemini-1 .5-flash" }); // Modelo rápido e barato
 
-      const result = await model.generateContent(prompt);
+      // ✅ Usando a nova função com Retry em vez de model.generateContent direto
+      const result = await generateWithRetry(model, prompt);
       const response = await result.response;
       const relatorioTexto = response.text();
 
@@ -118,7 +150,8 @@ class AiController {
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
       const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-      const result = await model.generateContent(prompt);
+      // ✅ Usando a nova função com Retry em vez de model.generateContent direto
+      const result = await generateWithRetry(model, prompt);
       const diagnosticText = result.response.text();
 
       // Guarda no banco de dados e marca o onboarding como concluído
@@ -192,7 +225,8 @@ class AiController {
       const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
       const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
 
-      const result = await model.generateContent(prompt);
+      // ✅ Usando a nova função com Retry em vez de model.generateContent direto
+      const result = await generateWithRetry(model, prompt);
       let text = result.response.text();
 
       // Limpeza de segurança caso a IA coloque blocos ```json

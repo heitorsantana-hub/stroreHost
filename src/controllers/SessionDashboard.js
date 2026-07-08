@@ -167,6 +167,8 @@ class DashboardController {
         storeId: storeId,
         onboardingCompleted: loja.onboardingCompleted || false,
         storeDiagnostic: loja.diagnostic || "",
+        userName: req.session.userName,
+        userInitials: req.session.userName.substring(0, 2).toUpperCase(),
 
         kpiVendas: totalVendas.toFixed(2),
         kpiProdutos: produtosCount,

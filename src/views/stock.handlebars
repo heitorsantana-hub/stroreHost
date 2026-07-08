@@ -1,342 +1,234 @@
-<div class="content-body">
-    
-    <section class="welcome-sec">
-        <h1>Controle de Estoque</h1>
-        <p>Monitore os níveis de produtos e registre entradas ou saídas.</p>
-    </section>
+<div class="space-y-6">
+  <div class="flex flex-wrap items-end justify-between gap-4">
+    <div>
+      <h1 class="text-2xl sm:text-3xl font-bold tracking-tight text-slate-900">Controlo de Estoque</h1>
+      <p class="mt-1 text-sm text-slate-500 max-w-2xl">
+        Monitore níveis, receba alertas de reposição e evite capital travado.
+      </p>
+    </div>
+    <button onclick="openModal('stock-movement-modal')" class="h-9 px-4 rounded-lg text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-indigo-500 shadow-md shadow-indigo-600/10 hover:from-indigo-500 hover:to-indigo-600 transition-all flex items-center gap-2">
+      <i data-lucide="arrow-right-left" class="h-4 w-4"></i>
+      Movimentar Estoque
+    </button>
+  </div>
 
-    <div class="main-grid">
+  <section class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="text-xs font-bold uppercase tracking-[0.25em] text-slate-400">Total em estoque</div>
+      <div class="mt-3 text-2xl font-bold tracking-tight text-slate-900">{{total_estoque}}</div>
+      <div class="mt-1 text-xs font-bold text-slate-500">Unidades físicas na loja</div>
+    </div>
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="text-xs font-bold uppercase tracking-[0.25em] text-slate-400">Itens críticos</div>
+      <div class="mt-3 text-2xl font-bold tracking-tight text-slate-900">{{itens_criticos}}</div>
+      <div class="mt-1 text-xs font-bold text-rose-600">Requerem reposição urgente</div>
+    </div>
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="text-xs font-bold uppercase tracking-[0.25em] text-slate-400">Giro médio</div>
+      <div class="mt-3 text-2xl font-bold tracking-tight text-slate-900">{{giro_medio}}</div>
+      <div class="mt-1 text-xs font-bold text-emerald-600">Estabilidade de saída</div>
+    </div>
+    <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
+      <div class="text-xs font-bold uppercase tracking-[0.25em] text-slate-400">Valor imobilizado</div>
+      <div class="mt-3 text-2xl font-bold tracking-tight text-slate-900">R$ {{valor_imobilizado}}</div>
+      <div class="mt-1 text-xs font-bold text-slate-500">Capital investido nos produtos</div>
+    </div>
+  </section>
+
+  <div class="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+    <div class="p-4 border-b border-slate-200 flex items-center justify-between bg-slate-50/50">
+      <h2 class="text-base font-bold text-slate-900">Níveis por produto</h2>
+      <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 rounded-lg border border-slate-200 bg-white h-9 px-3 focus-within:border-indigo-500 transition-colors">
+          <i data-lucide="search" class="h-4 w-4 text-slate-400"></i>
+          <input id="search-stock" onkeyup="filterStock()" placeholder="Pesquisar..." class="w-32 sm:w-48 bg-transparent outline-none text-sm text-slate-900 placeholder:text-slate-400" />
+        </div>
+      </div>
+    </div>
+
+    <div class="divide-y divide-slate-200 max-h-[600px] overflow-y-auto" id="stock-list">
+      
+      {{#each produtos}}
+      <div class="p-4 grid grid-cols-12 gap-3 items-center hover:bg-slate-50/60 transition-colors stock-row"
+           data-name="{{this.name}}" 
+           data-current="{{this.current_stock}}" 
+           data-min="{{this.min_stock}}" 
+           data-max="{{this.max_stock}}">
         
-        <section class="data-card">
-            <div class="card-header d-flex justify-content-between align-items-center flex-wrap gap-3">
-                <h2>Níveis de Estoque</h2>
-                <div class="search-box" style="flex: 1; max-width: 300px;">
-                    <input type="text" id="searchInput" class="form-control" placeholder="🔍 Pesquisar por nome...">
-                </div>
-            </div>
-
-            <div class="table-container mt-3">
-                <table class="custom-table" id="stockTable">
-                    <thead>
-                        <tr>
-                            <th>Produto</th>
-                            <th>Qtd. Atual</th>
-                            <th>Valor</th>
-                            <th>Última Mov.</th>
-                            <th class="text-center">Ações</th> 
-                        </tr>
-                    </thead>
-                    <tbody id="tableBody">
-                        {{#each produtos}}
-                        <tr class="product-row" data-name="{{this.name}}">
-                            <td>
-                                <strong>{{this.name}}</strong><br>
-                                <small class="text-muted" style="font-size: 0.7rem;">Cód: {{#if this.barcode}}{{this.barcode}}{{else}}N/A{{/if}}</small>
-                            </td>
-                            
-                            <td>
-                                <span>
-                                       {{this.current_stock}} {{this.unit_of_measure}}
-                                </span>
-                            </td> 
-                            
-                            <td>R$ {{this.price}}</td>
-                            
-                            <td class="text-muted" style="font-size: 0.85rem;">
-                                {{formatDate this.updatedAt}}
-                            </td>
-                            
-                            <td>
-                                <div class="d-flex justify-content-center align-items-center gap-2">
-                                    <button class="btn btn-outline btn-sm" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#viewModal"
-                                        data-id="{{this._id}}"
-                                        data-name="{{this.name}}"
-                                        data-image="{{this.image_url}}"
-                                        data-quantity="{{this.current_stock}}"
-                                        data-category="{{this.category}}"
-                                        data-description="{{this.description}}"
-                                        data-price="{{this.price}}"
-                                        data-stock="{{this.current_stock}}"
-                                        data-unit="{{this.unit_of_measure}}">
-                                        <i class="bi bi-eye"></i> Ver
-                                    </button>
-
-                                    <button class="btn btn-outline btn-sm" 
-                                        data-bs-toggle="modal" 
-                                        data-bs-target="#editModal"
-                                        data-id="{{this._id}}"
-                                        data-quantity="{{this.current_stock}}">
-                                        Ajustar
-                                    </button>
-                                </div>
-                            </td>
-                        </tr>
-                        {{else}}
-                        <tr id="emptyRow">
-                            <td colspan="5" style="text-align: center; padding: 2rem; color: var(--text-muted);">
-                                Nenhum produto cadastrado ainda. Use o formulário ao lado para começar!
-                            </td>
-                        </tr>
-                        {{/each}}
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="d-flex justify-content-between align-items-center mt-3 p-2" id="paginationControls">
-                <button class="btn btn-outline-secondary btn-sm" id="prevPage" disabled>
-                    <i class="bi bi-chevron-left"></i> Anterior
-                </button>
-                <span id="pageIndicator" class="text-muted" style="font-size: 0.9rem;">Página 1</span>
-                <button class="btn btn-outline-secondary btn-sm" id="nextPage">
-                    Próxima <i class="bi bi-chevron-right"></i>
-                </button>
-            </div>
-        </section>
-
-        <section class="data-card">
-            <div class="card-header">
-                <h2>Movimentar Estoque</h2>
-            </div>
-            <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1.5rem;">Adicione entradas ou saídas de itens.</p>
-
-            <div id="alert-container"></div>
-            
-            <form action="/dashboard/stock/update" method="post">
-                <div class="form-group mb-2">
-                    <label>Selecionar Produto</label>
-                    <select name="product_id" class="form-input" required>
-                        <option value="">Escolha um produto...</option>
-                        {{#each produtos}}
-                            <option value="{{this._id}}">{{this.name}} (Qtd Atual: {{this.current_stock}})</option>
-                        {{/each}}
-                    </select>
-                </div>
-
-                <div class="row mb-2">
-                    <div class="col-md-6 form-group">
-                        <label>Tipo de Movimento</label>
-                        <select name="type" class="form-input" required>
-                            <option value="in">Entrada (+)</option>
-                            <option value="out">Saída (-)</option>
-                        </select>
-                    </div>
-                    <div class="col-md-6 form-group">
-                        <label>Motivo</label>
-                        <select name="reason" class="form-input" required>
-                            <option value="compra">Nova Compra</option>
-                            <option value="venda">Venda Avulsa</option>
-                            <option value="devolucao">Devolução</option>
-                            <option value="ajuste">Ajuste de Estoque</option>
-                            <option value="perda_validade">Perda / Vencimento</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="row mb-3">
-                    <div class="col-md-6 form-group">
-                        <label>Quantidade (Decimais permitidos)</label>
-                        <input type="number" name="quantity" class="form-input" step="0.001" min="0.001" required>
-                    </div>
-                    <div class="col-md-6 form-group">
-                        <label>Custo Total desta Ação (R$)</label>
-                        <input type="number" name="unit_value" class="form-input" step="0.01" placeholder="Opcional">
-                    </div>
-                </div>
-
-                <button type="submit" class="btn btn-primary" style="width: 100%;">Registrar Movimentação</button>
-            </form>
-        </section>
-
-    </div>
-</div>
-
-<div class="modal fade" id="editModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <form id="editStockForm" method="POST">
-                <div class="modal-header">
-                    <h5 class="modal-title">Ajuste Direto de Estoque</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="form-group mb-3">
-                        <label>Nova Quantidade Total</label>
-                        <input type="number" step="0.001" name="quantity" id="edit-quantity" class="form-input" required>
-                        <small class="text-muted">Isso sobrescreverá a quantidade atual do produto.</small>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Salvar Alteração</button>
-                </div>
-            </form>
+        <div class="col-span-12 sm:col-span-4 flex items-center gap-3">
+          <div class="h-8 w-8 rounded bg-slate-100 flex items-center justify-center border border-slate-200 shrink-0">
+             {{#if this.image_url}}
+                <img src="{{this.image_url}}" class="h-full w-full object-cover rounded" onerror="this.style.display='none'">
+             {{else}}
+                <i data-lucide="package" class="h-4 w-4 text-slate-400"></i>
+             {{/if}}
+          </div>
+          <span class="font-bold text-slate-800 truncate" title="{{this.name}}">{{this.name}}</span>
         </div>
-    </div>
-</div>
-
-<div class="modal fade" id="viewModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Detalhes do Produto</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="fw-bold">Nome:</label>
-                    <span id="view-name"></span>
-                </div>
-                <div class="mb-3">
-                    <label class="fw-bold">Categoria:</label>
-                    <span id="view-category"></span>
-                </div>
-                <div class="mb-3">
-                    <label class="fw-bold">Preço:</label>
-                    <span id="view-price"></span>
-                </div>
-                <div class="mb-3">
-                    <label class="fw-bold">Descrição:</label>
-                    <p id="view-description" class="text-muted"></p>
-                </div>
-                <div class="mb-3">
-                    <label class="fw-bold">Quantidade Atual:</label>
-                    <p id="view-quantity" class="text-muted fw-bold"></p>
-                </div>
-               <div class="mb-3 text-center">
-                    <label class="fw-bold d-block mb-2">Imagem do Produto:</label>
-                    <img id="view-image" 
-                    src="" 
-                    alt="Produto" 
-                    class="img-fluid rounded shadow-sm d-block mx-auto" 
-                    style="max-height: 250px; object-fit: cover;">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-            </div>
+        
+        <div class="col-span-12 sm:col-span-5">
+          <div class="relative h-2 rounded-full bg-slate-100 overflow-hidden">
+            <div class="absolute inset-y-0 left-0 rounded-full progress-bar transition-all duration-700 ease-out" style="width: 0%"></div>
+          </div>
+          <div class="mt-1 flex justify-between text-[11px] font-medium text-slate-400">
+            <span>mín {{this.min_stock}}</span>
+            <span>máx {{this.max_stock}}</span>
+          </div>
         </div>
+        
+        <div class="col-span-6 sm:col-span-2 text-sm tabular-nums font-bold text-slate-900 text-center">
+          {{this.current_stock}} <span class="text-xs font-normal text-slate-500">{{this.unit_of_measure}}</span>
+        </div>
+        
+        <div class="col-span-6 sm:col-span-1 text-right">
+          <span class="status-badge inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-bold border"></span>
+        </div>
+      </div>
+      {{else}}
+      <div class="p-12 text-center text-slate-400">
+        <i data-lucide="inbox" class="h-12 w-12 mx-auto mb-3 opacity-50"></i>
+        <p>Não há produtos no catálogo para exibir o nível de stock.</p>
+      </div>
+      {{/each}}
+      
     </div>
+  </div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<div id="stock-movement-modal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm p-4 sm:p-6" style="z-index: 9999;">
+  <div class="mx-auto flex min-h-full max-w-md items-center justify-center">
+    <div class="w-full rounded-2xl border border-slate-200 bg-white shadow-2xl overflow-hidden">
+      <div class="p-6 border-b border-slate-200 bg-slate-50 flex items-center justify-between">
+        <div>
+          <h3 class="text-lg font-bold text-slate-900">Movimentar Estoque</h3>
+          <p class="text-xs text-slate-500">Registe uma entrada ou saída manual.</p>
+        </div>
+        <button type="button" onclick="closeModal('stock-movement-modal')" class="text-slate-400 hover:text-slate-600 h-8 w-8 flex items-center justify-center rounded-lg hover:bg-slate-200 transition-colors">
+          <i data-lucide="x" class="h-5 w-5"></i>
+        </button>
+      </div>
+      
+      <form action="/dashboard/stock/update" method="POST" class="p-6 space-y-4">
+        
+        <div>
+          <label class="mb-1 block text-xs font-bold uppercase tracking-[0.2em] text-slate-700">Produto</label>
+          <select name="product_id" required class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:bg-white transition-colors">
+            <option value="">Selecione um produto...</option>
+            {{#each produtos}}
+              <option value="{{this._id}}">{{this.name}} (Atual: {{this.current_stock}})</option>
+            {{/each}}
+          </select>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="mb-1 block text-xs font-bold uppercase tracking-[0.2em] text-slate-700">Tipo de Movimento</label>
+            <select name="type" required class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm font-bold text-slate-800 outline-none focus:border-indigo-500 focus:bg-white transition-colors">
+              <option value="in" class="text-emerald-600">Entrada (+)</option>
+              <option value="out" class="text-rose-600">Saída (-)</option>
+            </select>
+          </div>
+          <div>
+            <label class="mb-1 block text-xs font-bold uppercase tracking-[0.2em] text-slate-700">Quantidade</label>
+            <input name="quantity" type="number" step="0.001" min="0.001" required placeholder="Ex: 10" class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:bg-white">
+          </div>
+        </div>
+
+        <div>
+          <label class="mb-1 block text-xs font-bold uppercase tracking-[0.2em] text-slate-700">Motivo</label>
+          <select name="reason" required class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:bg-white transition-colors">
+            <option value="compra">Nova Compra de Fornecedor</option>
+            <option value="ajuste">Ajuste / Contagem de Inventário</option>
+            <option value="devolucao">Devolução de Cliente</option>
+            <option value="perda_validade">Perda / Validade Expirada</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="mb-1 block text-xs font-bold uppercase tracking-[0.2em] text-slate-700">Valor Unitário Opcional (R$)</label>
+          <input name="unit_value" type="number" step="0.01" placeholder="Custo por unidade nesta transação" class="h-10 w-full rounded-lg border border-slate-200 bg-slate-50 px-3 text-sm text-slate-800 outline-none focus:border-indigo-500 focus:bg-white">
+          <p class="text-[10px] text-slate-500 mt-1">Deixe em branco para usar o preço de custo padrão do produto.</p>
+        </div>
+
+        <div class="pt-4 border-t border-slate-100">
+          <button type="submit" class="w-full h-11 rounded-lg text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-indigo-500 shadow-md shadow-indigo-600/10 hover:from-indigo-500 hover:to-indigo-600 transition-all flex items-center justify-center gap-2">
+            <i data-lucide="check" class="h-4 w-4"></i> Confirmar Registo
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 <script>
-    // ==========================================
-    // 1. LÓGICA DE ALERTS E MODAIS
-    // ==========================================
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.get('sucess') === 'create') {
-        const alertContainer = document.getElementById('alert-container');
-        alertContainer.innerHTML = `
-            <div class="alert alert-success d-flex align-items-center" role="alert">
-                <svg width="20" height="20" fill="currentColor" class="bi flex-shrink-0 me-2" viewBox="0 0 16 16"><path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z"/></svg>
-                <div style="font-size: 0.9rem;">Estoque Atualizado com Sucesso!</div>
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-        `;
-    }
+  document.addEventListener('DOMContentLoaded', () => {
+    // 1. Injeta os ícones
+    if (window.lucide) window.lucide.createIcons();
 
-    const editModal = document.getElementById('editModal');
-    if (editModal) {
-        editModal.addEventListener('show.bs.modal', event => {
-            const btn = event.relatedTarget; 
-            const id = btn.getAttribute('data-id');
-            const quantity = btn.getAttribute('data-quantity');
+    // 2. Motor de Níveis de Stock (Barras de Progresso Mágicas)
+    const rows = document.querySelectorAll('.stock-row');
+    
+    rows.forEach(row => {
+      // Lê os atributos data-*
+      const current = parseFloat(row.getAttribute('data-current')) || 0;
+      const min = parseFloat(row.getAttribute('data-min')) || 0;
+      const max = parseFloat(row.getAttribute('data-max')) || 1; // Previne divisão por zero
+      
+      const bar = row.querySelector('.progress-bar');
+      const badge = row.querySelector('.status-badge');
+      
+      // Calcula a percentagem para a largura da barra
+      let pct = (current / max) * 100;
+      if (pct > 100) pct = 100;
+      
+      // Anima a barra
+      setTimeout(() => { bar.style.width = pct + '%'; }, 150);
 
-            editModal.querySelector('#edit-quantity').value = quantity;
-            const form = editModal.querySelector('#editStockForm');
-            form.action = `/dashboard/stock/update/${id}`;
-        });
-    }
-
-    const viewModal = document.getElementById('viewModal');
-    if (viewModal) {
-        viewModal.addEventListener('show.bs.modal', event => {
-            const btn = event.relatedTarget;
-            const unit = btn.getAttribute('data-unit') || "UN";
-
-            viewModal.querySelector('#view-name').textContent = btn.getAttribute('data-name') || "Não informado";
-            viewModal.querySelector('#view-category').textContent = btn.getAttribute('data-category') || "Sem categoria";
-            const price = btn.getAttribute('data-price');
-            viewModal.querySelector('#view-price').textContent = price ? `R$ ${price}` : "Consulte";
-            viewModal.querySelector('#view-quantity').textContent = `${btn.getAttribute('data-quantity')} ${unit}`;
-            viewModal.querySelector('#view-description').textContent = btn.getAttribute('data-description') || "Nenhuma descrição disponível.";
-
-            const imgElement = viewModal.querySelector('#view-image');
-            const image = btn.getAttribute('data-image');
-            if (image && image !== "") {
-                imgElement.src = image;
-                imgElement.style.display = "block"; 
-            } else {
-                imgElement.src = "https://placehold.co/400x300?text=Produto+Sem+Foto";
-            }
-        });
-    }
-
-    // ==========================================
-    // 2. NOVA LÓGICA DE PESQUISA E PAGINAÇÃO
-    // ==========================================
-    document.addEventListener("DOMContentLoaded", function() {
-        const searchInput = document.getElementById("searchInput");
-        const allRows = Array.from(document.querySelectorAll(".product-row")); 
-        let filteredRows = [...allRows]; 
-        
-        let currentPage = 1;
-        const rowsPerPage = 10; 
-
-        const btnPrev = document.getElementById("prevPage");
-        const btnNext = document.getElementById("nextPage");
-        const pageIndicator = document.getElementById("pageIndicator");
-
-        function renderTable() {
-            allRows.forEach(row => row.style.display = "none");
-            const startIndex = (currentPage - 1) * rowsPerPage;
-            const endIndex = startIndex + rowsPerPage;
-
-            const rowsToShow = filteredRows.slice(startIndex, endIndex);
-            rowsToShow.forEach(row => row.style.display = ""); 
-
-            const totalPages = Math.ceil(filteredRows.length / rowsPerPage) || 1;
-            pageIndicator.textContent = `Página ${currentPage} de ${totalPages}`;
-            
-            btnPrev.disabled = currentPage === 1;
-            btnNext.disabled = currentPage === totalPages;
-        }
-
-        if(searchInput) {
-            searchInput.addEventListener("input", function(e) {
-                const searchTerm = e.target.value.toLowerCase().trim();
-                filteredRows = allRows.filter(row => {
-                    const productName = row.getAttribute("data-name").toLowerCase();
-                    return productName.includes(searchTerm);
-                });
-                currentPage = 1;
-                renderTable();
-            });
-        }
-
-        if(btnPrev) {
-            btnPrev.addEventListener("click", () => {
-                if (currentPage > 1) {
-                    currentPage--;
-                    renderTable();
-                }
-            });
-        }
-
-        if(btnNext) {
-            btnNext.addEventListener("click", () => {
-                const totalPages = Math.ceil(filteredRows.length / rowsPerPage);
-                if (currentPage < totalPages) {
-                    currentPage++;
-                    renderTable();
-                }
-            });
-        }
-
-        // Renderiza inicial
-        renderTable();
+      // Lógica de Inteligência de Cores e Estados
+      if (current <= 0) {
+        bar.classList.add('bg-rose-600');
+        badge.classList.add('bg-rose-50', 'border-rose-200', 'text-rose-700');
+        badge.innerText = 'Esgotado';
+      } 
+      else if (current <= min) {
+        bar.classList.add('bg-amber-500');
+        badge.classList.add('bg-amber-50', 'border-amber-200', 'text-amber-700');
+        badge.innerText = 'Crítico';
+      } 
+      else if (current > max) {
+        bar.classList.add('bg-indigo-400');
+        badge.classList.add('bg-indigo-50', 'border-indigo-200', 'text-indigo-700');
+        badge.innerText = 'Excesso';
+      } 
+      else {
+        bar.classList.add('bg-emerald-500');
+        badge.classList.add('bg-emerald-50', 'border-emerald-200', 'text-emerald-700');
+        badge.innerText = 'Estável';
+      }
     });
+  });
+
+  // 3. Sistema de Pesquisa Rápida na Lista
+  function filterStock() {
+    const input = document.getElementById('search-stock').value.toLowerCase();
+    const rows = document.querySelectorAll('.stock-row');
+    
+    rows.forEach(row => {
+      const name = row.getAttribute('data-name').toLowerCase();
+      row.style.display = name.includes(input) ? '' : 'none';
+    });
+  }
+
+  // 4. Controlo do Modal
+  function openModal(id) {
+    const modal = document.getElementById(id);
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
+
+  function closeModal(id) {
+    const modal = document.getElementById(id);
+    modal.classList.add('hidden');
+    modal.classList.remove('flex');
+  }
 </script>

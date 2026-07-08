@@ -41,9 +41,9 @@ class SessionFinance {
 
         return t;
       });
-      // --- FIM DA MATEMÁTICA ---
 
-      // Envia os dados prontos para a tela (Convertendo os agrupamentos em Arrays tipo JSON)
+      const saldoFinal = totalEntradas - totalSaidas;
+
       res.render("finance", {
         layout: "dashboard",
         transacoes: formatadas,
@@ -51,14 +51,20 @@ class SessionFinance {
         activeFinance: true,
 
         // Dados para os Gráficos
-        labelsEntradas: JSON.stringify(Object.keys(categoriasEntrada)), // Nomes das categorias
-        dadosEntradas: JSON.stringify(Object.values(categoriasEntrada)), // Valores somados
-
+        labelsEntradas: JSON.stringify(Object.keys(categoriasEntrada)),
+        dadosEntradas: JSON.stringify(Object.values(categoriasEntrada)),
         labelsSaidas: JSON.stringify(Object.keys(categoriasSaida)),
         dadosSaidas: JSON.stringify(Object.values(categoriasSaida)),
 
-        totalEntradas: totalEntradas,
-        totalSaidas: totalSaidas,
+        // 🚀 KPIs PARA OS CARTÕES DO TOPO
+        totalEntradas: totalEntradas.toFixed(2),
+        totalSaidas: totalSaidas.toFixed(2),
+        saldoFinal: saldoFinal.toFixed(2),
+        // Exemplo: Taxa de eficiência (quanto sobra das entradas)
+        taxaEficiencia:
+          totalEntradas > 0
+            ? ((saldoFinal / totalEntradas) * 100).toFixed(0) + "%"
+            : "0%",
       });
     } catch (error) {
       console.log("Erro ao carregar o painel financeiro:", error);
