@@ -26,9 +26,6 @@ import SessionAIFeedback from "./src/controllers/SessionAIFeedback.js";
 import AiController from "./src/controllers/AiController.js";
 import ReportController from "./src/controllers/ReportController.js";
 
-// IMPORTANTE: Importando o Middleware de Permissões
-// (Certifique-se de que o caminho do arquivo esteja correto de acordo com o seu projeto)
-import { checkPermission } from "./src/middlewares/checkPermission.js";
 import { defaultMaxListeners } from "node:events";
 
 const app = express();
@@ -133,21 +130,13 @@ export const upload = multer({ storage });
 // ==========================================
 
 // O middleware foi adicionado como o segundo parâmetro em todas as rotas protegidas
-app.get("/dashboard", checkPermission("dashboard"), SessionDashboard.index);
+app.get("/dashboard", SessionDashboard.index);
 
 // Rota para o Cockpit Inteligente da IA
-app.get(
-  "/api/cockpit",
-  checkPermission("dashboard"),
-  AiController.generateCockpit,
-);
+app.get("/api/cockpit", AiController.generateCockpit);
 
 // Rota de busca por data de venda
-app.get(
-  "/api/reports/daily-sales",
-  checkPermission("dashboard"),
-  ReportController.getDailySales,
-);
+app.get("/api/reports/daily-sales", ReportController.getDailySales);
 
 // Rota para configuração de personalização do sistema
 app.post(
@@ -160,11 +149,7 @@ app.post(
 app.get("/dashboard/ai-report", AiController.generateReport);
 
 // Rota para IA gerar o Diagnostico de sistema
-app.post(
-  "/api/ai-diagnostic",
-  checkPermission("dashboard"),
-  AiController.generateDiagnostic,
-);
+app.post("/api/ai-diagnostic", AiController.generateDiagnostic);
 
 // Rota para baixar o pdf da IA
 app.post("/dashboard/ai-report/download", AiController.downloadReport);
@@ -176,23 +161,17 @@ app.get("/dashboard/reports/csv", ReportController.exportCsv);
 // Sessão de Produtos
 app.post(
   "/dashboard/products/create",
-  checkPermission("products"),
   upload.single("image"),
   SessionProduct.store,
 );
 app.post(
   "/dashboard/product/update/:id",
-  checkPermission("products"),
   upload.single("image"),
   SessionProduct.update,
 );
-app.post(
-  "/dashboard/product/delete",
-  checkPermission("products"),
-  SessionProduct.destroy,
-);
+app.post("/dashboard/product/delete", SessionProduct.destroy);
 
-app.get("/dashboard/product", checkPermission("products"), async (req, res) => {
+app.get("/dashboard/product", async (req, res) => {
   if (!req.session.storeId) {
     return res.redirect("/login?error=session");
   }
@@ -214,18 +193,10 @@ app.get("/dashboard/product", checkPermission("products"), async (req, res) => {
 });
 
 // Sessão de Estoque
-app.post(
-  "/dashboard/stock/update",
-  checkPermission("stock"),
-  SesssionStock.update,
-);
-app.post(
-  "/dashboard/stock/update/:id",
-  checkPermission("stock"),
-  SesssionStock.update,
-);
+app.post("/dashboard/stock/update", SesssionStock.update);
+app.post("/dashboard/stock/update/:id", SesssionStock.update);
 
-app.get("/dashboard/stock", checkPermission("stock"), async (req, res) => {
+app.get("/dashboard/stock", async (req, res) => {
   if (!req.session.storeId) {
     return res.redirect("/login?error=session");
   }
@@ -290,30 +261,22 @@ app.get("/dashboard/stock", checkPermission("stock"), async (req, res) => {
 });
 
 // Sessão de Funcionários
-app.post(
-  "/dashboard/employee/post",
-  checkPermission("employee"),
-  SessionEmployee.store,
-);
-app.post(
-  "/dashboard/employee/update/:id",
-  checkPermission("employee"),
-  SessionEmployee.update,
-);
+app.post("/dashboard/employee/post", SessionEmployee.store);
+app.post("/dashboard/employee/update/:id", SessionEmployee.update);
 app.post(
   "/dashboard/employee/delete",
-  checkPermission("employee"),
+
   SessionEmployee.destroy,
 );
 app.post(
   "/dashboard/employee/add/role",
-  checkPermission("employee"),
+
   SessionRole.store,
 );
 
 app.get(
   "/dashboard/employee",
-  checkPermission("employee"),
+
   async (req, res) => {
     if (!req.session.storeId) {
       return res.redirect("/login?error=session");
@@ -377,23 +340,11 @@ app.get(
 );
 
 // Sessão de Vendas
-app.post(
-  "/dashboard/sales/create",
-  checkPermission("sales"),
-  SessionSale.store,
-);
-app.post(
-  "/dashboard/sales/delete",
-  checkPermission("sales"),
-  SessionSale.destroy,
-);
-app.post(
-  "/dashboard/sales/update/:id",
-  checkPermission("sales"),
-  SessionSale.update,
-);
+app.post("/dashboard/sales/create", SessionSale.store);
+app.post("/dashboard/sales/delete", SessionSale.destroy);
+app.post("/dashboard/sales/update/:id", SessionSale.update);
 
-app.get("/dashboard/sales", checkPermission("sales"), async (req, res) => {
+app.get("/dashboard/sales", async (req, res) => {
   if (!req.session.storeId) {
     return res.redirect("/login?error=session");
   }
@@ -420,20 +371,16 @@ app.get("/dashboard/sales", checkPermission("sales"), async (req, res) => {
 });
 
 // Rotas do Financeiro
-app.get("/dashboard/finance", checkPermission("finance"), SessionFinance.index);
-app.post(
-  "/dashboard/finance/delete",
-  checkPermission("finance"),
-  SessionFinance.destroy,
-);
+app.get("/dashboard/finance", SessionFinance.index);
+app.post("/dashboard/finance/delete", SessionFinance.destroy);
 app.post(
   "/dashboard/finance/update/:id",
-  checkPermission("finance"),
+
   SessionFinance.update,
 );
 app.post(
   "/dashboard/finance/create",
-  checkPermission("finance"),
+
   SessionFinance.store,
 );
 
@@ -442,7 +389,7 @@ app.post(
 // ==========================================
 app.get(
   "/dashboard/scheduling",
-  checkPermission("appointments"),
+
   async (req, res) => {
     if (!req.session.storeId) return res.redirect("/login?error=session");
     return SessionScheduling.index(req, res);
@@ -451,7 +398,7 @@ app.get(
 
 app.post(
   "/dashboard/scheduling/create",
-  checkPermission("appointments"),
+
   async (req, res) => {
     if (!req.session.storeId) return res.status(401).send("Sessão expirada.");
     return SessionScheduling.create(req, res);
@@ -460,7 +407,7 @@ app.post(
 
 app.post(
   "/dashboard/scheduling/update/:id",
-  checkPermission("appointments"),
+
   async (req, res) => {
     if (!req.session.storeId) return res.status(401).send("Sessão expirada.");
     return SessionScheduling.update(req, res);
@@ -469,7 +416,7 @@ app.post(
 
 app.post(
   "/dashboard/scheduling/delete",
-  checkPermission("appointments"),
+
   async (req, res) => {
     if (!req.session.storeId) return res.status(401).send("Sessão expirada.");
     return SessionScheduling.delete(req, res);
@@ -479,7 +426,7 @@ app.post(
 // Feedback AI (Geralmente no Dashboard, então vamos exigir acesso básico ao dashboard)
 app.post(
   "/api/ai-feedback",
-  checkPermission("dashboard"),
+
   SessionAIFeedback.postChat,
 );
 
