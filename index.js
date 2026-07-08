@@ -29,6 +29,7 @@ import ReportController from "./src/controllers/ReportController.js";
 // IMPORTANTE: Importando o Middleware de Permissões
 // (Certifique-se de que o caminho do arquivo esteja correto de acordo com o seu projeto)
 import { checkPermission } from "./src/middlewares/checkPermission.js";
+import { defaultMaxListeners } from "node:events";
 
 const app = express();
 const port = 8888;
@@ -510,6 +511,4 @@ app.get("/", (req, res) => {
   });
 });
 
-app.listen(port, (req, res) => {
-  console.log("funcionando;");
-});
+export default app;
