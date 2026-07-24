@@ -3,30 +3,36 @@ import multer from "multer";
 import session from "express-session";
 import crypto from "node:crypto";
 import { engine } from "express-handlebars";
-import SessionRegister from "./src/controllers/SessionRegister.js";
-import SessionLogin from "./src/controllers/SessionLogin.js";
-import SessionProduct from "./src/controllers/SessionProduct.js";
-import SesssionStock from "./src/controllers/SessionStock.js";
-import SessionEmployee from "./src/controllers/SessionEmployee.js";
-import SessionFinance from "./src/controllers/SessionFinance.js";
-import SessionScheduling from "./src/controllers/SessionScheduling.js";
-import SessionRole from "./src/controllers/SessionRole.js";
-import Schedule from "./src/models/Schedule.js";
-import Product from "./src/models/Product.js";
-import Employee from "./src/models/Employee.js";
-import Role from "./src/models/Role.js";
-import Sale from "./src/models/Sale.js";
+import SessionRegister from "./controllers/SessionRegister.js";
+import SessionLogin from "./controllers/SessionLogin.js";
+import SessionProduct from "./controllers/SessionProduct.js";
+import SesssionStock from "./controllers/SessionStock.js";
+import SessionEmployee from "./controllers/SessionEmployee.js";
+import SessionFinance from "./controllers/SessionFinance.js";
+import SessionScheduling from "./controllers/SessionScheduling.js";
+import SessionRole from "./controllers/SessionRole.js";
+import Schedule from "./models/Schedule.js";
+import Product from "./models/Product.js";
+import Employee from "./models/Employee.js";
+import Role from "./models/Role.js";
+import Sale from "./models/Sale.js";
 import path, { join } from "path";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import { fileURLToPath } from "url";
-import SessionSale from "./src/controllers/SessionSale.js";
-import SessionDashboard from "./src/controllers/SessionDashboard.js";
-import SessionAIFeedback from "./src/controllers/SessionAIFeedback.js";
-import AiController from "./src/controllers/AiController.js";
-import ReportController from "./src/controllers/ReportController.js";
+import SessionSale from "./controllers/SessionSale.js";
+import SessionDashboard from "./controllers/SessionDashboard.js";
+import SessionAIFeedback from "./controllers/SessionAIFeedback.js";
+import AiController from "./controllers/AiController.js";
+import ReportController from "./controllers/ReportController.js";
+
+// Importando Rotas
+import { mainRoutes } from "./routes/mainRoutes.js";
+import { dashboardRoutes } from "./routes/dashboardRoutes.js";
 
 import { defaultMaxListeners } from "node:events";
+import { aiRoutes } from "./routes/aiRoutes.js";
+import { reportsRoutes } from "./routes/reportsRoutes.js";
 
 const app = express();
 const port = 8888;
@@ -40,12 +46,12 @@ const __dirname = path.dirname(__filename);
 
 // Configurando as views
 // Configurando as views
-app.set("views", path.join(__dirname, "src", "views"));
+app.set("views", path.join(__dirname, "views"));
 app.engine(
   "handlebars",
   engine({
-    partialsDir: [path.join(__dirname, "src", "views", "partials")],
-    layoutsDir: path.join(__dirname, "src", "views", "layouts"),
+    partialsDir: [path.join(__dirname, "views", "partials")],
+    layoutsDir: path.join(__dirname, "views", "layouts"),
     defaultLayout: "main",
 
     // Configuração dos Helpers customizados
@@ -62,7 +68,6 @@ app.engine(
           timeZone: "America/Sao_Paulo", // Garante o fuso horário correto
         }).format(new Date(date));
       },
-      // 🚀 NOVO HELPER: Compara dois valores (Necessário para a view de produtos)
       eq: function (v1, v2) {
         return v1 === v2;
       },
@@ -71,7 +76,7 @@ app.engine(
 );
 app.set("view engine", "handlebars");
 app.set("view engine", "handlebars");
-app.use(express.static(path.join(__dirname, "public"))); // Criando para o CSS funcionar
+app.use(express.static(path.join(__dirname, "../public"))); // Criando para o CSS funcionar
 
 // Captura de dados do HTML
 app.use(
@@ -93,7 +98,7 @@ app.use(
 app.use(async (req, res, next) => {
   if (req.session && req.session.storeId) {
     try {
-      const Store = (await import("./src/models/Store.js")).default;
+      const Store = (await import("./models/Store.js")).default;
       const loja = await Store.findById(req.session.storeId).lean();
 
       if (loja) {
@@ -124,39 +129,6 @@ const storage = multer.diskStorage({
 });
 
 export const upload = multer({ storage });
-
-// ==========================================
-// ROTAS DO DASHBOARD (COM MIDDLEWARE)
-// ==========================================
-
-// O middleware foi adicionado como o segundo parâmetro em todas as rotas protegidas
-app.get("/dashboard", SessionDashboard.index);
-
-// Rota para o Cockpit Inteligente da IA
-app.get("/api/cockpit", AiController.generateCockpit);
-
-// Rota de busca por data de venda
-app.get("/api/reports/daily-sales", ReportController.getDailySales);
-
-// Rota para configuração de personalização do sistema
-app.post(
-  "/dashboard/settings",
-  upload.single("logo"),
-  SessionDashboard.updateSettings,
-);
-
-// Rota para a IA (Note que é um GET, pois vamos chamar via Fetch no Front-end)
-app.get("/dashboard/ai-report", AiController.generateReport);
-
-// Rota para IA gerar o Diagnostico de sistema
-app.post("/api/ai-diagnostic", AiController.generateDiagnostic);
-
-// Rota para baixar o pdf da IA
-app.post("/dashboard/ai-report/download", AiController.downloadReport);
-
-// Rota de Relátorios
-app.get("/dashboard/reports", ReportController.getDashboardData);
-app.get("/dashboard/reports/csv", ReportController.exportCsv);
 
 // Sessão de Produtos
 app.post(
@@ -430,32 +402,10 @@ app.post(
   SessionAIFeedback.postChat,
 );
 
-// ==========================================
-// ROTAS PÚBLICAS (NÃO PRECISAM DE PERMISSÃO)
-// ==========================================
+// Rotas
+app.use("/dashboard", reportsRoutes);
+app.use("/api", aiRoutes);
+app.use("/dashboard", dashboardRoutes);
+app.use("/", mainRoutes);
 
-// Página de Login
-app.post("/login/post", SessionLogin.store);
-
-app.get("/login", (req, res) => {
-  res.render("login", {
-    layout: "login",
-  });
-});
-
-// Página de Registro
-app.post("/register/store", SessionRegister.store);
-
-app.get("/register", (req, res) => {
-  res.render("register", {
-    layout: "register",
-  });
-});
-
-app.get("/", (req, res) => {
-  res.render("home", {
-    layout: "main",
-  });
-});
-
-export default app;
+export { app };
