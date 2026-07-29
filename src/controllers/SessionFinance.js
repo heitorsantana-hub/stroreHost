@@ -47,7 +47,8 @@ class SessionFinance {
       res.render("finance", {
         layout: "dashboard",
         transacoes: formatadas,
-        storeName: req.session.storeName,
+        userName: req.session.userName,
+        userInitials: req.session.userName.substring(0, 2).toUpperCase(),
         activeFinance: true,
 
         // Dados para os Gráficos

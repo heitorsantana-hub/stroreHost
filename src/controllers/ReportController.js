@@ -157,6 +157,8 @@ class ReportController {
       res.render("reports", {
         layout: "dashboard",
         topProdutos,
+        userName: req.session.userName,
+        userInitials: req.session.userName.substring(0, 2).toUpperCase(),
         kpiVendas: totalVendas.toFixed(2),
         kpiProdutos: produtosCount,
         kpiEstoqueBaixo: estoqueBaixoCount,

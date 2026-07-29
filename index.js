@@ -82,23 +82,11 @@ app.use(
 );
 app.use(express.json());
 
-// Configurando Session com o Mongo
-app.set("trust proxy", 1);
-
 app.use(
   session({
     secret: process.env.SECRET_KEY,
     resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({
-      mongoUrl: process.env.MONGO_URL,
-      collectionName: "sessions",
-    }),
-    cookie: {
-      secure: true,
-      sameSite: "lax",
-      maxAge: 1000 * 60 * 60 * 24, // No máximo um dia
-    },
+    saveUninitialized: true,
   }),
 );
 
@@ -195,6 +183,8 @@ app.get("/dashboard/product", async (req, res) => {
 
     res.render("product", {
       layout: "dashboard",
+      userName: req.session.userName,
+      userInitials: req.session.userName.substring(0, 2).toUpperCase(),
       produtos: meusProdutos,
       activeProduct: true,
     });
@@ -260,6 +250,8 @@ app.get("/dashboard/stock", async (req, res) => {
       layout: "dashboard",
       produtos: meusProdutos,
       activeStock: true,
+      userName: req.session.userName,
+      userInitials: req.session.userName.substring(0, 2).toUpperCase(),
       // Novas variáveis dos cartões do topo:
       total_estoque: total_estoque,
       itens_criticos: itens_criticos,
@@ -332,6 +324,8 @@ app.get(
         funcionarios: funcionariosFormatados, // Use "funcionarios" no {{#each}} do handlebars
         roles: meusCargos,
         activeEmployee: true,
+        userName: req.session.userName,
+        userInitials: req.session.userName.substring(0, 2).toUpperCase(),
         // KPIs de topo calculados
         total_time: funcionariosFormatados.length,
         ativos_hoje: funcionariosFormatados.length,
@@ -373,6 +367,8 @@ app.get("/dashboard/sales", async (req, res) => {
     res.render("sale", {
       layout: "dashboard",
       produtos: meusProdutos,
+      userName: req.session.userName,
+      userInitials: req.session.userName.substring(0, 2).toUpperCase(),
       vendas: minhasVenda,
       activeSales: true,
     });
@@ -470,4 +466,6 @@ app.get("/", (req, res) => {
   });
 });
 
-export default app;
+app.listen(port, (req, res) => {
+  console.log("Servidor Rodando Local!");
+});

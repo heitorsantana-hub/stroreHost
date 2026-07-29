@@ -73,7 +73,7 @@
         </nav>
 
         <div class="p-3 border-t border-slate-200 space-y-1">
-          <a href="/logout" class="w-full flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-rose-600 hover:bg-rose-50 transition-colors font-semibold">
+          <a href="/" class="w-full flex items-center gap-2 rounded-lg px-3 py-2 text-sm text-rose-600 hover:bg-rose-50 transition-colors font-semibold">
             <i data-lucide="log-out" class="h-4 w-4"></i> Sair do sistema
           </a>
         </div>
@@ -94,7 +94,7 @@
             </div>
           </div>
 
-          <a href="/logout" class="h-9 w-9 grid place-items-center rounded-lg border border-slate-200 bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors" title="Sair">
+          <a href="/" class="h-9 w-9 grid place-items-center rounded-lg border border-slate-200 bg-white hover:bg-rose-50 text-slate-400 hover:text-rose-600 transition-colors" title="Sair">
             <i data-lucide="log-out" class="h-4 w-4"></i>
           </a>
         </header>
@@ -103,7 +103,46 @@
           {{{body}}}
         </main>
       </div>
+
+      <!-- MOBILE BOTTOM NAV -->
+      <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around bg-white/90 backdrop-blur-xl border-t border-slate-200 px-2 py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
+        <a href="/dashboard" data-mobile-nav-link class="flex flex-col items-center gap-1 px-2 py-1 rounded-lg text-slate-500 transition-colors">
+          <i data-lucide="layout-dashboard" class="h-5 w-5"></i>
+          <span class="text-[10px] font-medium">Visão</span>
+        </a>
+        <a href="/dashboard/product" data-mobile-nav-link class="flex flex-col items-center gap-1 px-2 py-1 rounded-lg text-slate-500 transition-colors">
+          <i data-lucide="package" class="h-5 w-5"></i>
+          <span class="text-[10px] font-medium">Produtos</span>
+        </a>
+        <a href="/dashboard/stock" data-mobile-nav-link class="flex flex-col items-center gap-1 px-2 py-1 rounded-lg text-slate-500 transition-colors">
+         <i data-lucide="boxes" class="h-4 w-4"></i>
+          <span class="text-[10px] font-medium">Estoque</span>
+        </a>
+        <a href="/dashboard/sales" data-mobile-nav-link class="flex flex-col items-center gap-1 px-2 py-1 rounded-lg text-slate-500 transition-colors">
+          <i data-lucide="shopping-cart" class="h-5 w-5"></i>
+          <span class="text-[10px] font-medium">Vendas</span>
+        </a>
+        <a href="/dashboard/employee" data-mobile-nav-link class="flex flex-col items-center gap-1 px-2 py-1 rounded-lg text-slate-500 transition-colors">
+          <i data-lucide="users" class="h-5 w-5"></i>
+          <span class="text-[10px] font-medium">Equipe</span>
+        </a>
+        <a href="/dashboard/finance" data-mobile-nav-link class="flex flex-col items-center gap-1 px-2 py-1 rounded-lg text-slate-500 transition-colors">
+          <i data-lucide="wallet" class="h-5 w-5"></i>
+          <span class="text-[10px] font-medium">Financeiro</span>
+        </a>
+        <a href="/dashboard/scheduling" data-mobile-nav-link class="flex flex-col items-center gap-1 px-2 py-1 rounded-lg text-slate-500 transition-colors">
+          <i data-lucide="calendar-days" class="h-4 w-4"></i>
+          <span class="text-[10px] font-medium">Agendamentos</span>
+        </a>
+        <a href="/dashboard/reports" data-mobile-nav-link class="flex flex-col items-center gap-1 px-2 py-1 rounded-lg text-slate-500 transition-colors">
+         <i data-lucide="file-bar-chart" class="h-4 w-4"></i>
+          <span class="text-[10px] font-medium">Relatórios</span>
+        </a>
+      </nav>
+
     </div>
+
+
 
     <script>
       // Lógica simples para ativar menu e modais
