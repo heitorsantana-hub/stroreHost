@@ -19,6 +19,7 @@ import Sale from "./src/models/Sale.js";
 import path, { join } from "path";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
+import MongoStore from "connect-mongo";
 import { fileURLToPath } from "url";
 import SessionSale from "./src/controllers/SessionSale.js";
 import SessionDashboard from "./src/controllers/SessionDashboard.js";
@@ -81,12 +82,23 @@ app.use(
 );
 app.use(express.json());
 
-// Configurando Session
+// Configurando Session com o Mongo
+app.set("trust proxy", 1);
+
 app.use(
   session({
-    secret: "chave-secreta-do-storehost",
+    secret: process.env.SECRET_KEY,
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGO_URL,
+      collectionName: "sessions",
+    }),
+    cookie: {
+      secure: true,
+      sameSite: "lax",
+      maxAge: 1000 * 60 * 60 * 24, // No máximo um dia
+    },
   }),
 );
 
