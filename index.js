@@ -466,6 +466,4 @@ app.get("/", (req, res) => {
   });
 });
 
-app.listen(port, (req, res) => {
-  console.log("Servidor Rodando Local!");
-});
+export default app;
