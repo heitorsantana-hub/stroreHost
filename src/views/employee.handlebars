@@ -1,3 +1,12 @@
+
+<div class="flex items-center gap-2">
+      <button onclick="openModal('createModal')" class="h-9 px-4 rounded-lg text-sm font-bold text-white bg-gradient-to-r from-indigo-600 to-indigo-500 shadow-md shadow-indigo-600/10 hover:from-indigo-500 hover:to-indigo-600 transition-all inline-flex items-center gap-2">
+        <i data-lucide="plus" class="h-4 w-4"></i> Novo Funcionário
+      </button>
+
+      <br>
+</div>
+
 <section class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
     {{#each funcionarios}}
     <div class="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm">
@@ -32,3 +41,158 @@
     </div>
     {{/each}}
   </section>
+
+  
+
+  <div id="createModal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm p-4 sm:p-6" style="z-index: 9999;">
+  <div class="mx-auto flex min-h-full max-w-2xl items-center justify-center w-full">
+    <div class="w-full rounded-2xl border border-slate-200 bg-white shadow-2xl overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+        <h5 class="font-bold text-slate-900 flex items-center gap-2">
+          <i data-lucide="calendar-plus" class="h-5 w-5 text-indigo-600"></i> Novo Agendamento
+        </h5>
+        <button type="button" onclick="closeModal('createModal')" class="text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="h-5 w-5"></i>
+        </button>
+      </div>
+      
+      <form action="/dashboard/employee/post" method="POST" class="p-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Funcionário</label>
+            <input type="text" name="name" required class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Cargo</label>
+            <select name="cargo" required class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-colors">
+              <option value="">Selecione um cargo</option>
+              {{#each roles}}
+                <option value="{{this._id}}">{{this.name_role}}</option>
+              {{/each}}
+            </select>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Email do Funcionário</label>
+            <input type="email" name="email" required class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+          </div>
+
+  
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Senha</label>
+            <input type="password" name="password" required class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+          </div>
+
+        </div>
+        
+        <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-slate-100">
+          <button type="button" onclick="closeModal('createModal')" class="px-4 py-2 text-sm font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition-colors">Cancelar</button>
+          <button type="submit" class="px-6 py-2 text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md transition-colors flex items-center gap-2">
+            <i data-lucide="save" class="h-4 w-4"></i> Salvar Agendamento
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<div id="editModal" class="hidden fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm p-4 sm:p-6" style="z-index: 9999;">
+  <div class="mx-auto flex min-h-full max-w-2xl items-center justify-center w-full">
+    <div class="w-full rounded-2xl border border-slate-200 bg-white shadow-2xl overflow-hidden">
+      <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
+        <h5 class="font-bold text-slate-900 flex items-center gap-2">
+          <i data-lucide="edit-3" class="h-5 w-5 text-indigo-600"></i> Atualizar Agendamento
+        </h5>
+        <button type="button" onclick="closeModal('editModal')" class="text-slate-400 hover:text-slate-600">
+          <i data-lucide="x" class="h-5 w-5"></i>
+        </button>
+      </div>
+      
+      <form id="editForm" action="/dashboard/scheduling/update/0" method="POST" class="p-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Data</label>
+            <input type="date" id="editDate" name="scheduled_date" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Horário</label>
+            <input type="time" id="editTime" name="scheduled_time" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+          </div>
+
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Serviço</label>
+            <input type="text" id="editServiceType" name="service_type" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Cliente</label>
+            <input type="text" id="editCustomerName" name="customer_name" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-slate-500 uppercase tracking-wider mb-1.5">Telefone</label>
+            <input type="tel" id="editCustomerPhone" name="customer_phone" class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm bg-slate-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+          </div>
+
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-bold text-indigo-600 uppercase tracking-wider mb-1.5">Estado do Serviço</label>
+            <select id="editStatus" name="status" class="w-full px-3 py-2 border border-indigo-300 rounded-xl text-sm bg-indigo-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 font-bold text-indigo-900 transition-colors">
+              <option value="Pendente">Pendente</option>
+              <option value="Confirmado">Confirmado</option>
+              <option value="Concluído">Concluído</option>
+              <option value="Cancelado">Cancelado</option>
+            </select>
+          </div>
+
+        </div>
+        
+        <div class="flex justify-end gap-2 mt-6 pt-4 border-t border-slate-100">
+          <button type="button" onclick="closeModal('editModal')" class="px-4 py-2 text-sm font-bold bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition-colors">Cancelar</button>
+          <button type="submit" class="px-6 py-2 text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl shadow-md transition-colors">Salvar Alterações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+
+
+  // 3. Controle dos Modais nativo
+  function openModal(id) {
+    const modal = document.getElementById(id);
+    modal.classList.remove('hidden');
+    modal.classList.add('flex');
+  }
+
+  function closeModal(id) {
+    const modal = document.getElementById(id);
+    modal.classList.remove('flex');
+    modal.classList.add('hidden');
+  }
+
+  // Abre o modal de edição injetando os dados do botão clicado
+  function openEditModal(btn) {
+    document.getElementById('editForm').action = `/dashboard/scheduling/update/${btn.dataset.id}`;
+    
+    // Tratamento de data para o input type="date"
+    const rawDate = btn.dataset.date;
+    if(rawDate) {
+       document.getElementById('editDate').value = new Date(rawDate).toISOString().split('T')[0];
+    } else {
+       document.getElementById('editDate').value = '';
+    }
+
+    document.getElementById('editTime').value = btn.dataset.time;
+    document.getElementById('editCustomerName').value = btn.dataset.customerName;
+    document.getElementById('editCustomerPhone').value = btn.dataset.customerPhone;
+    document.getElementById('editServiceType').value = btn.dataset.serviceType;
+    document.getElementById('editStatus').value = btn.dataset.status;
+    
+    openModal('editModal');
+  }
+</script>

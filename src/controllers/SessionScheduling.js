@@ -5,8 +5,10 @@ class SessionScheduling {
   // Carrega a página da agenda com os dados do banco
   async index(req, res) {
     try {
-      const schedules = await Schedule.find().lean();
-      const employees = await Employee.find().lean();
+      const storeId = req.session.storeId;
+
+      const schedules = await Schedule.find({ store_id: storeId }).lean();
+      const employees = await Employee.find({ store_id: storeId }).lean();
 
       return res.render("scheduling", {
         schedules,
@@ -24,6 +26,8 @@ class SessionScheduling {
 
   // Cria um novo agendamento
   async create(req, res) {
+    const storeId = req.session.storeId;
+
     try {
       const {
         employee_id,
@@ -40,6 +44,7 @@ class SessionScheduling {
       const employee_name = employee ? employee.name : "Não informado";
 
       await Schedule.create({
+        store_id: storeId,
         employee_id,
         employee_name,
         scheduled_date,

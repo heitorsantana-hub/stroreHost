@@ -466,4 +466,6 @@ app.get("/", (req, res) => {
   });
 });
 
-export default app;
+app.listen(port, (req, res) => {
+  console.log("Servidor Rodando!");
+});

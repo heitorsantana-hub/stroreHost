@@ -40,7 +40,7 @@ class SessionEmployee {
         name,
         email,
         password: hashedPassword,
-        cargo,
+        role_id: cargo,
       });
 
       console.log("Funcionario cadastrado: ", employee.name);
