@@ -22,6 +22,18 @@
       });
     </script>
   </head>
+
+
+  <style>
+    .no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+  </style>
+
   <body class="min-h-screen bg-slate-50 text-slate-800 antialiased">
     <div class="min-h-screen flex bg-slate-50">
       
@@ -104,40 +116,42 @@
         </main>
       </div>
 
-      <!-- MOBILE BOTTOM NAV -->
-      <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around bg-white/90 backdrop-blur-xl border-t border-slate-200 px-2 py-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))]">
-        <a href="/dashboard" data-mobile-nav-link class="flex flex-col items-center gap-1 px-2 py-1 rounded-lg text-slate-500 transition-colors">
-          <i data-lucide="layout-dashboard" class="h-5 w-5"></i>
-          <span class="text-[10px] font-medium">Visão</span>
-        </a>
-        <a href="/dashboard/product" data-mobile-nav-link class="flex flex-col items-center gap-1 px-2 py-1 rounded-lg text-slate-500 transition-colors">
-          <i data-lucide="package" class="h-5 w-5"></i>
-          <span class="text-[10px] font-medium">Produtos</span>
-        </a>
-        <a href="/dashboard/stock" data-mobile-nav-link class="flex flex-col items-center gap-1 px-2 py-1 rounded-lg text-slate-500 transition-colors">
-         <i data-lucide="boxes" class="h-4 w-4"></i>
-          <span class="text-[10px] font-medium">Estoque</span>
-        </a>
-        <a href="/dashboard/sales" data-mobile-nav-link class="flex flex-col items-center gap-1 px-2 py-1 rounded-lg text-slate-500 transition-colors">
-          <i data-lucide="shopping-cart" class="h-5 w-5"></i>
-          <span class="text-[10px] font-medium">Vendas</span>
-        </a>
-        <a href="/dashboard/employee" data-mobile-nav-link class="flex flex-col items-center gap-1 px-2 py-1 rounded-lg text-slate-500 transition-colors">
-          <i data-lucide="users" class="h-5 w-5"></i>
-          <span class="text-[10px] font-medium">Equipe</span>
-        </a>
-        <a href="/dashboard/finance" data-mobile-nav-link class="flex flex-col items-center gap-1 px-2 py-1 rounded-lg text-slate-500 transition-colors">
-          <i data-lucide="wallet" class="h-5 w-5"></i>
-          <span class="text-[10px] font-medium">Financeiro</span>
-        </a>
-        <a href="/dashboard/scheduling" data-mobile-nav-link class="flex flex-col items-center gap-1 px-2 py-1 rounded-lg text-slate-500 transition-colors">
-          <i data-lucide="calendar-days" class="h-4 w-4"></i>
-          <span class="text-[10px] font-medium">Agendamentos</span>
-        </a>
-        <a href="/dashboard/reports" data-mobile-nav-link class="flex flex-col items-center gap-1 px-2 py-1 rounded-lg text-slate-500 transition-colors">
-         <i data-lucide="file-bar-chart" class="h-4 w-4"></i>
-          <span class="text-[10px] font-medium">Relatórios</span>
-        </a>
+    <!-- MOBILE BOTTOM NAV -->
+      <nav class="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/90 backdrop-blur-xl border-t border-slate-200 pb-[env(safe-area-inset-bottom)]">
+        <div class="flex items-center gap-1 overflow-x-auto no-scrollbar snap-x snap-mandatory px-2 py-2">
+          <a href="/dashboard" data-mobile-nav-link class="flex flex-col items-center gap-1 px-3 py-1 rounded-lg text-slate-500 transition-colors shrink-0 snap-center">
+            <i data-lucide="layout-dashboard" class="h-5 w-5"></i>
+            <span class="text-[10px] font-medium whitespace-nowrap">Visão</span>
+          </a>
+          <a href="/dashboard/product" data-mobile-nav-link class="flex flex-col items-center gap-1 px-3 py-1 rounded-lg text-slate-500 transition-colors shrink-0 snap-center">
+            <i data-lucide="package" class="h-5 w-5"></i>
+            <span class="text-[10px] font-medium whitespace-nowrap">Produtos</span>
+          </a>
+          <a href="/dashboard/stock" data-mobile-nav-link class="flex flex-col items-center gap-1 px-3 py-1 rounded-lg text-slate-500 transition-colors shrink-0 snap-center">
+            <i data-lucide="boxes" class="h-4 w-4"></i>
+            <span class="text-[10px] font-medium whitespace-nowrap">Estoque</span>
+          </a>
+          <a href="/dashboard/sales" data-mobile-nav-link class="flex flex-col items-center gap-1 px-3 py-1 rounded-lg text-slate-500 transition-colors shrink-0 snap-center">
+            <i data-lucide="shopping-cart" class="h-5 w-5"></i>
+            <span class="text-[10px] font-medium whitespace-nowrap">Vendas</span>
+          </a>
+          <a href="/dashboard/employee" data-mobile-nav-link class="flex flex-col items-center gap-1 px-3 py-1 rounded-lg text-slate-500 transition-colors shrink-0 snap-center">
+            <i data-lucide="users" class="h-5 w-5"></i>
+            <span class="text-[10px] font-medium whitespace-nowrap">Equipe</span>
+          </a>
+          <a href="/dashboard/finance" data-mobile-nav-link class="flex flex-col items-center gap-1 px-3 py-1 rounded-lg text-slate-500 transition-colors shrink-0 snap-center">
+            <i data-lucide="wallet" class="h-5 w-5"></i>
+            <span class="text-[10px] font-medium whitespace-nowrap">Financeiro</span>
+          </a>
+          <a href="/dashboard/scheduling" data-mobile-nav-link class="flex flex-col items-center gap-1 px-3 py-1 rounded-lg text-slate-500 transition-colors shrink-0 snap-center">
+            <i data-lucide="calendar-days" class="h-4 w-4"></i>
+            <span class="text-[10px] font-medium whitespace-nowrap">Agendamentos</span>
+          </a>
+          <a href="/dashboard/reports" data-mobile-nav-link class="flex flex-col items-center gap-1 px-3 py-1 rounded-lg text-slate-500 transition-colors shrink-0 snap-center">
+            <i data-lucide="file-bar-chart" class="h-4 w-4"></i>
+            <span class="text-[10px] font-medium whitespace-nowrap">Relatórios</span>
+          </a>
+        </div>
       </nav>
 
     </div>
